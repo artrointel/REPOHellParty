@@ -10,7 +10,7 @@ internal static class DifficultyService
         get
         {
 #if DEBUG
-            return Debugging.DebugBowtieScenario.ForcedDifficulty;
+            return Debugging.DebugChefScenario.ForcedDifficulty;
 #else
             return DifficultyRules.FromCompletedStages(RunManager.instance != null ? RunManager.instance.levelsCompleted : 0);
 #endif

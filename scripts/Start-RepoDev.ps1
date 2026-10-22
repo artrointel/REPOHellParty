@@ -54,5 +54,5 @@ else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
 if ($Configuration -eq "Debug") {
-    Write-Host "Bowtie test: difficulty 5; Bowtie + shotgun + tranquilizer. Let Bowtie begin its wind attack for Brothers; kill it for Revenge after 0.5s. Both Elsa summons last 10s."
+    Write-Host "Chef test: difficulty 5; Chef + shotgun + tranquilizer + valuable-targeting drone. Wait for Chef to see a player within 20m, then grab the Frog disguise."
 }

@@ -47,6 +47,6 @@ Animal은 현재 대상과 가까워지면 독가스를 방출하고, 고난도�
 - 네트워크 매개체로 순정 `Valuables/04 Big/Valuable Museum Uranium Mug Deluxe`를 생성하고, 순정 파괴 이벤트의 `UraniumScript.Cloud`만 사용한다. Cleanup Crew 헤드나 헤드의 직접 폭발 피해는 생성하지 않는다. 일반 우라늄 가치품의 약한 가스로 대체하지 않는다.
 - 매개체 가치는 순정 초기화 전에 0으로 설정해 보상과 최대 수집 금액에 추가하지 않는다. 초기화 중에는 플레이 영역 밖에 두고 순정 위치 RPC 후 파괴 RPC를 순서대로 전송한다. 준비에 약 0.35초와 프레임 대기가 필요하며, 쿨타임은 발동 요청 시점부터 계산한다.
 - Animal 가스 인스턴스에만 호스트 측 `HurtCollider.enemyLogic` 및 `physLogic`을 끈다. 몬스터·물체 피해는 호스트 권한으로 차단하고, 각 플레이어 클라이언트는 순정 플레이어 피해 처리를 그대로 실행한다. 원본 프리팹과 다른 가스 인스턴스는 수정하지 않는다.
-- 현재 Debug 추가 생성 대상은 Bowtie로 전환했다. Release에서는 임시 생성 코드와 난이도 강제를 제외한다. 실제 진행도에서의 확인 항목은 [Animal 플레이테스트](../animal-playtest.md)를 따른다.
+- 현재 Debug 추가 생성 대상은 Chef로 전환했다. Release에서는 임시 생성 코드와 난이도 강제를 제외한다. 실제 진행도에서의 확인 항목은 [Animal 플레이테스트](../animal-playtest.md)를 따른다.
 
 난이도별 요약은 [특수 능력 기획표](../monster-abilities.md)에서 관리한다.

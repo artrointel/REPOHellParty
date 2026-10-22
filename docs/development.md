@@ -1,6 +1,6 @@
 # 개발 환경
 
-REPOPocketCartTurret의 첫 커밋 `e788f0741f08436f0349089e68ca3bd48d0f3d1c`을 기반으로 개발 환경을 준비했고, 첫 기능으로 공용 난이도 모듈과 Apex Predator 능력을 구현했다. 다른 몬스터의 능력과 공통 인지 판정 연결은 아직 구현하지 않았다.
+REPOPocketCartTurret의 첫 커밋 `e788f0741f08436f0349089e68ca3bd48d0f3d1c`을 기반으로 개발 환경을 준비했고, 첫 기능으로 공용 난이도 모듈과 Apex Predator 능력을 구현했다. 현재 Apex Predator, Animal, Birthday Boy, Bella, Bowtie와 Chef의 능력을 구현했다.
 
 ## 도구와 참조
 
@@ -53,7 +53,7 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 - `src/HellParty/Debug/`는 Debug 구성에서만 컴파일한다. 호출부도 `#if DEBUG`로 분리한다.
 - Release는 완료 스테이지 수로 난이도를 계산한다. `min(5, max(0, levelsCompleted) / 3)`을 사용하므로 stage1은 0, stage4는 1, stage7은 2, stage10은 3, stage13은 4, stage16 이상은 5다.
-- Debug는 Bowtie 테스트를 위해 난이도를 5로 강제한다. 순정 `levelsCompleted`나 저장 진행도는 변경하지 않는다. 실제 스테이지 시작마다 시작 위치 근처 Bowtie·샷건·수면총을 각각 하나씩 생성한다. 테스트용 Bella·Birthday Boy·Animal·오리 생성과 임시 능력 추적 로그는 제거한 상태다.
+- Debug는 Chef 테스트를 위해 난이도를 5로 강제한다. 순정 `levelsCompleted`나 저장 진행도는 변경하지 않는다. 실제 스테이지 시작마다 시작 위치 근처 Chef·샷건·수면총·가치품 대상 드론을 각각 하나씩 생성한다. 테스트용 Bowtie·Bella·Birthday Boy·Animal·오리 생성과 임시 능력 추적 로그는 제거한 상태다.
 - `DifficultyService`는 공용 난이도 조회 지점이며, `StageRuntime.TryAttach`는 향후 몬스터 능력을 연결할 지점이다.
 - `scripts/Start-RepoDev.ps1`은 기본적으로 Debug를 빌드·배포하고 게임을 실행한다. `-Configuration Release`로 실제 진행 모드를 실행할 수 있다. 복원을 먼저 수행해야 하며, 이미 배포한 빌드를 시작할 때는 `-NoBuild`를 사용한다.
 - 게임은 `WindowStyle Normal`로 표시한다. 일반 플레이 테스트는 디버거 연결 없이 실행할 수 있으며, `-EnableDebugger`나 F5를 사용해도 디버거 연결을 기다리며 시작을 정지하지 않는다.
@@ -78,10 +78,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderst
 
 ## 검증과 다음 단계
 
-`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지를 검사한다. Mono.Cecil로 Debug 전용 Bowtie 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. Mono.Cecil로 Debug 전용 Chef 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
 ```
 
 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
+
+현재 Debug 실행 확인은 [Chef 플레이테스트](chef-playtest.md)를 따른다.

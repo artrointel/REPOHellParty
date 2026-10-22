@@ -2,6 +2,16 @@
 
 ## 0.1.0
 
+- Share Chef body health and usable Frog durability by percentage, preserving fractional damage across transformations through native value RPCs. Environmental destruction also awards the native orb. Removed the disguise-specific 20m/raycast override from pursuit expiry; native pursuit now controls target release.
+
+- Chef's disguise now ends only after five continuous seconds without a visible player. Reacquiring any player resets the timer; the one-second visibility scan interval is unchanged.
+
+- Excluded Chef disguise Frogs from Gnome valuable selection and guarded drone attachment before native RPC emission. Chef now keeps its grabber target through attack recovery instead of redisguising on a temporary vision gap; target death or native pursuit expiry releases it.
+
+- Chef now monitors player visibility every second while its native body is hidden. Losing all unobstructed living players within 20m removes the disguise and restores roaming without aggro or an orb, preserving health and grab/destruction precedence.
+
+- Added difficulty-one Chef Mimic: 20m unobstructed roaming scans at one-second intervals, a destructible native Frog disguise that rejects drones, native orb rewards for breaking the disguise, grab release before revealing, complete native attack preparation with preserved health, and return to roaming after target loss. Switched the Debug scenario to Chef, weapons and a valuable-targeting drone.
+
 - Bowtie-summoned Elsas now ignore their own summoner's native wind hit, including knockback/stun, while retaining the ten-second lifetime. Other Bowties, normal Elsas and players keep their native wind interactions.
 - Added difficulty-four Bowtie Revenge: an Elsa is summoned at the saved death position after 0.5 seconds, targets the killing player when identified or the nearest living player, and uses the existing no-orb, ten-second animated summon lifecycle. No target means immediate animated retirement.
 - Added difficulty-two Bowtie Brothers: native Elsa target inheritance and transformation, no orbs, a ten-second lifetime and animated retirement on timeout/replacement, with no automatic respawn. Excluded the proposed three-hit condition and switched the Debug scenario to Bowtie.

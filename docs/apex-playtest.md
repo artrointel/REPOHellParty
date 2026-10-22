@@ -12,7 +12,7 @@
 
 ## 실행 후 확인
 
-오리 테스트용 추가 오리·총기 생성과 상태·호출 경로 진단 코드는 제거했다. 현재 Debug는 [Bowtie 테스트](bowtie-playtest.md)를 위해 난이도 5와 Bowtie·총기 생성을 제공한다. 아래의 실제 진행도 검증은 Release의 순정 생성 오리로 확인한다.
+오리 테스트용 추가 오리·총기 생성과 상태·호출 경로 진단 코드는 제거했다. 현재 Debug는 [Chef 테스트](chef-playtest.md)를 위해 난이도 5와 Chef·총기·드론 생성을 제공한다. 아래의 실제 진행도 검증은 Release의 순정 생성 오리로 확인한다.
 
 게임을 종료한 뒤 저장소 루트에서 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1`을 실행한다. Debug 빌드·배포 후 게임 창이 표시된다. 일반 플레이 테스트에는 F5나 디버거 연결이 필요 없다.
 

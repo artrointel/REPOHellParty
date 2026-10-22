@@ -20,13 +20,16 @@ internal sealed class StageRuntime : MonoBehaviour
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugBowtieScenario.SpawnTestSet();
+        yield return Debugging.DebugChefScenario.SpawnTestSet();
 #endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.DifficultyRules.ChefMimicUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyTumbler>(true) != null &&
+            parent.GetComponent<ChefMimic>() == null)
+            parent.gameObject.AddComponent<ChefMimic>();
         if (Rules.DifficultyRules.BowtieBrothersUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyBowtie>(true) != null &&
             parent.GetComponent<BowtieBrothers>() == null)
             parent.gameObject.AddComponent<BowtieBrothers>();

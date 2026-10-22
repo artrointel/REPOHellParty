@@ -1,12 +1,12 @@
 # Bowtie 플레이테스트
 
-게임 종료 후 저장소 루트에서 실행한다.
+현재 Debug 자동 생성 대상은 [Chef](chef-playtest.md)다. Bowtie는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-Debug는 난이도 5에서 시작 위치 근처 Bowtie·샷건·수면총을 각각 하나 생성한다. 플레이어 발견과 바람 공격은 순정 AI로 발생시킨다. Release는 stage7부터 형제, stage13부터 복수를 해금한다. Debug의 해금 경계를 확인하려면 `DebugBowtieScenario.ForcedDifficulty`를 1·2·3·4로 바꿔 다시 빌드한다.
+Release는 실제 진행도를 따라 stage7부터 형제, stage13부터 복수를 해금한다. 아래 항목은 해당 난이도의 자연 생성 Bowtie로 확인한다.
 
 1. 난이도 0·1에는 추가 Elsa가 없어야 한다. 2 이상에서 플레이어 발견 후 실제 바람이 시작될 때 대상 위치 근처에 한 마리만 생성되어야 한다. 발견 예고 시점에는 생성되지 않아야 한다.
 2. Bowtie 타깃이 A이고 근처에 B가 있는 경우 Elsa가 A를 대상으로 변신 후 접근·공격하는지 확인한다. 가구 위·공중에 있는 플레이어 주변에서도 유효한 바닥에 나타나고 제자리에 멈추지 않아야 한다.

@@ -11,6 +11,7 @@ internal static class VanillaCatalog
 {
     internal static PrefabRef BowtiePrefab() => EnemyPrefab<EnemyBowtie>();
     internal static PrefabRef ElsaPrefab() => EnemyPrefab<EnemyElsa>();
+    internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
 
     private static PrefabRef EnemyPrefab<T>() where T : Component
     {

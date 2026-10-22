@@ -68,6 +68,86 @@ Check("Animal killing one child rewards independently of sibling expiry", oneOfT
 
 var clock = new RespawnClock();
 foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
+    Check($"Chef Mimic unlock at difficulty {level}", DifficultyRules.ChefMimicUnlocked(level) == (level >= 1));
+Check("Chef detects exactly twenty metres", ChefMimicState.InRange(400));
+Check("Chef detects below twenty metres", ChefMimicState.InRange(399.99f));
+Check("Chef ignores beyond twenty metres", !ChefMimicState.InRange(400.01f));
+var mimicState = new ChefMimicState();
+Check("Chef starts roaming", mimicState.Mode == ChefMimicMode.Roaming);
+Check("Chef cannot scan while native AI is not roaming", !mimicState.TryScan(0, false));
+Check("Chef initial roaming scan is immediately eligible", mimicState.TryScan(0, true));
+Check("Chef unsuccessful scan waits one second", !mimicState.TryScan(.999, true) && mimicState.TryScan(1, true));
+Check("Chef disguise can be entered only once", mimicState.Disguise() && !mimicState.Disguise());
+Check("Chef disguise pauses further detection", !mimicState.TryScan(100, true));
+Check("Chef cannot attack without accepted grab", !mimicState.Attack());
+Check("Chef first grab requests reveal exactly once", mimicState.Reveal() && !mimicState.Reveal());
+Check("Chef cannot disguise while revealing", !mimicState.Disguise());
+Check("Chef waits for native spawn before attack", mimicState.Mode == ChefMimicMode.Revealing);
+Check("Chef native reveal completes attack once", mimicState.Attack() && !mimicState.Attack());
+Check("Chef cannot rescan during attack", !mimicState.TryScan(200, true));
+mimicState.Roam(200);
+Check("Chef target loss resets to roaming with retry delay", mimicState.Mode == ChefMimicMode.Roaming && !mimicState.TryScan(200.999, true));
+Check("Chef target loss permits a fresh disguise after one second", mimicState.TryScan(201, true) && mimicState.Disguise());
+mimicState.Roam(300);
+Check("Chef death or cleanup cancels a pending disguise", !mimicState.Reveal() && !mimicState.Attack());
+Check("Chef roaming cannot award a disguise kill", !mimicState.Defeat());
+Check("Chef can enter a fresh destructible disguise", mimicState.Disguise());
+Check("Chef broken disguise schedules death exactly once", mimicState.Defeat() && !mimicState.Defeat());
+Check("Chef broken disguise cannot be grabbed or attack", !mimicState.Reveal() && !mimicState.Attack());
+Check("Chef pending death cannot scan or disguise", !mimicState.TryScan(1000, true) && !mimicState.Disguise());
+mimicState.Roam(1000);
+Check("Chef destruction during pending grab cancels reveal", mimicState.Disguise() && mimicState.Reveal() && mimicState.Defeat() && !mimicState.Attack());
+mimicState.Roam(1001);
+Check("Chef attack cannot be killed by stale Frog callbacks", mimicState.Disguise() && mimicState.Reveal() && mimicState.Attack() && !mimicState.Defeat());
+Check("Chef attack recovery does not release a living target", !mimicState.ShouldReleaseTarget(true, false));
+Check("Chef attack recovery cannot permit a fresh disguise", !mimicState.Disguise() && !mimicState.TryScan(2000, true));
+Check("Chef native pursuit completion releases without any disguise visibility override", mimicState.ShouldReleaseTarget(true, true));
+Check("Chef target death releases immediately without pursuit expiry", mimicState.ShouldReleaseTarget(false, false));
+mimicState.Roam(2000);
+Check("Chef can disguise again only after target release and retry delay", !mimicState.TryScan(2000.999, true) && mimicState.TryScan(2001, true) && mimicState.Disguise());
+Check("Chef target release rule cannot interrupt a disguise", !mimicState.ShouldReleaseTarget(false, true));
+var vitality = new ChefVitality();
+vitality.CaptureBody(50, 100);
+Check("Chef half health maps to half usable Frog durability", Math.Abs(vitality.FrogValue(10000) - 5750) < .001);
+vitality.ApplyFrogChange(-2125, 10000);
+Check("Chef Frog quarter-health damage persists on reveal", Math.Abs(vitality.Fraction - .25) < .000001 && vitality.BodyHealth(100) == 25);
+vitality.CaptureBody(15, 100);
+Check("Chef subsequent body damage carries back to the disguise", Math.Abs(vitality.Fraction - .15) < .000001 && Math.Abs(vitality.FrogValue(10000) - 2775) < .001);
+vitality.ApplyFrogChange(-42.5, 10000);
+double partialFraction = vitality.Fraction;
+for (int cycle = 0; cycle < 100; cycle++)
+    vitality.CaptureBody(vitality.BodyHealth(100), 100);
+Check("Chef repeated transformations neither heal nor discard fractional damage", Math.Abs(vitality.Fraction - partialFraction) < .000001);
+vitality.ApplyFrogChange(850, 10000);
+Check("Chef native Frog healing shares the same percentage", Math.Abs(vitality.Fraction - (partialFraction + .1)) < .000001);
+vitality.ApplyFrogChange(-10000, 10000);
+Check("Chef lethal Frog damage clamps to zero body health", vitality.Fraction == 0 && vitality.BodyHealth(100) == 0);
+vitality.CaptureBody(100, 100);
+Check("Chef native new life can restore full vitality", vitality.Fraction == 1);
+vitality.CaptureBody(1, 10000);
+Check("Chef very low positive vitality remains alive", vitality.BodyHealth(10000) == 1);
+vitality.ApplyFrogChange(-100, 0);
+Check("Chef uninitialized Frog value cannot corrupt vitality", vitality.BodyHealth(10000) == 1);
+vitality.NewLife(100, 100);
+Check("Chef native new life discards previous fractional wounds", vitality.Fraction == 1 && vitality.BodyHealth(100) == 100);
+var hiddenChef = new ChefMimicState();
+Check("Chef hidden visibility check cannot run while roaming", !hiddenChef.TryDisguiseScan(0));
+Check("Chef starts hidden monitoring after a qualifying roaming scan", hiddenChef.TryScan(0, true) && hiddenChef.Disguise());
+Check("Chef hidden monitoring keeps the one-second interval", !hiddenChef.TryDisguiseScan(.999) && hiddenChef.TryDisguiseScan(1) && !hiddenChef.TryDisguiseScan(1.999));
+Check("Chef remains disguised while any player is visible", !hiddenChef.ReturnIfUnseen(1, true) && hiddenChef.Mode == ChefMimicMode.Disguised);
+Check("Chef scans again while native body remains hidden", hiddenChef.TryDisguiseScan(2));
+Check("Chef starts a grace period on first visibility loss", !hiddenChef.ReturnIfUnseen(2, false));
+Check("Chef stays disguised just before five seconds unseen", !hiddenChef.ReturnIfUnseen(6.999, false));
+Check("Chef spotting any player resets the unseen period", !hiddenChef.ReturnIfUnseen(7, true) && !hiddenChef.ReturnIfUnseen(8, false));
+Check("Chef does not accumulate separate unseen periods", !hiddenChef.ReturnIfUnseen(12.999, false));
+Check("Chef five continuous seconds unseen requests roaming once", hiddenChef.ReturnIfUnseen(13, false) && !hiddenChef.ReturnIfUnseen(14, false));
+Check("Chef visibility loss cannot become a grab attack or orb reward", !hiddenChef.Reveal() && !hiddenChef.Attack() && !hiddenChef.Defeat());
+Check("Chef pending roaming restore cannot scan", !hiddenChef.TryScan(14, true) && !hiddenChef.TryDisguiseScan(14));
+hiddenChef.Roam(14);
+Check("Chef visibility loss permits disguise again after retry cooldown", !hiddenChef.TryScan(14.999, true) && hiddenChef.TryScan(15, true) && hiddenChef.Disguise());
+Check("Chef new disguise clears the previous unseen timer", !hiddenChef.ReturnIfUnseen(16, false) && !hiddenChef.ReturnIfUnseen(20.999, false));
+Check("Chef accepted grab wins over a subsequent hidden visibility check", hiddenChef.Reveal() && !hiddenChef.TryDisguiseScan(21) && !hiddenChef.ReturnIfUnseen(21, false));
+foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
     Check($"Bowtie Brothers unlock at difficulty {level}", DifficultyRules.BowtieBrothersUnlocked(level) == (level >= 2));
 var brotherLife = new BowtieBrotherLife();
 foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
@@ -251,14 +331,17 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
-Check("Debug contains Bowtie test scenario", debug.GetType("HellParty.Debugging.DebugBowtieScenario") != null);
-Check("Debug Bowtie scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugBowtieScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug contains Chef test scenario", debug.GetType("HellParty.Debugging.DebugChefScenario") != null);
+Check("Debug Chef scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugChefScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Debug no longer contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") == null);
 Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_5));
 Check("Release excludes debug scenarios and spawn tickets", !release.Types.Any(t => t.Namespace.StartsWith("HellParty.Debugging")));
 Check("Release computes difficulty from completed stages", release.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "FromCompletedStages"));
 Check("Release includes Animal ability", release.GetType("HellParty.AnimalPoison") != null);
 Check("Release includes Bella abilities and pinned doll", release.GetType("HellParty.BellaAbilities") != null && release.GetType("HellParty.BellaDollCarrier") != null);
+Check("Release includes Chef mimic and native Frog disguise", release.GetType("HellParty.ChefMimic") != null && release.GetType("HellParty.ChefMimicFrog") != null);
+Check("Chef pursuit release never uses disguise distance or ray predicates", release.GetType("HellParty.ChefMimic").Methods.Single(m => m.Name == "AfterNativeTick").Body.Instructions.All(i => i.Operand is not MethodReference m || (m.Name != "InRange" && m.Name != "Unobstructed" && m.Name != "HasVisiblePlayer")));
+Check("Debug no longer contains Bowtie scenario", debug.GetType("HellParty.Debugging.DebugBowtieScenario") == null);
 Check("Release includes Bowtie Brothers and summoned Elsa lifecycle", release.GetType("HellParty.BowtieBrothers") != null && release.GetType("HellParty.BowtieBrother") != null);
 Check("Debug no longer contains Bella scenario", debug.GetType("HellParty.Debugging.DebugBellaScenario") == null);
 Check("Release includes Birthday Boy ability", release.GetType("HellParty.BirthdayBoyAbilities") != null);
@@ -268,9 +351,9 @@ Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t =
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
-    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget"), ("EnemyTricycle", "DoBellRing"), ("EnemyTricycle", "SetState"), ("EnemyTricycle", "OnSpawn"), ("ClownTrap", "TouchNose"), ("PhysGrabObject", "GrabPlayerAddRPC"), ("PhysGrabObject", "GrabStarted"), ("EnemyBowtieAnim", "YellStart"), ("EnemyElsa", "Update"), ("EnemyElsa", "UpdateState"), ("EnemyElsa", "StateTransformBigToSmall"), ("EnemyElsa", "StateDespawnSmall"), ("EnemyElsaAnim", "Despawn"), ("PhysGrabObjectImpactDetector", "OnCollisionStay"), ("EnemyBowtie", "OnSpawn") })
+    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget"), ("EnemyTricycle", "DoBellRing"), ("EnemyTricycle", "SetState"), ("EnemyTricycle", "OnSpawn"), ("ClownTrap", "TouchNose"), ("PhysGrabObject", "GrabPlayerAddRPC"), ("PhysGrabObject", "GrabStarted"), ("EnemyBowtieAnim", "YellStart"), ("EnemyElsa", "Update"), ("EnemyElsa", "UpdateState"), ("EnemyElsa", "StateTransformBigToSmall"), ("EnemyElsa", "StateDespawnSmall"), ("EnemyElsaAnim", "Despawn"), ("PhysGrabObjectImpactDetector", "OnCollisionStay"), ("EnemyBowtie", "OnSpawn"), ("EnemyTumbler", "Update"), ("EnemyTumbler", "OnVision"), ("EnemyTumbler", "OnGrabbed"), ("EnemyTumbler", "UpdateState"), ("ItemDrone", "GetHighestParentWithRigidbody"), ("PhysGrabObject", "DestroyPhysGrabObject"), ("PhysGrabObjectImpactDetector", "DestroyObject") })
         Check($"installed game hook exists: {type}.{method}", game.GetType(type)?.Methods.Any(m => m.Name == method) == true);
-    foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic"), ("EnemyTricycle", "playerTarget"), ("EnemyTricycle", "attackTimer"), ("EnemyTricycle", "attackTimerMax"), ("EnemyTricycle", "lastSeenPlayerTimer"), ("LevelValuables", "tiny"), ("Trap", "trapTriggered"), ("EnemyBowtie", "playerTarget"), ("EnemyElsa", "playerTarget"), ("HurtCollider", "playerCausingHurt"), ("HurtCollider", "playerCausingHurtOverride"), ("PhysGrabObject", "lastPlayerGrabbing"), ("PhysGrabObject", "grabbedTimer") })
+    foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic"), ("EnemyTricycle", "playerTarget"), ("EnemyTricycle", "attackTimer"), ("EnemyTricycle", "attackTimerMax"), ("EnemyTricycle", "lastSeenPlayerTimer"), ("LevelValuables", "tiny"), ("Trap", "trapTriggered"), ("EnemyBowtie", "playerTarget"), ("EnemyElsa", "playerTarget"), ("HurtCollider", "playerCausingHurt"), ("HurtCollider", "playerCausingHurtOverride"), ("PhysGrabObject", "lastPlayerGrabbing"), ("PhysGrabObject", "grabbedTimer"), ("EnemyTumbler", "targetPlayer"), ("EnemyVision", "VisionsTriggered"), ("PhysGrabObjectImpactDetector", "destroyDisable") })
         Check($"installed game native field exists: {type}.{field}", game.GetType(type)?.Fields.Any(f => f.Name == field) == true);
     Check("installed game gas has native all-client destruction callback", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "DestroyObjectRPC").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "onDestroy"));
     Check("installed game stun owner field exists for birth readiness", game.GetType("EnemyStateStunned").Fields.Any(f => f.Name == "enemy" && f.FieldType.FullName == "Enemy"));
@@ -295,6 +378,19 @@ if (args.Length > 0)
         Check($"native Elsa RPC is master-only: {rpc}", game.GetType("EnemyElsa").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
     Check("native Elsa growth uses a 4.1-second transformation", game.GetType("EnemyElsa").Methods.Single(m => m.Name == "StateTransformSmallToBig").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_R4 && i.Operand is float f && Math.Abs(f - 4.1f) < .001f));
     Check("native Elsa despawn is completed by animation event", game.GetType("EnemyElsaAnim").Methods.Single(m => m.Name == "Despawn").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.FullName == "EnemyParent" && m.Name == "Despawn"));
+    foreach (string rpc in new[] { "UpdateStateRPC", "TargetPlayerRPC" })
+        Check($"native Chef RPC is master-only: {rpc}", game.GetType("EnemyTumbler").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native drone candidate search uses the filtered rigidbody resolver", game.GetType("ItemDrone").Methods.Single(m => m.Name == "SphereCheck").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "GetHighestParentWithRigidbody"));
+    Check("native drone attachment has a host-side entry before RPC emission", game.GetType("ItemDrone").Methods.Single(m => m.Name == "NewRayHitPoint").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "RPC"));
+    Check("native drone can retract a rejected attachment", game.GetType("ItemDrone").Methods.Any(m => m.Name == "DeactivateMagnet" && m.Parameters.Count == 0));
+    Check("native Gnome selection has exactly one valuable candidate lookup to filter", game.GetType("EnemyGnomeDirector").Methods.Single(m => m.Name == "StateAttackSet").Body.Instructions.Count(i => i.Operand is GenericInstanceMethod m && m.Name == "GetComponentInParent" && m.GenericArguments.SingleOrDefault()?.FullName == "ValuableObject") == 1);
+    Check("native Gnome selection retains a player fallback", game.GetType("EnemyGnomeDirector").Methods.Single(m => m.Name == "StateAttackSet").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "UpdateState"));
+    Check("native grab release broadcasts to vanilla grabbers", game.GetType("PhysGrabber").Methods.Single(m => m.Name == "OverrideGrabRelease").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "ReleaseObjectRPC"));
+    Check("native release clears the grabbed object", game.GetType("PhysGrabber").Methods.Single(m => m.Name == "ReleaseObject").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "grabbedPhysGrabObject" && i.OpCode.Code == Code.Stfld));
+    Check("native Chef tell leads to tumble", game.GetType("EnemyTumbler").Methods.Single(m => m.Name == "StateTell").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "UpdateState"));
+    Check("native valuable value initializer remains a coroutine", game.GetType("ValuableObject").Methods.Single(m => m.Name == "DollarValueSet").ReturnType.FullName == "System.Collections.IEnumerator");
+    Check("native Frog signed value adjustment is master-only", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "HealRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native Frog signed value adjustment preserves original value", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "HealLogic").Body.Instructions.All(i => i.OpCode.Code != Code.Stfld || i.Operand is not FieldReference f || f.Name != "dollarValueOriginal"));
     foreach (string rpc in new[] { "SpawnBalloonRPC", "RemoveBalloonRPC", "PopAllBalloonsRPC" })
         Check($"native balloon RPC is master-only: {rpc}", game.GetType("EnemyBirthdayBoy").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 }
