@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <GameDirectory>C:\Program Files (x86)\Steam\steamapps\common\REPO</GameDirectory>
+    <ProfileName>REPO</ProfileName>
+    <BepInExDirectory>$(AppData)\Thunderstore Mod Manager\DataFolder\REPO\profiles\$(ProfileName)\BepInEx</BepInExDirectory>
+    <PluginOutputSubdirectory>HellParty</PluginOutputSubdirectory>
+    <StartArguments>--doorstop-enabled true --doorstop-target-assembly &quot;$(BepInExDirectory)\core\BepInEx.Preloader.dll&quot;</StartArguments>
+  </PropertyGroup>
+</Project>

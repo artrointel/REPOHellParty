@@ -1,0 +1,47 @@
+﻿{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "HellParty: Build (Debug)",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Build-Dev.ps1"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "HellParty: Build + Deploy (Debug)",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Build-Dev.ps1", "-Deploy"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "HellParty: Start game",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1"],
+      "dependsOn": "HellParty: Build + Deploy (Debug)",
+      "problemMatcher": []
+    },
+    {
+      "label": "HellParty: Start game with debugger",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-EnableDebugger"],
+      "dependsOn": "HellParty: Build + Deploy (Debug)",
+      "problemMatcher": []
+    },
+    {
+      "label": "HellParty: Watch BepInEx log",
+      "type": "shell",
+      "command": "Get-Content -LiteralPath '${env:APPDATA}\\Thunderstore Mod Manager\\DataFolder\\REPO\\profiles\\REPO\\BepInEx\\LogOutput.log' -Tail 100 -Wait",
+      "options": {
+        "shell": { "executable": "powershell.exe", "args": ["-NoProfile", "-Command"] }
+      },
+      "problemMatcher": []
+    }
+  ]
+}
