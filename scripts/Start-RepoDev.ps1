@@ -54,5 +54,5 @@ else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
 if ($Configuration -eq "Debug") {
-    Write-Host "Animal test: difficulty 5; Animal + shotgun + tranquilizer. Gas: target within 3m / 10s. Death: two half-health children / 20s lifetime."
+    Write-Host "Birthday Boy test: difficulty 5; Birthday Boy + shotgun + tranquilizer. Wait for native balloons: stay within 3m for 3s to trigger a Gnome."
 }

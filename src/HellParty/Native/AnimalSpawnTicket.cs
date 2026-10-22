@@ -6,20 +6,8 @@ namespace HellParty.Native;
 
 internal sealed class AnimalSpawnTicket : MonoBehaviour
 {
-    private static readonly AccessTools.FieldRef<EnemyStateStunned, Enemy> StunOwner =
-        AccessTools.FieldRefAccess<EnemyStateStunned, Enemy>("enemy");
     internal Vector3 Position;
     internal bool Pending = true;
-
-    internal static bool IsPreparing(Component component)
-    {
-        AnimalSpawnTicket ticket = component.GetComponentInParent<AnimalSpawnTicket>();
-        if (ticket == null) return false;
-        if (ticket.Pending) return true;
-        EnemyStateStunned stunned = ticket.GetComponentInChildren<EnemyStateStunned>(true);
-        // SpawnRPC may activate a component whose Start has not run yet.
-        return stunned != null && StunOwner(stunned) == null;
-    }
 
     internal static EnemyParent Create(Vector3 position, bool offspring)
     {

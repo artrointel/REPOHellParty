@@ -67,6 +67,97 @@ foreach (var life in oneOfTwo) life.Start(0);
 Check("Animal killing one child rewards independently of sibling expiry", oneOfTwo[0].Die(10) && oneOfTwo[1].Expire(20));
 
 var clock = new RespawnClock();
+foreach ((int level, int tier) in new[] { (0, 0), (1, 1), (2, 2), (3, 3), (4, 3), (5, 3) })
+    Check($"Birthday Boy difficulty {level} -> balloon tier {tier}", DifficultyRules.BirthdayBalloonTier(level) == tier);
+var proximity = new BalloonProximityClock();
+Check("balloon proximity starts without owner recognition", !proximity.Observe(100, true));
+Check("balloon does not pop before three seconds", !proximity.Observe(102.999, true));
+Check("balloon pops at exactly three seconds", proximity.Observe(103, true));
+Check("balloon proximity triggers once", !proximity.Observe(110, true));
+var interruptedProximity = new BalloonProximityClock();
+interruptedProximity.Observe(0, true);
+interruptedProximity.Observe(2.9, false);
+Check("leaving balloon radius resets continuous exposure", !interruptedProximity.Observe(3, true) && !interruptedProximity.Observe(5.999, true));
+Check("fresh continuous exposure triggers after three seconds", interruptedProximity.Observe(6, true));
+var rewards = new BirthdayBalloonRewards<int>();
+rewards.Register(1);
+Check("tier one automatic pop creates Gnome with nearby player", rewards.Remove(1, BalloonPopCause.Automatic, true, 1) == BalloonReward.Gnome);
+Check("same balloon cannot reward twice", rewards.Remove(1, BalloonPopCause.Automatic, true, 2) == BalloonReward.None);
+rewards.Register(2);
+Check("tier one player pop creates Gnome", rewards.Remove(2, BalloonPopCause.Player, true, 1) == BalloonReward.Gnome);
+rewards.Register(3);
+Check("tier two player pop creates Gnome", rewards.Remove(3, BalloonPopCause.Player, true, 2) == BalloonReward.Gnome);
+rewards.Register(4);
+Check("manual replacement does not create Gnome", rewards.Remove(4, BalloonPopCause.Other, true, 2) == BalloonReward.None);
+rewards.Register(5);
+Check("tier zero automatic pop cannot create reward", rewards.Remove(5, BalloonPopCause.Automatic, true, 0) == BalloonReward.None);
+var deathRewards = new BirthdayBalloonRewards<int>();
+foreach (int key in new[] { 1, 2, 3, 4, 5 }) deathRewards.Register(key);
+deathRewards.BeginDeath();
+deathRewards.BeginDeath();
+Check("older balloons do not award death loot", deathRewards.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.None && deathRewards.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
+foreach (int key in new[] { 3, 4, 5 })
+    Check($"recent balloon {key} awards Eyeball independent of recognition", deathRewards.Remove(key, BalloonPopCause.Automatic, false, 2) == BalloonReward.Eyeball);
+Check("death cleanup cannot duplicate an Eyeball", deathRewards.Remove(5, BalloonPopCause.Player, true, 2) == BalloonReward.None);
+var sparseDeath = new BirthdayBalloonRewards<int>();
+sparseDeath.Register(10);
+sparseDeath.BeginDeath();
+Check("death with one balloon awards only one Eyeball", sparseDeath.Remove(10, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball);
+var basicDeath = new BirthdayBalloonRewards<int>();
+basicDeath.Register(1);
+basicDeath.BeginDeath();
+Check("tier one death cleanup creates neither Gnome nor Eyeball", basicDeath.Remove(1, BalloonPopCause.Player, true, 1) == BalloonReward.None);
+var otherOwner = new BirthdayBalloonRewards<int>();
+otherOwner.Register(1);
+Check("balloon identities are isolated by owner", otherOwner.Remove(1, BalloonPopCause.Automatic, true, 1) == BalloonReward.Gnome);
+var reusedPosition = new BirthdayBalloonRewards<int>();
+foreach (int key in new[] { 1, 2, 3, 4, 1 }) reusedPosition.Register(key);
+reusedPosition.BeginDeath();
+Check("reused placement position counts as newest generation", reusedPosition.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball && reusedPosition.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
+reusedPosition.Remove(3, BalloonPopCause.Other, false, 2);
+reusedPosition.Remove(4, BalloonPopCause.Other, false, 2);
+reusedPosition.NewLife();
+reusedPosition.Register(1);
+Check("new monster life restores normal automatic pop reward", reusedPosition.Remove(1, BalloonPopCause.Automatic, true, 1) == BalloonReward.Gnome);
+var quietTierTwo = new BirthdayBalloonRewards<int>();
+quietTierTwo.Register(1);
+Check("tier two automatic pop uses nearby player eligibility", quietTierTwo.Remove(1, BalloonPopCause.Automatic, true, 2) == BalloonReward.Gnome);
+quietTierTwo.Register(2);
+Check("distant direct pop creates no Gnome", quietTierTwo.Remove(2, BalloonPopCause.Player, false, 2) == BalloonReward.None);
+foreach (BalloonPopCause cause in new[] { BalloonPopCause.Player, BalloonPopCause.Physical, BalloonPopCause.Automatic })
+    foreach (bool nearby in new[] { false, true })
+    {
+        var physical = new BirthdayBalloonRewards<int>();
+        physical.Register(1);
+        Check($"tier one {cause} nearby={nearby}", physical.Remove(1, cause, nearby, 1) == (nearby ? BalloonReward.Gnome : BalloonReward.None));
+    }
+Check("balloon radius includes exactly ten metres", DifficultyRules.BirthdayBalloonInRange(100));
+Check("balloon radius includes less than ten metres", DifficultyRules.BirthdayBalloonInRange(99.99f));
+Check("balloon radius excludes beyond ten metres", !DifficultyRules.BirthdayBalloonInRange(100.01f));
+Check("tier three reacts to actual nonlethal HP loss", DifficultyRules.BirthdayDamageTriggers(100, 90, 3));
+Check("lower tiers do not react to body damage", !DifficultyRules.BirthdayDamageTriggers(100, 90, 2));
+Check("blocked or rounded-zero damage does not trigger burst", !DifficultyRules.BirthdayDamageTriggers(100, 100, 3));
+Check("healing does not trigger burst", !DifficultyRules.BirthdayDamageTriggers(90, 100, 3));
+Check("lethal damage leaves death rewards in control", !DifficultyRules.BirthdayDamageTriggers(100, 0, 3));
+foreach (int tier in new[] { 0, 1, 2, 3 })
+{
+    var damage = new BirthdayBalloonRewards<int>();
+    damage.Register(1);
+    Check($"damage burst tier {tier} independent of nearby player", damage.Remove(1, BalloonPopCause.Damage, false, tier) == (tier >= 3 ? BalloonReward.Gnome : BalloonReward.None));
+    Check($"damage burst cannot reward twice at tier {tier}", damage.Remove(1, BalloonPopCause.Damage, true, tier) == BalloonReward.None);
+}
+var fatalBurst = new BirthdayBalloonRewards<int>();
+fatalBurst.Register(1);
+fatalBurst.BeginDeath();
+Check("death reward overrides a concurrent damage burst", fatalBurst.Remove(1, BalloonPopCause.Damage, true, 3) == BalloonReward.Eyeball);
+var remainingDeath = new BirthdayBalloonRewards<int>();
+foreach (int key in new[] { 1, 2, 3, 4, 5 }) remainingDeath.Register(key);
+remainingDeath.Remove(5, BalloonPopCause.Automatic, false, 1);
+remainingDeath.BeginDeath();
+Check("already popped newest balloon is excluded from death rewards", remainingDeath.Remove(5, BalloonPopCause.Other, false, 2) == BalloonReward.None);
+Check("death rewards select newest remaining balloon", remainingDeath.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball);
+remainingDeath.BeginDeath();
+Check("repeated death notifications cannot refill reward slots with older balloons", remainingDeath.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 Check("no respawn without a loss", !clock.IsReady(1000));
 clock.NoteLoss(100);
 Check("no respawn before 30 seconds", !clock.IsReady(129.999));
@@ -91,25 +182,33 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
-Check("Debug contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") != null);
-Check("Debug Animal scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugAnimalScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug contains Birthday Boy test scenario", debug.GetType("HellParty.Debugging.DebugBirthdayBoyScenario") != null);
+Check("Debug Birthday Boy scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugBirthdayBoyScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug no longer contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") == null);
 Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_5));
 Check("Release excludes debug scenarios and spawn tickets", !release.Types.Any(t => t.Namespace.StartsWith("HellParty.Debugging")));
 Check("Release computes difficulty from completed stages", release.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "FromCompletedStages"));
 Check("Release includes Animal ability", release.GetType("HellParty.AnimalPoison") != null);
+Check("Release includes Birthday Boy ability", release.GetType("HellParty.BirthdayBoyAbilities") != null);
 Check("Release includes Animal division and native spawn support", release.GetType("HellParty.AnimalDivision") != null && release.GetType("HellParty.Native.AnimalSpawnTicket") != null);
 Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t => t.Methods).Any(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "PunRPC")));
 
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
-    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate") })
+    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget") })
         Check($"installed game hook exists: {type}.{method}", game.GetType(type)?.Methods.Any(m => m.Name == method) == true);
     foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic") })
         Check($"installed game native field exists: {type}.{field}", game.GetType(type)?.Fields.Any(f => f.Name == field) == true);
     Check("installed game gas has native all-client destruction callback", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "DestroyObjectRPC").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "onDestroy"));
     Check("installed game stun owner field exists for birth readiness", game.GetType("EnemyStateStunned").Fields.Any(f => f.Name == "enemy" && f.FieldType.FullName == "Enemy"));
     Check("native stun owner initializes in Start, requiring birth protection", game.GetType("EnemyStateStunned").Methods.Single(m => m.Name == "Start").Body.Instructions.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == "enemy"));
+    Check("native Gnome group has player target for shared Birthday Boy aggro", game.GetType("EnemyGnomeDirector").Fields.Any(f => f.Name == "playerTarget" && f.FieldType.FullName == "PlayerAvatar"));
+    Check("native Gnome group supports player attack state transition", game.GetType("EnemyGnomeDirector").Methods.Any(m => m.Name == "UpdateState" && m.Parameters.Count == 1 && m.Parameters[0].ParameterType.Resolve().Fields.Any(f => f.Name == "AttackPlayer")));
+    Check("native navigation supports forced Warp for off-mesh births", game.GetType("EnemyNavMeshAgent").Methods.Any(m => m.Name == "Warp" && m.Parameters.Count == 2 && m.Parameters[0].ParameterType.FullName == "UnityEngine.Vector3" && m.Parameters[1].ParameterType.FullName == "System.Boolean"));
+    Check("native navigation supports enabling after spawn activation", game.GetType("EnemyNavMeshAgent").Methods.Any(m => m.Name == "Enable" && m.Parameters.Count == 0));
+    foreach (string rpc in new[] { "SpawnBalloonRPC", "RemoveBalloonRPC", "PopAllBalloonsRPC" })
+        Check($"native balloon RPC is master-only: {rpc}", game.GetType("EnemyBirthdayBoy").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 }
 
 Console.WriteLine($"All {passed} checks passed.");

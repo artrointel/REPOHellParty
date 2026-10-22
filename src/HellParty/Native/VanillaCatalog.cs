@@ -53,6 +53,15 @@ internal static class VanillaCatalog
         ? PhotonNetwork.InstantiateRoomObject(prefab.ResourcePath, position, rotation, 0)
         : UnityEngine.Object.Instantiate(prefab.Prefab, position, rotation);
 
+    internal static GameObject Spawn(string resourcePath, Vector3 position, Quaternion rotation)
+    {
+        GameObject prefab = Resources.Load<GameObject>(resourcePath);
+        if (prefab == null) throw new InvalidOperationException($"Vanilla prefab not found: {resourcePath}");
+        return SemiFunc.IsMultiplayer()
+            ? PhotonNetwork.InstantiateRoomObject(resourcePath, position, rotation, 0)
+            : UnityEngine.Object.Instantiate(prefab, position, rotation);
+    }
+
     internal static bool Adjacent(Vector3 origin, int slot, out Vector3 position)
     {
         // Validate both the navmesh and the path so we don't choose the other side of a wall.

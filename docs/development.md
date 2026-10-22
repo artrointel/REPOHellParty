@@ -53,7 +53,7 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 - `src/HellParty/Debug/`는 Debug 구성에서만 컴파일한다. 호출부도 `#if DEBUG`로 분리한다.
 - Release는 완료 스테이지 수로 난이도를 계산한다. `min(5, max(0, levelsCompleted) / 3)`을 사용하므로 stage1은 0, stage4는 1, stage7은 2, stage10은 3, stage13은 4, stage16 이상은 5다.
-- Debug는 Animal 테스트를 위해 난이도를 5로 강제한다. 순정 `levelsCompleted`나 저장 진행도는 변경하지 않는다. 실제 스테이지 시작마다 시작 위치 근처 Animal·샷건·수면총을 각각 하나씩 생성한다. 오리 테스트용 추가 오리 생성과 상태·디스폰 호출 추적은 제거한 상태다.
+- Debug는 Birthday Boy 테스트를 위해 난이도를 5로 강제한다. 순정 `levelsCompleted`나 저장 진행도는 변경하지 않는다. 실제 스테이지 시작마다 시작 위치 근처 Birthday Boy·샷건·수면총을 각각 하나씩 생성한다. 테스트용 Animal·오리 생성과 임시 능력 추적 로그는 제거한 상태다.
 - `DifficultyService`는 공용 난이도 조회 지점이며, `StageRuntime.TryAttach`는 향후 몬스터 능력을 연결할 지점이다.
 - `scripts/Start-RepoDev.ps1`은 기본적으로 Debug를 빌드·배포하고 게임을 실행한다. `-Configuration Release`로 실제 진행 모드를 실행할 수 있다. 복원을 먼저 수행해야 하며, 이미 배포한 빌드를 시작할 때는 `-NoBuild`를 사용한다.
 - 게임은 `WindowStyle Normal`로 표시한다. 일반 플레이 테스트는 디버거 연결 없이 실행할 수 있으며, `-EnableDebugger`나 F5를 사용해도 디버거 연결을 기다리며 시작을 정지하지 않는다.
@@ -78,10 +78,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderst
 
 ## 검증과 다음 단계
 
-`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, 분신 상한, 15m 회수 기준, 공유 재소환 쿨타임 및 Animal 해금·3m 거리·10초 쿨타임·분화 체력·20초 만료와 보상 경계를 검사한다. Mono.Cecil로 Debug 전용 Animal 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지를 검사한다. Mono.Cecil로 Debug 전용 Birthday Boy 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
 ```
 
-게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Animal 플레이테스트](animal-playtest.md)와 [Apex Predator 플레이테스트](apex-playtest.md)를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
+게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.

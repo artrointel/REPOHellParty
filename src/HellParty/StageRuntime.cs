@@ -20,13 +20,16 @@ internal sealed class StageRuntime : MonoBehaviour
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugAnimalScenario.SpawnTestSet();
+        yield return Debugging.DebugBirthdayBoyScenario.SpawnTestSet();
 #endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (DifficultyService.Current > 0 && parent.GetComponentInChildren<EnemyBirthdayBoy>(true) != null &&
+            parent.GetComponent<BirthdayBoyAbilities>() == null)
+            parent.gameObject.AddComponent<BirthdayBoyAbilities>();
         if (DifficultyService.Current > 0 && parent.GetComponent<DuckClone>() == null &&
             NativeEnemy.Duck(parent) != null && parent.GetComponent<DuckFamily>() == null)
             parent.gameObject.AddComponent<DuckFamily>();

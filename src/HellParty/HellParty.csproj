@@ -8,7 +8,7 @@
     <RootNamespace>HellParty</RootNamespace>
     <Authors>artrointel</Authors>
     <Version>0.1.0</Version>
-    <Description>Host-only stage difficulty, Apex Predator and Animal abilities for R.E.P.O.</Description>
+    <Description>Host-only stage difficulty and monster abilities for R.E.P.O.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
   </PropertyGroup>

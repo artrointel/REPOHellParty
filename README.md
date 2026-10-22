@@ -84,6 +84,6 @@ R.E.P.O.에 누적 난이도와 몬스터 특수 능력을 추가하는 호스�
 
 ## 현재 상태
 
-공용 스테이지 난이도 모듈, Apex Predator의 분신·Crown과 Animal의 독가스·분화를 구현했다. 독가스는 현재 타깃 3m 이내에서 10초 쿨타임으로 발동한다. 3단계(stage10)부터 해금되는 분화 개체는 체력 50%와 수명 20초를 가지며 개별 처치마다 코어를 드랍한다. Debug는 Animal 테스트를 위해 난이도 5와 시작 위치 근처 Animal·샷건·수면총 생성을 제공한다. Release는 실제 진행도를 따른다. 실행·확인 방법은 [Animal 플레이테스트](docs/animal-playtest.md)를 참고한다. Bella, Birthday Boy 등 나머지 몬스터는 기획 단계이며, 바닐라 참가자 호환성은 별도 검증이 필요하다.
+공용 스테이지 난이도, Apex Predator의 분신·Crown, Animal의 독가스·분화와 Birthday Boy의 풍선강화를 구현했다. Birthday Boy는 난이도 1부터 풍선 3m·3초 체류 시 자동 파열하며, 일반·자동 파열 순간 주변 10m 안에 플레이어가 있으면 Gnome을 생성한다. 난이도 2에는 자동 파열 시 본체 어그로와 사망 시 최근 잔존 풍선 최대 3개의 Eyeball 보상, 난이도 3에는 비치명 피격 시 본체 주변 10m의 모든 풍선 파열·Gnome 생성이 추가된다. Debug는 난이도 5와 시작 위치 근처 Birthday Boy·샷건·수면총 생성을 제공한다. Release는 실제 진행도를 따른다. 실행·확인 방법은 [Birthday Boy 플레이테스트](docs/birthday-boy-playtest.md)를 참고한다. Bella 등 나머지 몬스터는 기획 단계이며, 바닐라 참가자 호환성은 별도 검증이 필요하다.
 
 개발 환경, 빌드·디버깅·패키징 방법과 검증 범위는 [개발 환경 문서](docs/development.md)를 참고한다.
