@@ -27,18 +27,19 @@ internal static class StalkingDollPlayerDamagePatch
         if (!SemiFunc.IsMasterClientOrSingleplayer() || _player == null || _player.deadSet ||
             __instance.detectionOnly || __instance.playerKill || __instance.ignorePlayers.Contains(_player) ||
             __instance.GetComponentInParent<StalkingDoll>() is not StalkingDoll doll ||
-            doll.Mode != StalkingDollMode.Attacking) return;
+            !StalkingDollRules.Attacks(doll.Mode)) return;
         bool local = !SemiFunc.IsMultiplayer() || _player.photonView.IsMine;
         if (local)
         {
             // Native PlayerHurt has already consumed CanHit on the owner's peer.
             if (__state <= Health(_player.playerHealth)) return;
+            doll.ValidHit(normalAttack: true);
         }
         else if (!(bool)CanHit.Invoke(__instance, new object[] { _player.gameObject,
             __instance.playerDamageCooldown, __instance.playerRayCast,
             _player.PlayerVisionTarget.VisionTransform.position, HurtCollider.HitType.Player })) return;
         int extra = StalkingDollRules.AdditionalPlayerDamage(__instance.playerDamage);
-        if (extra > 0) _player.playerHealth.HurtOther(extra, Vector3.zero, savingGrace: false);
+        if (extra > 0) doll.DamagePlayer(_player, extra, normalAttack: true);
     }
 }
 
@@ -81,7 +82,10 @@ internal sealed class StalkingDollGrabGuard : MonoBehaviour
         if (_attempts.Accept(id, Time.time))
         {
             // Match the native release lockout and collapse duplicate requests.
-            grabber.playerAvatar.playerHealth.HurtOther(StalkingDollRules.PlayerDamage, Vector3.zero, savingGrace: false);
+            // Enter rage before applying damage: a lethal third grab must also
+            // end that rage through the normal player-death notification.
+            GetComponent<StalkingDoll>().GrabAttempt();
+            GetComponent<StalkingDoll>().DamagePlayer(grabber.playerAvatar, StalkingDollRules.PlayerDamage);
         }
         // Even a duplicate must release the client's optimistically created beam.
         if (_releasePending.Add(id)) StartCoroutine(ReleaseAfterGrabStarted(grabber, id));
@@ -100,6 +104,39 @@ internal sealed class StalkingDollGrabGuard : MonoBehaviour
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || physical.GetComponent<StalkingDoll>() == null) return null;
         return physical.GetComponent<StalkingDollGrabGuard>() ?? physical.gameObject.AddComponent<StalkingDollGrabGuard>();
+    }
+}
+
+[HarmonyPatch(typeof(PlayerHealth), "UpdateHealthRPC")]
+internal static class StalkingDollHitConfirmationPatch
+{
+    [HarmonyPrefix]
+    private static void Prefix(PlayerHealth __instance, out int __state) => __state = __instance.health;
+
+    [HarmonyPostfix]
+    private static void Postfix(PlayerHealth __instance, int __state)
+    {
+        // Only actual health decreases after the native RPC's authentication
+        // can confirm a pending hit. Invulnerable contacts never extend rage.
+        if (!SemiFunc.IsMasterClientOrSingleplayer() || __instance.health >= __state) return;
+        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsOfType<StalkingDoll>())
+            doll.ConfirmRemoteHit(__instance, __state);
+    }
+}
+
+[HarmonyPatch(typeof(PlayerAvatar), "PlayerDeathRPC")]
+internal static class StalkingDollRageDeathPatch
+{
+    [HarmonyPrefix]
+    private static void Prefix(PlayerAvatar __instance, out bool __state) => __state = __instance.deadSet;
+
+    [HarmonyPostfix]
+    private static void Postfix(PlayerAvatar __instance, bool __state)
+    {
+        // Observe the authenticated native alive-to-dead transition, including
+        // deaths caused by other monsters, other players or the environment.
+        if (!SemiFunc.IsMasterClientOrSingleplayer() || __state || !__instance.deadSet) return;
+        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsOfType<StalkingDoll>()) doll.PlayerDied();
     }
 }
 

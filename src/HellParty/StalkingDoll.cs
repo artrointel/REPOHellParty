@@ -30,9 +30,38 @@ internal sealed class StalkingDoll : MonoBehaviour
     private float _halfHeight;
     private float _radius;
     private bool _ready;
+    private readonly StalkingDollRage _rage = new();
     private ScreamDollValuable.States? _sentState;
     internal StalkingDollMode Mode { get; private set; } = StalkingDollMode.Waiting;
-    internal float MovementSpeed => _speed;
+    internal float MovementSpeed => _speed * _rage.SpeedMultiplier;
+
+    internal void GrabAttempt()
+    {
+        _rage.GrabAttempt(Time.timeAsDouble);
+        if (_ready) ApplyDecision();
+    }
+
+    internal void PlayerDied()
+    {
+        _rage.PlayerDied();
+        if (_ready) ApplyDecision();
+    }
+
+    internal void ValidHit(bool normalAttack = false) => _rage.Hit(Time.timeAsDouble,
+        DifficultyRules.StalkingDollRampageUnlocked(DifficultyService.Current) && normalAttack);
+
+    internal void DamagePlayer(PlayerAvatar player, int damage, bool normalAttack = false)
+    {
+        bool local = !SemiFunc.IsMultiplayer() || player.photonView.IsMine;
+        int before = player.playerHealth.health;
+        if (!local) _rage.ExpectRemoteHit(player.playerHealth.GetInstanceID(), Time.timeAsDouble,
+            DifficultyRules.StalkingDollRampageUnlocked(DifficultyService.Current) && normalAttack);
+        player.playerHealth.HurtOther(damage, Vector3.zero, savingGrace: false);
+        if (local && !player.deadSet && player.playerHealth.health < before) ValidHit(normalAttack);
+    }
+
+    internal void ConfirmRemoteHit(PlayerHealth player, int before) =>
+        _rage.ConfirmRemoteHit(player.GetInstanceID(), Time.timeAsDouble, before, player.health);
 
     internal static StalkingDoll Spawn(Vector3 ground, Quaternion rotation)
     {
@@ -80,6 +109,7 @@ internal sealed class StalkingDoll : MonoBehaviour
 
     private void ApplyDecision()
     {
+        _rage.Tick(Time.timeAsDouble);
         if (_physical.dead || GetComponent<StalkingDollHealth>() is StalkingDollHealth health && health.Paused || !SemiFunc.RunIsLevel())
         {
             Mode = StalkingDollMode.Waiting;
@@ -99,13 +129,13 @@ internal sealed class StalkingDoll : MonoBehaviour
             nearest = player; best = distance; bestId = id;
         }
         if (_target != nearest) { _target = nearest; _pathAt = 0; _corners = Array.Empty<Vector3>(); }
-        bool seen = Observed();
+        bool seen = !_rage.Enraged && Observed();
         bool reach = Alive(_target) && best <= StalkingDollRules.AttackDistance * StalkingDollRules.AttackDistance &&
             ClearRay(transform.TransformPoint(_centerOffset), _target!.PlayerVisionTarget.VisionTransform.position, _target);
-        Mode = StalkingDollRules.Decide(seen, _physical.playerGrabbing.Count > 0, Alive(_target), reach);
-        SetNativeAttack(Mode == StalkingDollMode.Attacking);
+        Mode = StalkingDollRules.Decide(seen, _physical.playerGrabbing.Count > 0, Alive(_target), reach, _rage.Enraged);
+        SetNativeAttack(StalkingDollRules.Attacks(Mode));
         foreach (HurtCollider hurt in _hurts)
-            hurt.enabled = Mode == StalkingDollMode.Attacking;
+            hurt.enabled = StalkingDollRules.Attacks(Mode);
     }
 
     private void SetNativeAttack(bool attack)
@@ -162,7 +192,7 @@ internal sealed class StalkingDoll : MonoBehaviour
         _physical.OverrideZeroGravity(0.2f);
         if (!_body.isKinematic) { _body.velocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
         _physical.OverrideKinematic(0.2f);
-        if (Mode == StalkingDollMode.Following) Follow();
+        if (Mode == StalkingDollMode.Following || Mode == StalkingDollMode.Rushing) Follow();
         else if (Mode == StalkingDollMode.Attacking && _target != null) Face(_target.transform.position);
     }
 
@@ -180,7 +210,7 @@ internal sealed class StalkingDoll : MonoBehaviour
         }
         while (_corner < _corners.Length && Vector3.Distance(transform.position, _corners[_corner] + Vector3.up * _height) < 0.08f) _corner++;
         if (_corner >= _corners.Length) return;
-        Vector3 next = Vector3.MoveTowards(_body.position, _corners[_corner] + Vector3.up * _height, _speed * Time.fixedDeltaTime);
+        Vector3 next = Vector3.MoveTowards(_body.position, _corners[_corner] + Vector3.up * _height, MovementSpeed * Time.fixedDeltaTime);
         Vector3 delta = next - _body.position;
         foreach (RaycastHit hit in Physics.SphereCastAll(transform.TransformPoint(_centerOffset), _radius, delta.normalized,
                      delta.magnitude, LayerMask.GetMask("Default", "PhysGrabObject"), QueryTriggerInteraction.Ignore))

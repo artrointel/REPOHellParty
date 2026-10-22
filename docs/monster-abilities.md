@@ -25,15 +25,17 @@
 
 코드 구조와 구현 후보는 [몬스터 인지 상태 구현 검토](monsters/recognition-review.md)에 기록한다.
 
+스토커 동반 생성은 본체의 실제 등장 시점에 수행한다. 스토커의 기본 분노와 폭주는 인지 메타데이터 대신 Grab·유효 타격을 발동 조건으로 사용한다.
+
 ## 특수 능력 기획표
 
 | 헬파티 난이도 | 대상 몬스터 및 특수 능력 |
 | --- | --- |
 | 0(stage1) | 모든 몬스터가 순정 상태 그대로 진행한다. 추가 특수 능력과 수치 변경이 없다. |
-| 1(stage4) | **[Apex Predator — 분신1](monsters/apex-predator.md):** 본체 스폰 즉시 분신 최대 1마리의 소환을 시작하며 Crown은 본체 식별 표시와 처치 보상으로 사용된다.<br>**[Bella — 자폭](monsters/bella.md):** 의자에 고정한 Clown Doll이 벨 1·2회에 경고하고 3회에 순정 자폭을 시작하며, Bella 사망 시 남은 인형을 수집할 수 있다.<br>**[Birthday Boy — 풍선강화1](monsters/birthday-boy.md):** 풍선은 3m·3초 체류 시 자동 파열하며, 일반·자동 파열 시 주변 10m 내 플레이어가 있으면 Gnome을 생성한다.<br>**[Chef — 변장(미믹)](monsters/chef.md):** 배회 중 20m 내 플레이어를 발견하면 드론 부착 불가 Frog로 변장하며, Grab 시 해제 후 순정 공격을 진행하고 파괴 시 코어를 드랍한다. |
+| 1(stage4) | **[Loom·Robe — 스토커 동반](monsters/stalking-doll.md):** 각 본체 등장 시 기본 분노 스킬을 보유한 스토커를 개체당 1마리 동반 생성한다.<br>**[Apex Predator — 분신1](monsters/apex-predator.md):** 본체 스폰 즉시 분신 최대 1마리의 소환을 시작하며 Crown은 본체 식별 표시와 처치 보상으로 사용된다.<br>**[Bella — 자폭](monsters/bella.md):** 의자에 고정한 Clown Doll이 벨 1·2회에 경고하고 3회에 순정 자폭을 시작하며, Bella 사망 시 남은 인형을 수집할 수 있다.<br>**[Birthday Boy — 풍선강화1](monsters/birthday-boy.md):** 풍선은 3m·3초 체류 시 자동 파열하며, 일반·자동 파열 시 주변 10m 내 플레이어가 있으면 Gnome을 생성한다.<br>**[Chef — 변장(미믹)](monsters/chef.md):** 배회 중 20m 내 플레이어를 발견하면 드론 부착 불가 Frog로 변장하며, Grab 시 해제 후 순정 공격을 진행하고 파괴 시 코어를 드랍한다. |
 | 2(stage7) | **[Animal — 독가스](monsters/animal.md):** 현재 타깃이 3m 이내이면 10초 쿨타임으로 해당 플레이어 위치에 플레이어만 피해를 받는 순정 독가스를 생성한다.<br>**[Birthday Boy — 풍선강화2](monsters/birthday-boy.md):** 자동 파열 시 본체가 감지 플레이어를 공격하며, 본체 사망 시 최근 잔존 풍선 최대 3개에서 Eyeball을 생성한다.<br>**[Bowtie — 형제(Brothers)](monsters/bowtie.md):** 바람 공격 시작 시 대상 위치에 코어를 드랍하지 않는 Elsa를 최대 1마리 소환하며, 순정 변신 후 공격하고 스폰 10초 뒤 애니메이션으로 디스폰한다. |
-| 3(stage10) | **[Apex Predator — 분신2](monsters/apex-predator.md):** 분신 최대 수가 2마리로 증가한다.<br>**[Animal — 분화](monsters/animal.md):** 사망 0.5초 후 코어 대신 체력 50%인 Animal 2마리를 생성하며, 각 개체는 20초 내 처치 시 코어를 드랍하고 시간 만료 시 사라진다.<br>**[Birthday Boy — 풍선강화3](monsters/birthday-boy.md):** 본체가 피해를 받고 생존하면 주변 10m의 모든 풍선을 터뜨려 본체의 공격 대상을 우선 공유하는 Gnome을 생성한다.<br>**[Bella — 미끼](monsters/bella.md):** 벨마다 15m 거리 제한의 Tiny 미끼 1개를 교체하며, 잡을 때마다 즉시 공격하고 근처에서 본체 처치 시 미끼를 보상으로 남긴다. |
+| 3(stage10) | **[스토커 — 폭주](monsters/stalking-doll.md):** 플레이어 일반 공격의 유효 타격도 기본 분노의 추가 발동 조건이 된다.<br>**[Apex Predator — 분신2](monsters/apex-predator.md):** 분신 최대 수가 2마리로 증가한다.<br>**[Animal — 분화](monsters/animal.md):** 사망 0.5초 후 코어 대신 체력 50%인 Animal 2마리를 생성하며, 각 개체는 20초 내 처치 시 코어를 드랍하고 시간 만료 시 사라진다.<br>**[Birthday Boy — 풍선강화3](monsters/birthday-boy.md):** 본체가 피해를 받고 생존하면 주변 10m의 모든 풍선을 터뜨려 본체의 공격 대상을 우선 공유하는 Gnome을 생성한다.<br>**[Bella — 미끼](monsters/bella.md):** 벨마다 15m 거리 제한의 Tiny 미끼 1개를 교체하며, 잡을 때마다 즉시 공격하고 근처에서 본체 처치 시 미끼를 보상으로 남긴다. |
 | 4(stage13) | **[Bowtie — 복수](monsters/bowtie.md):** 본체 사망 0.5초 후 사망 위치에 Elsa를 소환해 처치자 또는 가장 가까운 플레이어를 공격하며, 코어 없이 스폰 10초 뒤 디스폰하고 대상이 없으면 즉시 디스폰한다. |
 | 5(stage16) | **[Apex Predator — 분신3](monsters/apex-predator.md):** 분신 최대 수가 3마리로 증가한다. |
 
-독립 추가 몬스터인 [자율 Scream Doll](monsters/stalking-doll.md)은 별도 문서에서 관리한다. 등장 난이도·빈도는 미정이며 현재 Debug에서만 자동 생성한다.
+[스토커](monsters/stalking-doll.md)는 난이도 1부터 Loom·Robe 개체당 1마리 동반 등장하며 분노를 기본 탑재한다. 난이도 3의 폭주는 분노 진입 조건을 추가한다.

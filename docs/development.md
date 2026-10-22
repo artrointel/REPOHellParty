@@ -86,4 +86,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -
 
 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
 
-현재 Debug 실행 확인은 [자율 인형 플레이테스트](stalking-doll-playtest.md)를 따른다. 자율 인형 생성 진입점은 Release에도 포함되지만 등장 난이도 미정으로 자동 생성은 Debug에서만 한다.
+현재 Debug 실행 확인은 [자율 인형 플레이테스트](stalking-doll-playtest.md)를 따른다. Debug/Release 모두 난이도 1부터 Loom·Robe의 실제 등장 시 개체당 스토커 1마리를 동반 생성한다. Debug의 시작 위치 테스트 인형은 별도 생성이다. 난이도 3부터 폭주가 추가된다.

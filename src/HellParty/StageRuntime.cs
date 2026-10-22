@@ -27,6 +27,10 @@ internal sealed class StageRuntime : MonoBehaviour
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.DifficultyRules.StalkingDollCompanionUnlocked(DifficultyService.Current) &&
+            (parent.GetComponentInChildren<EnemyShadow>(true) != null || parent.GetComponentInChildren<EnemyRobe>(true) != null) &&
+            parent.GetComponent<StalkingDollCompanion>() == null)
+            parent.gameObject.AddComponent<StalkingDollCompanion>();
         if (Rules.DifficultyRules.ChefMimicUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyTumbler>(true) != null &&
             parent.GetComponent<ChefMimic>() == null)
             parent.gameObject.AddComponent<ChefMimic>();

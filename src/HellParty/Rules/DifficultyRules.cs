@@ -22,4 +22,6 @@ internal static class DifficultyRules
     internal static bool BowtieBrothersUnlocked(int difficulty) => difficulty >= 2;
     internal static bool BowtieRevengeUnlocked(int difficulty) => difficulty >= 4;
     internal static bool ChefMimicUnlocked(int difficulty) => difficulty >= 1;
+    internal static bool StalkingDollCompanionUnlocked(int difficulty) => difficulty >= 1;
+    internal static bool StalkingDollRampageUnlocked(int difficulty) => difficulty >= 3;
 }

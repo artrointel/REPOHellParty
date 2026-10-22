@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- From difficulty 1, native Loom and Robe spawns each bring one Stalking Doll companion per instance per stage. Rage is innate; difficulty 3 adds Rampage, triggering that same rage on a confirmed normal attack regardless of direction. Grab retaliation does not trigger Rampage. Player-death and 30-second inactivity exits remain.
+
+- Added Stalking Doll rage: three accepted grab attempts shared across players trigger triple-speed pursuit that ignores observation and keeps native attacks active while moving. Any confirmed player death or 30 seconds without a valid hit ends rage and resets its counter. With no hits, the timer starts at rage entry. Remote hit confirmation correlates pending attacks with native health decreases; overlapping damage cannot be attributed exactly by vanilla messages. Repeated death messages do not reset a later activation.
+
 - Stalking Doll attacks now total 10 player damage using the native hit plus a host-sent native health supplement. Grab attempts deal 10 damage to the grabber and cancel the grab, with duplicate request suppression. Wall/floor collisions no longer damage its health or value; weapon and thrown-object damage remain. Multiplayer hit alignment still requires playtesting.
 
 - Stalking Doll price now follows original native value multiplied by remaining HP / 200. Removed host-only price/discovery hiding; host and vanilla guests use the same native price UI and impact feedback without monster red flashes. Extraction remains disabled, and native 15% value thresholds do not kill a living doll.
