@@ -2,15 +2,15 @@
 
 ## 실행
 
-게임을 종료한 뒤 저장소 루트에서 실행한다. Debug를 빌드·배포하고 게임 창을 표시한다.
+현재 Debug 자동 생성 대상은 [Bella](bella-playtest.md)다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-- Debug 기본 난이도는 5다. 각 게임 스테이지 시작 위치 근처에 Birthday Boy·샷건·수면총을 각각 하나 생성한다.
-- 풍선은 순정 AI가 배치하도록 둔다. 본체 타깃이나 풍선 파열을 미리 강제하지 않는다. 초기 테스트 개체는 시작점 20m 이내 LevelPoint 또는 NavMesh 삼각형에 배치하며 최대 20초 재시도한다. 무기는 몬스터 배치 성공 여부와 독립적으로 생성한다.
-- 난이도별 검증에는 `src/HellParty/Debug/DebugBirthdayBoyScenario.cs`의 `ForcedDifficulty`를 1·2·3으로 변경하고 다시 실행한다. 기본 5는 풍선강화3이다. Release는 stage4~6에 풍선강화1, stage7~9에 풍선강화2, stage10 이상에 풍선강화3을 사용한다.
+- Release에서는 테스트 몬스터·무기를 추가 생성하지 않는다.
+- 풍선은 순정 AI가 배치하도록 둔다. 본체 타깃이나 풍선 파열을 미리 강제하지 않는다.
+- Release는 stage4~6에 풍선강화1, stage7~9에 풍선강화2, stage10 이상에 풍선강화3을 사용한다.
 
 ## 확인 항목
 

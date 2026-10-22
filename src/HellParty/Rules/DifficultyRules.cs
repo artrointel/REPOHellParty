@@ -16,4 +16,7 @@ internal static class DifficultyRules
     internal static int BirthdayBalloonTier(int difficulty) => Math.Min(3, Math.Max(0, difficulty));
     internal static bool BirthdayBalloonInRange(float squaredDistance) => squaredDistance <= 100f;
     internal static bool BirthdayDamageTriggers(int before, int after, int tier) => tier >= 3 && after > 0 && after < before;
+    internal static bool BellaSuicideUnlocked(int difficulty) => difficulty >= 1;
+    internal static bool BellaBaitUnlocked(int difficulty) => difficulty >= 3;
+    internal static bool BellaBaitOutOfRange(float squaredDistance) => squaredDistance >= 225f;
 }

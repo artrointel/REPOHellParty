@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- Mounted Clown Doll explosions now use native enemyHost self-hit exclusion for their owning Bella only, preserving damage to other enemies and players.
+- Bella bait now disappears silently at 15m from its living owner, becomes permanent loot if the owner dies while it remains inside that radius, and triggers immediate native attacks on every new grab, including repeated grabs of the same bait.
+- Added Bella's native Clown Doll bell-linked suicide and difficulty-three Tiny bait, with silent per-Bella replacement, grabber-targeted native attacks, and collectible leftovers after death. Switched the Debug playtest scenario to Bella.
+
 - Rebind summoned enemy navigation to the NavMesh after initial spawn activation, bypassing the native near-distance Warp shortcut that could leave balloon Gnomes stationary.
 - Tier-three damage-burst Gnomes now prioritize the damaged Birthday Boy's existing player target after native spawn initialization, including when the native Gnome group was attacking another target.
 - Initial development scaffold: BepInEx entry point, Harmony initialization, build, debug, and packaging configuration.

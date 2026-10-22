@@ -6,6 +6,8 @@ Animal gains player-only native Cleanup Crew gas at difficulty 2: its current ta
 
 From difficulty 1, Birthday Boy balloons automatically pop after a player stays within 3m for 3 seconds. Automatic, player and physical-impact pops spawn one Gnome when a living player is within 10m at the moment of popping. Difficulty 2 adds automatic-pop aggro and up to three Eyeballs from the newest remaining balloons on death. Difficulty 3 adds a burst of all balloons within 10m of the body on actual nonlethal damage, with one Gnome per balloon. Lethal hits retain the death reward rules.
 
-Only vanilla network objects and RPCs are used. Actual multiplayer compatibility still needs in-game playtesting. Release uses normal stage progression. The development Debug build forces difficulty 5 and spawns a Birthday Boy and test weapons. Other planned monster abilities are not implemented yet.
+Bella gains a seat-mounted Clown Doll at difficulty 1, linked to native bell warning stages. Difficulty 3 adds random Tiny bait on every bell pulse: the previous bait is silently replaced, every new grab of the current bait immediately starts Bella's native attack against that grabber. Bait disappears at 15m from a living Bella; killing her before it leaves that radius preserves it as collectible loot. Surviving dolls also remain collectible after her death.
+
+Only vanilla network objects and RPCs are used. Actual multiplayer compatibility still needs in-game playtesting. Release uses normal stage progression. The development Debug build forces difficulty 5 and spawns a Bella and test weapons. Other planned monster abilities are not implemented yet.
 
 The package icon is a temporary development asset reused from REPOPocketCartTurret and must be replaced before publication.

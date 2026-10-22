@@ -9,6 +9,33 @@ namespace HellParty.Native;
 
 internal static class VanillaCatalog
 {
+    internal static PrefabRef BellaPrefab()
+    {
+        foreach (var setups in new[] { EnemyDirector.instance.enemiesDifficulty1, EnemyDirector.instance.enemiesDifficulty2, EnemyDirector.instance.enemiesDifficulty3 })
+        foreach (EnemySetup setup in setups)
+        foreach (PrefabRef prefab in setup.spawnObjects)
+            if (prefab != null && prefab.IsValid() && prefab.Prefab.GetComponentInChildren<EnemyTricycle>(true) != null)
+                return prefab;
+        throw new InvalidOperationException("Vanilla Bella prefab not found.");
+    }
+
+    internal static PrefabRef RandomTinyValuable()
+    {
+        var choices = new List<PrefabRef>();
+        var paths = new HashSet<string>(StringComparer.Ordinal);
+        foreach (LevelValuables preset in Resources.FindObjectsOfTypeAll<LevelValuables>())
+        {
+            if (preset.tiny == null) continue;
+            foreach (PrefabRef prefab in preset.tiny)
+                if (prefab != null && prefab.IsValid() && prefab.ResourcePath.StartsWith("Valuables/", StringComparison.Ordinal) &&
+                    prefab.Prefab.GetComponent<ValuableObject>() is ValuableObject valuable && valuable.volumeType == ValuableVolume.Type.Tiny &&
+                    prefab.Prefab.GetComponent<PhysGrabObject>() != null && paths.Add(prefab.ResourcePath))
+                    choices.Add(prefab);
+        }
+        if (choices.Count == 0) throw new InvalidOperationException("No native Tiny valuables in loaded presets.");
+        return choices[UnityEngine.Random.Range(0, choices.Count)];
+    }
+
     internal static PrefabRef AnimalPrefab()
     {
         foreach (var setups in new[] { EnemyDirector.instance.enemiesDifficulty1, EnemyDirector.instance.enemiesDifficulty2, EnemyDirector.instance.enemiesDifficulty3 })

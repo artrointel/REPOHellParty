@@ -2,14 +2,14 @@
 
 ## 실행
 
-현재 Debug 생성 대상은 [Birthday Boy](birthday-boy-playtest.md)로 전환했다. Animal의 실제 진행도 검증은 게임 종료 후 다음 명령으로 Release를 실행하고 자연 생성 개체로 수행한다. 디버거 연결은 필요 없다.
+현재 Debug 생성 대상은 [Bella](bella-playtest.md)로 전환했다. Animal의 실제 진행도 검증은 게임 종료 후 다음 명령으로 Release를 실행하고 자연 생성 개체로 수행한다. 디버거 연결은 필요 없다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
 - Release는 실제 스테이지 진행도를 사용한다. 필요한 샷건·수면총은 순정 플레이로 준비한다.
-- Animal 테스트용 추가 생성은 종료했다. 현재 Debug는 Birthday Boy·샷건·수면총을 생성하며, Release에서는 몬스터·아이템을 추가하지 않는다.
+- Animal 테스트용 추가 생성은 종료했다. 현재 Debug는 Bella·샷건·수면총을 생성하며, Release에서는 몬스터·아이템을 추가하지 않는다.
 - 능력 발동·분화·체력·시간 만료 및 테스트 세트 생성의 임시 디버그 로그는 제거했다. 실패 시 오류 로그는 남긴다. Debug의 테스트 생성과 난이도 설정은 유지하며, 타깃·가스 발동은 순정 상태와 거리 조건을 따른다.
 
 ## 확인 항목
