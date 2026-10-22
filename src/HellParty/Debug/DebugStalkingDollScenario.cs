@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 namespace HellParty.Debugging;
 
-internal static class DebugChefScenario
+internal static class DebugStalkingDollScenario
 {
     internal const int ForcedDifficulty = 5;
 
@@ -18,7 +18,7 @@ internal static class DebugChefScenario
         {
             if (Time.time >= deadline)
             {
-                Plugin.ModLogger.LogError("DEBUG Chef: truck/item catalog setup timed out.");
+                Plugin.ModLogger.LogError("DEBUG Stalking Doll: truck/item catalog setup timed out.");
                 yield break;
             }
             yield return null;
@@ -34,19 +34,20 @@ internal static class DebugChefScenario
             {
                 try
                 {
-                    SpawnChef(point);
+                    StalkingDoll doll = SpawnDoll(point);
+                    Plugin.ModLogger.LogInfo($"DEBUG Stalking Doll spawned at {point}; Loom speed={doll.MovementSpeed:0.##}m/s. Look away to let it approach.");
                 }
-                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Chef spawn failed: {exception}"); }
+                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll spawn failed: {exception}"); }
                 yield break;
             }
             yield return new WaitForSeconds(0.5f);
         }
-        Plugin.ModLogger.LogError($"DEBUG Chef: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
+        Plugin.ModLogger.LogError($"DEBUG Stalking Doll: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
     }
 
-    private static EnemyParent SpawnChef(Vector3 point)
+    private static StalkingDoll SpawnDoll(Vector3 point)
     {
-        return SummonedEnemySpawnTicket.Create(VanillaCatalog.ChefPrefab().ResourcePath, point);
+        return StalkingDoll.Spawn(point, Quaternion.identity);
     }
 
     private static void SpawnWeapon(Transform anchor, bool tranquilizer)
@@ -66,7 +67,7 @@ internal static class DebugChefScenario
             }
             throw new InvalidOperationException($"Native {(tranquilizer ? "tranquilizer gun" : "shotgun")} not found.");
         }
-        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Chef weapon spawn failed: {exception}"); }
+        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll weapon spawn failed: {exception}"); }
     }
 
     private static void SpawnDrone(Transform anchor)
@@ -83,7 +84,7 @@ internal static class DebugChefScenario
             }
             throw new InvalidOperationException("Native valuable-targeting drone not found.");
         }
-        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Chef drone spawn failed: {exception}"); }
+        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll drone spawn failed: {exception}"); }
     }
 
     private static bool TryFindPosition(Vector3 origin, out Vector3 result)

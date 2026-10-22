@@ -1,6 +1,6 @@
 # Bowtie 플레이테스트
 
-현재 Debug 자동 생성 대상은 [Chef](chef-playtest.md)다. Bowtie는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
+현재 Debug 자동 생성 대상은 [자율 Scream Doll](stalking-doll-playtest.md)다. Bowtie는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

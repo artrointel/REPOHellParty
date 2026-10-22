@@ -35,3 +35,5 @@
 | 3(stage10) | **[Apex Predator — 분신2](monsters/apex-predator.md):** 분신 최대 수가 2마리로 증가한다.<br>**[Animal — 분화](monsters/animal.md):** 사망 0.5초 후 코어 대신 체력 50%인 Animal 2마리를 생성하며, 각 개체는 20초 내 처치 시 코어를 드랍하고 시간 만료 시 사라진다.<br>**[Birthday Boy — 풍선강화3](monsters/birthday-boy.md):** 본체가 피해를 받고 생존하면 주변 10m의 모든 풍선을 터뜨려 본체의 공격 대상을 우선 공유하는 Gnome을 생성한다.<br>**[Bella — 미끼](monsters/bella.md):** 벨마다 15m 거리 제한의 Tiny 미끼 1개를 교체하며, 잡을 때마다 즉시 공격하고 근처에서 본체 처치 시 미끼를 보상으로 남긴다. |
 | 4(stage13) | **[Bowtie — 복수](monsters/bowtie.md):** 본체 사망 0.5초 후 사망 위치에 Elsa를 소환해 처치자 또는 가장 가까운 플레이어를 공격하며, 코어 없이 스폰 10초 뒤 디스폰하고 대상이 없으면 즉시 디스폰한다. |
 | 5(stage16) | **[Apex Predator — 분신3](monsters/apex-predator.md):** 분신 최대 수가 3마리로 증가한다. |
+
+독립 추가 몬스터인 [자율 Scream Doll](monsters/stalking-doll.md)은 별도 문서에서 관리한다. 등장 난이도·빈도는 미정이며 현재 Debug에서만 자동 생성한다.

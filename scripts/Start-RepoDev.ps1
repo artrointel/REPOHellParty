@@ -54,5 +54,5 @@ else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
 if ($Configuration -eq "Debug") {
-    Write-Host "Chef test: difficulty 5; Chef + shotgun + tranquilizer + valuable-targeting drone. Wait for Chef to see a player within 20m, then grab the Frog disguise."
+    Write-Host "Stalking Doll test: difficulty 5; autonomous Scream Doll + shotgun + tranquilizer + drone. Look away to let the doll approach; any observer stops it. Spawn position and Loom speed are logged once."
 }

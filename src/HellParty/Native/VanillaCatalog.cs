@@ -12,6 +12,8 @@ internal static class VanillaCatalog
     internal static PrefabRef BowtiePrefab() => EnemyPrefab<EnemyBowtie>();
     internal static PrefabRef ElsaPrefab() => EnemyPrefab<EnemyElsa>();
     internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
+    internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
+    internal static PrefabRef ScreamDollPrefab() => Valuable(p => p.GetComponent<ScreamDollValuable>() != null);
 
     private static PrefabRef EnemyPrefab<T>() where T : Component
     {

@@ -53,7 +53,7 @@
 ## 구현과 검증
 
 - 벨은 순정 `DoBellRing`, 공격은 `SetState`의 기존 RPC, 물품은 기존 순정 프리팹과 위치 동기화 경로를 사용한다. 바닐라 참가자에 커스텀 RPC나 에셋을 요구하지 않는다.
-- 현재 Debug 자동 생성 대상은 [Chef](../chef-playtest.md)다. Bella의 자연 생성 개체에도 능력이 적용되며, Release는 실제 스테이지 난이도를 따른다.
+- 현재 Debug 자동 생성 대상은 [자율 Scream Doll](../stalking-doll-playtest.md)다. Bella의 자연 생성 개체에도 능력이 적용되며, Release는 실제 스테이지 난이도를 따른다.
 - 단위 검증은 해금·15m 거리 경계·인형 경고 누적/대기/중단 및 설치된 게임의 호출 지점을 다룬다. 실제 자리 배치·폭발·잡기·교체·추출과 바닐라 참가자 동기화는 [Bella 플레이테스트](../bella-playtest.md)로 확인한다.
 
 한 줄 요약은 [특수 능력 기획표](../monster-abilities.md)에서 관리한다.

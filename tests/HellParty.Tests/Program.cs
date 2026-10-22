@@ -12,6 +12,60 @@ void Check(string name, bool condition)
     passed++;
 }
 
+Check("Stalking Doll freezes when any observer sees it, even at attack range", StalkingDollRules.Decide(true, false, true, true) == StalkingDollMode.Observed);
+Check("Stalking Doll observation takes precedence over target absence", StalkingDollRules.Decide(true, false, false, false) == StalkingDollMode.Observed);
+Check("Stalking Doll unseen target can be followed", StalkingDollRules.Decide(false, false, true, false) == StalkingDollMode.Following);
+Check("Stalking Doll unseen close target can be attacked", StalkingDollRules.Decide(false, false, true, true) == StalkingDollMode.Attacking);
+Check("Stalking Doll resumes pursuit after observation ends", StalkingDollRules.Decide(true, false, true, false) == StalkingDollMode.Observed && StalkingDollRules.Decide(false, false, true, false) == StalkingDollMode.Following);
+Check("Stalking Doll cannot attack without a valid target", StalkingDollRules.Decide(false, false, false, true) == StalkingDollMode.Waiting);
+Check("Stalking Doll native grabs suspend autonomous attacks", StalkingDollRules.Decide(false, true, true, true) == StalkingDollMode.Held);
+Check("Stalking Doll nearer target replaces previous target regardless of identity", StalkingDollRules.Nearer(4, 20, 9, 1));
+Check("Stalking Doll farther target never replaces nearest", !StalkingDollRules.Nearer(10, 1, 9, 20));
+Check("Stalking Doll exact distance ties resolve consistently", StalkingDollRules.Nearer(9, 1, 9, 20) && !StalkingDollRules.Nearer(9, 20, 9, 1));
+Check("Stalking Doll invalid distances cannot select a target", !StalkingDollRules.Nearer(double.NaN, 1, 10, 2) && !StalkingDollRules.Nearer(double.PositiveInfinity, 1, 10, 2) && !StalkingDollRules.Nearer(-1, 1, 10, 2));
+Check("Stalking Doll view includes centre and boundary", StalkingDollRules.InView(0, 0, 1, 1, 1) && StalkingDollRules.InView(1, -1, 1, 1, 1));
+Check("Stalking Doll rear points do not count as observed", !StalkingDollRules.InView(0, 0, -1, 1, 1) && !StalkingDollRules.InView(0, 0, 0, 1, 1));
+Check("Stalking Doll horizontal and vertical bounds both matter", !StalkingDollRules.InView(1.001, 0, 1, 1, 1) && !StalkingDollRules.InView(0, 1.001, 1, 1, 1));
+Check("Stalking Doll observation has no arbitrary twenty-metre limit", StalkingDollRules.InView(0, 0, 100, 1, 1));
+Check("Stalking Doll native two damage plus supplement totals ten", 2 + StalkingDollRules.AdditionalPlayerDamage(2) == 10);
+Check("Stalking Doll full native damage is not supplemented twice", StalkingDollRules.AdditionalPlayerDamage(10) == 0 && StalkingDollRules.AdditionalPlayerDamage(20) == 0);
+var grabAttempts = new StalkingDollGrabAttempts();
+Check("Stalking Doll first grab attempt is accepted", grabAttempts.Accept(1, 0));
+Check("Stalking Doll duplicate grab requests cannot multiply damage", !grabAttempts.Accept(1, 0) && !grabAttempts.Accept(1, 0.49f));
+Check("Stalking Doll two simultaneous grabbers each take one hit", grabAttempts.Accept(2, 0));
+Check("Stalking Doll retry after release lockout is a new attempt", grabAttempts.Accept(1, 0.5f));
+Check("Stalking Doll repeated new attempt is also deduplicated", !grabAttempts.Accept(1, 0.5f));
+var stalkingLife = new StalkingDollLife();
+Check("Stalking Doll has exactly two hundred health", stalkingLife.Health == 200 && !stalkingLife.Dead);
+Check("Stalking Doll ignores nonpositive damage", !stalkingLife.Hurt(0) && !stalkingLife.Hurt(-50) && stalkingLife.Health == 200);
+Check("Stalking Doll preserves remaining HP across distinct hits", stalkingLife.Hurt(75) && stalkingLife.Health == 125 && stalkingLife.Hurt(124) && stalkingLife.Health == 1);
+Check("Stalking Doll exact lethal hit reaches zero HP", stalkingLife.Hurt(1) && stalkingLife.Dead && stalkingLife.Health == 0);
+Check("Stalking Doll dead hits cannot repeat death rewards", !stalkingLife.Hurt(200) && !stalkingLife.Kill());
+var environmentalLife = new StalkingDollLife();
+Check("Stalking Doll environmental death is processed only once", environmentalLife.Kill() && environmentalLife.Dead && !environmentalLife.Kill() && !environmentalLife.Hurt(10));
+var overkillLife = new StalkingDollLife();
+Check("Stalking Doll overkill clamps to zero health", overkillLife.Hurt(int.MaxValue) && overkillLife.Health == 0);
+var pricedLife = new StalkingDollLife();
+Check("Stalking Doll full HP keeps its native full price", pricedLife.RemainingValue(10000) == 10000);
+pricedLife.Hurt(50);
+Check("Stalking Doll seventy-five percent HP has seventy-five percent price", pricedLife.Health == 150 && pricedLife.RemainingValue(10000) == 7500);
+pricedLife.Hurt(50);
+Check("Stalking Doll half HP has half price", pricedLife.Health == 100 && pricedLife.RemainingValue(10000) == 5000);
+pricedLife.Hurt(99);
+Check("Stalking Doll value below native break threshold remains alive", !pricedLife.Dead && pricedLife.Health == 1 && pricedLife.RemainingValue(10000) == 50);
+Check("Stalking Doll price rounds down to native display precision without changing HP", pricedLife.RemainingValue(100) == 0 && !pricedLife.Dead);
+Check("Stalking Doll invalid base values cannot produce invalid prices", pricedLife.RemainingValue(-1) == 0 && pricedLife.RemainingValue(double.NaN) == 0 && pricedLife.RemainingValue(double.PositiveInfinity) == 0);
+pricedLife.Kill();
+Check("Stalking Doll environmental death zeroes its price", pricedLife.RemainingValue(10000) == 0);
+var gradualLife = new StalkingDollLife();
+bool exactValues = true;
+for (int hit = 1; hit <= 200; hit++)
+{
+    gradualLife.Hurt(1);
+    exactValues &= gradualLife.RemainingValue(12300) == Math.Floor(12300.0 * (200 - hit) / 200);
+}
+Check("Stalking Doll repeated hits always derive price from full value without cumulative drift", exactValues);
+
 foreach ((int completed, int expected) in new[] { (-1, 0), (0, 0), (2, 0), (3, 1), (5, 1), (6, 2), (8, 2), (9, 3), (11, 3), (12, 4), (14, 4), (15, 5), (99, 5), (int.MaxValue, 5) })
     Check($"completed stages {completed} -> difficulty {expected}", DifficultyRules.FromCompletedStages(completed) == expected);
 Check("stage starts at one", DifficultyRules.StageNumber(0) == 1);
@@ -331,8 +385,15 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
-Check("Debug contains Chef test scenario", debug.GetType("HellParty.Debugging.DebugChefScenario") != null);
-Check("Debug Chef scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugChefScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug contains Stalking Doll test scenario", debug.GetType("HellParty.Debugging.DebugStalkingDollScenario") != null);
+Check("Debug Stalking Doll scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugStalkingDollScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug no longer spawns the Chef scenario", debug.GetType("HellParty.Debugging.DebugChefScenario") == null);
+Check("Release includes independently spawnable Stalking Doll AI", release.GetType("HellParty.StalkingDoll").Methods.Any(m => m.Name == "Spawn"));
+Check("Stalking Doll no longer hides price or discovery only on the host", release.GetType("HellParty.StalkingDollLocalPricePatch") == null && release.GetType("HellParty.StalkingDollLocalDiscoveryPatch") == null);
+Check("Stalking Doll price synchronization uses a vanilla signed value RPC", release.GetType("HellParty.StalkingDollHealth").Methods.Single(m => m.Name == "SynchronizeValue").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "HealRPC"));
+Check("Stalking Doll grab RPC authenticates the requesting player", release.GetType("HellParty.StalkingDollGrabRpcPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "OwnerOnlyRPC"));
+Check("Stalking Doll terrain immunity is restored even after native exceptions", release.GetType("HellParty.StalkingDollTerrainCollisionPatch").Methods.Single(m => m.Name == "Finalizer").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyFinalizer"));
+Check("Stalking Doll wall collisions cannot become break or instant-kill damage", new[] { "HellParty.StalkingDollCollisionDamagePatch", "HellParty.StalkingDollEnvironmentDeathPatch" }.All(t => release.GetType(t).Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_TerrainCollision")));
 Check("Debug no longer contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") == null);
 Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_5));
 Check("Release excludes debug scenarios and spawn tickets", !release.Types.Any(t => t.Namespace.StartsWith("HellParty.Debugging")));
@@ -351,6 +412,8 @@ Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t =
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    Check("native owner health damage RPC accepts host requests", game.GetType("PlayerHealth").Methods.Single(m => m.Name == "HurtOtherRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterAndOwnerOnlyRPC"));
+    Check("native doll hit remains owner-authoritative requiring guest damage supplement", game.GetType("HurtCollider").Methods.Single(m => m.Name == "PlayerHurt").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_IsMine"));
     foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget"), ("EnemyTricycle", "DoBellRing"), ("EnemyTricycle", "SetState"), ("EnemyTricycle", "OnSpawn"), ("ClownTrap", "TouchNose"), ("PhysGrabObject", "GrabPlayerAddRPC"), ("PhysGrabObject", "GrabStarted"), ("EnemyBowtieAnim", "YellStart"), ("EnemyElsa", "Update"), ("EnemyElsa", "UpdateState"), ("EnemyElsa", "StateTransformBigToSmall"), ("EnemyElsa", "StateDespawnSmall"), ("EnemyElsaAnim", "Despawn"), ("PhysGrabObjectImpactDetector", "OnCollisionStay"), ("EnemyBowtie", "OnSpawn"), ("EnemyTumbler", "Update"), ("EnemyTumbler", "OnVision"), ("EnemyTumbler", "OnGrabbed"), ("EnemyTumbler", "UpdateState"), ("ItemDrone", "GetHighestParentWithRigidbody"), ("PhysGrabObject", "DestroyPhysGrabObject"), ("PhysGrabObjectImpactDetector", "DestroyObject") })
         Check($"installed game hook exists: {type}.{method}", game.GetType(type)?.Methods.Any(m => m.Name == method) == true);
     foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic"), ("EnemyTricycle", "playerTarget"), ("EnemyTricycle", "attackTimer"), ("EnemyTricycle", "attackTimerMax"), ("EnemyTricycle", "lastSeenPlayerTimer"), ("LevelValuables", "tiny"), ("Trap", "trapTriggered"), ("EnemyBowtie", "playerTarget"), ("EnemyElsa", "playerTarget"), ("HurtCollider", "playerCausingHurt"), ("HurtCollider", "playerCausingHurtOverride"), ("PhysGrabObject", "lastPlayerGrabbing"), ("PhysGrabObject", "grabbedTimer"), ("EnemyTumbler", "targetPlayer"), ("EnemyVision", "VisionsTriggered"), ("PhysGrabObjectImpactDetector", "destroyDisable") })
@@ -391,6 +454,18 @@ if (args.Length > 0)
     Check("native valuable value initializer remains a coroutine", game.GetType("ValuableObject").Methods.Single(m => m.Name == "DollarValueSet").ReturnType.FullName == "System.Collections.IEnumerator");
     Check("native Frog signed value adjustment is master-only", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "HealRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
     Check("native Frog signed value adjustment preserves original value", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "HealLogic").Body.Instructions.All(i => i.OpCode.Code != Code.Stfld || i.Operand is not FieldReference f || f.Name != "dollarValueOriginal"));
+    Check("native Scream Doll state RPC is master-only", game.GetType("ScreamDollValuable").Methods.Single(m => m.Name == "SetStateRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native Scream Doll animation uses the existing active bool", game.GetType("ScreamDollValuable").Methods.Single(m => m.Name == "StateActive").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "active"));
+    Check("native Scream Doll host activity needs its random impulses suppressed", game.GetType("ScreamDollValuable").Methods.Single(m => m.Name == "StateActive").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "AddForce"));
+    Check("native Scream Doll sound loop is available for host animation control", game.GetType("ScreamDollValuable").Fields.Any(f => f.Name == "loopPlaying" && f.FieldType.FullName == "System.Boolean"));
+    Check("native Loom speed derives from prefab agent speed", game.GetType("EnemyNavMeshAgent").Methods.Single(m => m.Name == "Awake").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_speed"));
+    Check("native physical object can suspend gravity and motion", game.GetType("PhysGrabObject").Methods.Any(m => m.Name == "OverrideKinematic") && game.GetType("PhysGrabObject").Methods.Any(m => m.Name == "OverrideZeroGravity"));
+    Check("native remote camera orientation is serialized for observation", game.GetType("PlayerLocalCamera").Methods.Single(m => m.Name == "OnPhotonSerializeView").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_rotation"));
+    Check("native hit validation is available for Stalking Doll monster damage cooldowns", game.GetType("HurtCollider").Methods.Single(m => m.Name == "CanHit").Parameters.Count == 5);
+    Check("native valuable break entry exposes impact level without relying on dollar loss", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "Break").Parameters.Any(p => p.Name == "breakLevel"));
+    Check("native Bella reward size uses EnemyParent difficulty", game.GetType("EnemyParent").Fields.Any(f => f.Name == "difficulty" && f.FieldType.FullName.Contains("Difficulty")));
+    Check("native valuable price is driven by component presence on the viewing client", game.GetType("PhysGrabber").Methods.Single(m => m.Name == "ShowValue").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.Name == "GetComponent" && m.GenericArguments.SingleOrDefault()?.FullName == "ValuableObject"));
+    Check("native extraction has an explicit valuable registration entry to exclude", game.GetType("ValuableObject").Methods.Any(m => m.Name == "AddToDollarHaulList"));
     foreach (string rpc in new[] { "SpawnBalloonRPC", "RemoveBalloonRPC", "PopAllBalloonsRPC" })
         Check($"native balloon RPC is master-only: {rpc}", game.GetType("EnemyBirthdayBoy").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 }

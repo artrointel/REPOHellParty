@@ -1,12 +1,12 @@
 # Chef 플레이테스트
 
-게임을 종료한 뒤 저장소 루트에서 실행한다.
+현재 Debug 자동 생성 대상은 [자율 Scream Doll](stalking-doll-playtest.md)이다. Chef는 게임을 종료한 뒤 Release로 자연 생성 개체를 검증한다.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-Debug는 난이도 5로 시작하며, 시작 위치 근처의 유효한 바닥에 Chef 한 마리와 샷건·수면총·가치품 대상 드론을 생성한다. 총기와 드론은 몬스터 스폰 위치 검색과 독립적으로 생성한다. 트럭 내부에는 내비게이션 바닥이 없을 수 있으므로 주변 방도 확인한다. Release 실행에는 `-Configuration Release`를 붙인다. 실제 진행도에서는 stage4부터 변장이 해금된다.
+Chef의 실제 진행도에서는 stage4부터 변장이 해금된다. 아래 항목은 해당 난이도의 자연 생성 Chef로 확인한다.
 
 1. 벽 뒤 또는 20m 밖에 있으면 Chef가 변장하지 않고 배회하는지 확인한다. 20m 이내에서 시야가 열리면 다음 탐색 시점(최대 약 1초)에 Frog로 바뀌어야 한다. 난이도 0에서는 순정 Chef 행동을 유지해야 한다.
 2. Frog 위치의 20m 내에서 한 명 이상이 보이는 동안에는 기다려도 Chef가 별도로 나타나거나 Frog가 여러 개 생기면 안 된다. 모든 플레이어가 벽 뒤로 숨거나 20m 밖으로 벗어나도 즉시 풀리지 않고, 첫 시야 상실 감지부터 연속 5초가 지난 검사에서 변장이 풀리고 Chef가 공격 대상 없이 배회해야 한다. 검사 간격은 1초다. 5초 직전에 한 명이라도 다시 감지되면 타이머가 초기화되고, 다시 숨었을 때 새로운 연속 5초를 기다려야 한다. 별개의 시야 상실 시간을 누적하면 안 된다. 한 명이 숨더라도 다른 한 명이 보이면 변장을 유지해야 한다. 시야 상실에 따른 해제에서는 코어가 없어야 하며, 이후 다시 발견하면 재변장해야 한다. Frog를 총격·무기뿐 아니라 주변 아이템·낙하·지형·다른 몬스터에 의한 환경 요인으로 실제 파괴해도 Chef가 처치되고 그 위치 근처에 순정 코어가 하나 생성되어야 한다. 파편·연속 타격으로 코어가 중복 생성되면 안 된다.

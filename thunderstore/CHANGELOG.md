@@ -2,6 +2,14 @@
 
 ## 0.1.0
 
+- Stalking Doll attacks now total 10 player damage using the native hit plus a host-sent native health supplement. Grab attempts deal 10 damage to the grabber and cancel the grab, with duplicate request suppression. Wall/floor collisions no longer damage its health or value; weapon and thrown-object damage remain. Multiplayer hit alignment still requires playtesting.
+
+- Stalking Doll price now follows original native value multiplied by remaining HP / 200. Removed host-only price/discovery hiding; host and vanilla guests use the same native price UI and impact feedback without monster red flashes. Extraction remains disabled, and native 15% value thresholds do not kill a living doll.
+
+- Added 200 HP to Stalking Dolls, routed native enemy weapon damage and environmental impacts to health, excluded dolls from extraction value/registration, and added a single Bella-equivalent core on death. Uses native doll impact feedback. Host price UI is hidden; native guest $0 UI and missing monster red-flash support remain documented limitations.
+
+- Added a separately spawned Stalking Doll prototype using native Scream Doll visuals, attacks and synchronization: nearest-living-player targeting, Loom prefab movement speed, silent NavMesh hover pursuit, observation-based freeze and held-object pause. Switched the Debug scenario to the doll. Remote viewport estimation and multiplayer attack interruption still require in-game validation; release spawn progression is unspecified.
+
 - Share Chef body health and usable Frog durability by percentage, preserving fractional damage across transformations through native value RPCs. Environmental destruction also awards the native orb. Removed the disguise-specific 20m/raycast override from pursuit expiry; native pursuit now controls target release.
 
 - Chef's disguise now ends only after five continuous seconds without a visible player. Reacquiring any player resets the timer; the one-second visibility scan interval is unchanged.

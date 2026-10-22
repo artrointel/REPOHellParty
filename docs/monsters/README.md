@@ -35,3 +35,7 @@
 - [Tick](tick.md)
 - [Trudge](trudge.md)
 - [Upscream](upscream.md)
+
+## 독립 추가 몬스터
+
+- [자율 Scream Doll — Stalking Doll (가칭)](stalking-doll.md): 관찰되지 않을 때만 최근접 플레이어를 추적하는 순정 인형 기반 몬스터.

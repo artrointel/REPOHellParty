@@ -46,7 +46,7 @@
 - Gnome은 순정 `Enemies/Enemy - Gnome`을 사용한다. 필요하면 순정 Gnome Director도 네트워크 생성한다. 풍선 파열 위치에서 가까운 NavMesh 지점에 순정 초기화·등록·스폰 절차를 거쳐 나타난다.
 - 숨겨진 대기 위치에서 이동한 개체는 최초 스폰 활성화 직후 순정 `EnemyNavMeshAgent.Warp(position, true)`로 NavMesh에 다시 등록한다. 단순 좌표 이동에서 순정 Warp의 근거리 생략 조건에 걸려 이동 경로를 받지 못하는 문제를 방지한다. 이후 이동·추격·공격은 순정 AI가 처리하며 매 프레임 위치를 강제하지 않는다.
 - Eyeball은 순정 `Valuables/01 Tiny/Valuable Wizard Eye Ball`을 사용한다.
-- 현재 Debug 자동 생성 대상은 [Chef](../chef-playtest.md)다. Birthday Boy의 자연 생성 개체도 능력이 적용되며, Release는 실제 스테이지 난이도를 따른다.
+- 현재 Debug 자동 생성 대상은 [자율 Scream Doll](../stalking-doll-playtest.md)다. Birthday Boy의 자연 생성 개체도 능력이 적용되며, Release는 실제 스테이지 난이도를 따른다.
 - 실제 게임 확인은 [Birthday Boy 플레이테스트](../birthday-boy-playtest.md)를 따른다. 자동 검증은 Unity 플레이와 바닐라 참가자 검증을 대체하지 않는다.
 
 단계별 한 줄 요약은 [특수 능력 기획표](../monster-abilities.md)에서 관리한다.

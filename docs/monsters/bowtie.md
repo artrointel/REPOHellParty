@@ -58,7 +58,7 @@
 
 - 바람 공격 시작, Elsa 대상·상태 전환과 변신은 모두 순정 메서드·RPC를 사용할 수 있다. 커스텀 프리팹·RPC를 참가자에게 요구하지 않는다.
 - 바닐라 참가자의 `PlayerHealth.UpdateHealthRPC`는 공격자를 전달하지 않으므로, 호스트가 체력 감소만으로 특정 Elsa의 직접 피해 성공을 정확히 확정할 수 없다. 이를 추정 집계하지 않고 3회 조건을 제외했다.
-- 현재 Debug 자동 생성 대상은 [Chef](../chef-playtest.md)다. Bowtie는 자연 생성 개체로 검증한다. Release는 실제 진행도를 따른다.
+- 현재 Debug 자동 생성 대상은 [자율 Scream Doll](../stalking-doll-playtest.md)다. Bowtie는 자연 생성 개체로 검증한다. Release는 실제 진행도를 따른다.
 - 자동 검증은 해금·공격별 중복 소환 방지·사망 복수 중복 방지·10초 경계·교체·재등장 방지에 쓰는 수명 규칙과 설치된 게임 호출 지점을 확인한다. 실제 처치자·변신·공격·디스폰 표현과 미설치 참가자는 [Bowtie 플레이테스트](../bowtie-playtest.md)로 검증한다.
 
 단계별 한 줄 요약은 [난이도별 기획표](../monster-abilities.md)에서 관리한다.

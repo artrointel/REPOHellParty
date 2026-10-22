@@ -20,7 +20,7 @@ internal sealed class StageRuntime : MonoBehaviour
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugChefScenario.SpawnTestSet();
+        yield return Debugging.DebugStalkingDollScenario.SpawnTestSet();
 #endif
     }
 
