@@ -5,7 +5,7 @@ using UnityEngine;
 namespace HellParty.Native;
 
 // Native room prefabs, native setup/registration and native spawn RPCs only.
-// Used by balloon Gnomes and the Birthday Boy development scenario.
+// Used by balloon Gnomes, Bowtie brothers and development scenarios.
 internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
 {
     internal Vector3 Position;
@@ -79,6 +79,7 @@ internal static class SummonedEnemyReadyPatch
                 Plugin.ModLogger.LogError($"Summoned enemy navigation could not bind at {ticket.Position}: {__instance.name}");
         }
         ticket.Pending = false;
+        __instance.GetComponent<BowtieBrother>()?.Born();
         if (__instance.GetComponentInChildren<EnemyGnome>(true) != null && ticket.InitialTarget != null &&
             !ticket.InitialTarget.isDisabled && !ticket.InitialTarget.deadSet && EnemyGnomeDirector.instance != null)
         {

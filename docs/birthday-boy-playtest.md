@@ -2,7 +2,7 @@
 
 ## 실행
 
-현재 Debug 자동 생성 대상은 [Bella](bella-playtest.md)다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
+현재 Debug 자동 생성 대상은 [Bowtie](bowtie-playtest.md)다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

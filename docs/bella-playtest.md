@@ -1,12 +1,12 @@
 # Bella 플레이테스트
 
-게임 종료 후 저장소 루트에서 실행한다.
+현재 Debug 자동 생성 대상은 [Bowtie](bowtie-playtest.md)다. Bella는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-Debug는 난이도 5에서 시작점 근처 Bella·샷건·수면총을 하나씩 생성한다. 순정 AI가 길을 막은 플레이어에게 벨을 울리도록 둔다. 난이도 1·2·3을 별도로 확인하려면 `DebugBellaScenario.ForcedDifficulty`를 변경하고 다시 빌드한다. Release는 stage4부터 자폭, stage10부터 미끼를 해금한다.
+순정 AI가 길을 막은 플레이어에게 벨을 울리도록 둔다. Release는 stage4부터 자폭, stage10부터 미끼를 해금하며 임시 개체·무기는 추가 생성하지 않는다.
 
 1. 살아 있는 Bella의 의자에 Clown Doll이 1개 붙어 있고 이동·회전 시 함께 움직이는지 확인한다. 잡아 떼어낼 수 없어야 한다. 자연 디스폰 후 재등장에는 같은 인형이 따라와야 한다.
 2. 첫 번째·두 번째·세 번째 경고 단계에서 인형이 순정 경고·경고·자폭을 진행해야 한다. 짧은 여러 울림을 경고 단계로 중복 계산하면 안 된다. 인형 애니메이션이 끝나기 전에 다음 단계가 오면 순정 애니메이션 종료 후 이어서 진행해야 한다.

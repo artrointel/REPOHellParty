@@ -19,4 +19,6 @@ internal static class DifficultyRules
     internal static bool BellaSuicideUnlocked(int difficulty) => difficulty >= 1;
     internal static bool BellaBaitUnlocked(int difficulty) => difficulty >= 3;
     internal static bool BellaBaitOutOfRange(float squaredDistance) => squaredDistance >= 225f;
+    internal static bool BowtieBrothersUnlocked(int difficulty) => difficulty >= 2;
+    internal static bool BowtieRevengeUnlocked(int difficulty) => difficulty >= 4;
 }

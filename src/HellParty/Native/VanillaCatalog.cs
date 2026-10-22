@@ -9,6 +9,18 @@ namespace HellParty.Native;
 
 internal static class VanillaCatalog
 {
+    internal static PrefabRef BowtiePrefab() => EnemyPrefab<EnemyBowtie>();
+    internal static PrefabRef ElsaPrefab() => EnemyPrefab<EnemyElsa>();
+
+    private static PrefabRef EnemyPrefab<T>() where T : Component
+    {
+        foreach (var setups in new[] { EnemyDirector.instance.enemiesDifficulty1, EnemyDirector.instance.enemiesDifficulty2, EnemyDirector.instance.enemiesDifficulty3 })
+        foreach (EnemySetup setup in setups)
+        foreach (PrefabRef prefab in setup.spawnObjects)
+            if (prefab != null && prefab.IsValid() && prefab.Prefab.GetComponentInChildren<T>(true) != null) return prefab;
+        throw new InvalidOperationException($"Vanilla enemy prefab not found: {typeof(T).Name}.");
+    }
+
     internal static PrefabRef BellaPrefab()
     {
         foreach (var setups in new[] { EnemyDirector.instance.enemiesDifficulty1, EnemyDirector.instance.enemiesDifficulty2, EnemyDirector.instance.enemiesDifficulty3 })

@@ -68,6 +68,43 @@ Check("Animal killing one child rewards independently of sibling expiry", oneOfT
 
 var clock = new RespawnClock();
 foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
+    Check($"Bowtie Brothers unlock at difficulty {level}", DifficultyRules.BowtieBrothersUnlocked(level) == (level >= 2));
+var brotherLife = new BowtieBrotherLife();
+foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
+    Check($"Bowtie Revenge unlock at difficulty {level}", DifficultyRules.BowtieRevengeUnlocked(level) == (level >= 4));
+var revenge = new BowtieRevengeTrigger();
+Check("Bowtie death below tier four cannot queue revenge", !revenge.TryQueue(3));
+Check("Bowtie qualifying death queues revenge once", revenge.TryQueue(4));
+Check("Bowtie duplicate death cannot create another revenge summon", !revenge.TryQueue(4) && !revenge.TryQueue(5));
+revenge.NewLife();
+Check("Bowtie new life restores revenge trigger", revenge.TryQueue(5));
+var anotherRevenge = new BowtieRevengeTrigger();
+Check("Bowtie revenge triggers are isolated per owner", anotherRevenge.TryQueue(4));
+Check("Bowtie brother lifetime does not run during setup", !brotherLife.Expire(1000));
+brotherLife.Start(100);
+Check("Bowtie brother lives until ten seconds from actual spawn", !brotherLife.Expire(109.999));
+brotherLife.Start(109);
+Check("Bowtie brother repeated spawn notification cannot extend lifetime", brotherLife.Expire(110));
+Check("Bowtie brother retirement is permanent", brotherLife.Retired && !brotherLife.Expire(111));
+var replacedBrother = new BowtieBrotherLife();
+replacedBrother.Start(0);
+replacedBrother.Retire();
+Check("Bowtie replacement ends previous brother before expiry", replacedBrother.Retired && !replacedBrother.Expire(5));
+var cancelledBrother = new BowtieBrotherLife();
+cancelledBrother.Retire();
+cancelledBrother.Start(100);
+Check("Bowtie pending replacement cannot activate later", cancelledBrother.Retired && !cancelledBrother.Started);
+var independentBrother = new BowtieBrotherLife();
+independentBrother.Start(105);
+Check("Bowtie new brother has an independent ten-second lifetime", !independentBrother.Expire(110) && independentBrother.Expire(115));
+var wind = new BowtieWindCycle();
+Check("Bowtie wind without target cannot summon", !wind.TrySummon(false));
+Check("Bowtie first valid wind start summons once", wind.TrySummon(true));
+wind.Observe(true);
+Check("Bowtie repeated wind animation event cannot duplicate summon", !wind.TrySummon(true));
+wind.Observe(false);
+Check("Bowtie new wind attack can replace the previous brother", wind.TrySummon(true));
+foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
 {
     Check($"Bella suicide unlock at difficulty {level}", DifficultyRules.BellaSuicideUnlocked(level) == (level >= 1));
     Check($"Bella bait unlock at difficulty {level}", DifficultyRules.BellaBaitUnlocked(level) == (level >= 3));
@@ -214,14 +251,16 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
-Check("Debug contains Bella test scenario", debug.GetType("HellParty.Debugging.DebugBellaScenario") != null);
-Check("Debug Bella scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugBellaScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug contains Bowtie test scenario", debug.GetType("HellParty.Debugging.DebugBowtieScenario") != null);
+Check("Debug Bowtie scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugBowtieScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Debug no longer contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") == null);
 Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_5));
 Check("Release excludes debug scenarios and spawn tickets", !release.Types.Any(t => t.Namespace.StartsWith("HellParty.Debugging")));
 Check("Release computes difficulty from completed stages", release.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "FromCompletedStages"));
 Check("Release includes Animal ability", release.GetType("HellParty.AnimalPoison") != null);
 Check("Release includes Bella abilities and pinned doll", release.GetType("HellParty.BellaAbilities") != null && release.GetType("HellParty.BellaDollCarrier") != null);
+Check("Release includes Bowtie Brothers and summoned Elsa lifecycle", release.GetType("HellParty.BowtieBrothers") != null && release.GetType("HellParty.BowtieBrother") != null);
+Check("Debug no longer contains Bella scenario", debug.GetType("HellParty.Debugging.DebugBellaScenario") == null);
 Check("Release includes Birthday Boy ability", release.GetType("HellParty.BirthdayBoyAbilities") != null);
 Check("Release includes Animal division and native spawn support", release.GetType("HellParty.AnimalDivision") != null && release.GetType("HellParty.Native.AnimalSpawnTicket") != null);
 Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t => t.Methods).Any(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "PunRPC")));
@@ -229,9 +268,9 @@ Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t =
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
-    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget"), ("EnemyTricycle", "DoBellRing"), ("EnemyTricycle", "SetState"), ("EnemyTricycle", "OnSpawn"), ("ClownTrap", "TouchNose"), ("PhysGrabObject", "GrabPlayerAddRPC"), ("PhysGrabObject", "GrabStarted") })
+    foreach ((string type, string method) in new[] { ("EnemyParent", "Spawn"), ("EnemyParent", "SpawnRPC"), ("EnemyParent", "Despawn"), ("EnemyHealth", "Death"), ("SemiFunc", "EnemySpawn"), ("LevelGenerator", "GenerateDone"), ("PhysGrabObject", "GrabStartedRPC"), ("UraniumScript", "Cloud"), ("PhysGrabObject", "SetPositionRPC"), ("HurtCollider", "EnemyHurt"), ("EnemyHealth", "Hurt"), ("EnemyStateStunned", "Set"), ("EnemyRigidbody", "FixedUpdate"), ("EnemyBirthdayBoy", "SpawnBalloonRPC"), ("EnemyBirthdayBoy", "RemoveBalloonRPC"), ("EnemyBirthdayBoy", "PopAllBalloonsRPC"), ("EnemyBirthdayBoy", "RemoveBalloon"), ("EnemyBirthdayBoy", "UpdatePlayerTarget"), ("EnemyBirthdayBoy", "OnSpawn"), ("EnemyGnomeDirector", "SetupSingle"), ("EnemyGnomeDirector", "SetTarget"), ("EnemyTricycle", "DoBellRing"), ("EnemyTricycle", "SetState"), ("EnemyTricycle", "OnSpawn"), ("ClownTrap", "TouchNose"), ("PhysGrabObject", "GrabPlayerAddRPC"), ("PhysGrabObject", "GrabStarted"), ("EnemyBowtieAnim", "YellStart"), ("EnemyElsa", "Update"), ("EnemyElsa", "UpdateState"), ("EnemyElsa", "StateTransformBigToSmall"), ("EnemyElsa", "StateDespawnSmall"), ("EnemyElsaAnim", "Despawn"), ("PhysGrabObjectImpactDetector", "OnCollisionStay"), ("EnemyBowtie", "OnSpawn") })
         Check($"installed game hook exists: {type}.{method}", game.GetType(type)?.Methods.Any(m => m.Name == method) == true);
-    foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic"), ("EnemyTricycle", "playerTarget"), ("EnemyTricycle", "attackTimer"), ("EnemyTricycle", "attackTimerMax"), ("EnemyTricycle", "lastSeenPlayerTimer"), ("LevelValuables", "tiny"), ("Trap", "trapTriggered") })
+    foreach ((string type, string field) in new[] { ("EnemyParent", "Spawned"), ("EnemyParent", "SetupDone"), ("EnemyParent", "valuableSpawnTimer"), ("EnemyHealth", "healthCurrent"), ("EnemyHealth", "dead"), ("EnemyAnimal", "playerTarget"), ("HurtCollider", "enemyLogic"), ("HurtCollider", "physLogic"), ("EnemyTricycle", "playerTarget"), ("EnemyTricycle", "attackTimer"), ("EnemyTricycle", "attackTimerMax"), ("EnemyTricycle", "lastSeenPlayerTimer"), ("LevelValuables", "tiny"), ("Trap", "trapTriggered"), ("EnemyBowtie", "playerTarget"), ("EnemyElsa", "playerTarget"), ("HurtCollider", "playerCausingHurt"), ("HurtCollider", "playerCausingHurtOverride"), ("PhysGrabObject", "lastPlayerGrabbing"), ("PhysGrabObject", "grabbedTimer") })
         Check($"installed game native field exists: {type}.{field}", game.GetType(type)?.Fields.Any(f => f.Name == field) == true);
     Check("installed game gas has native all-client destruction callback", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "DestroyObjectRPC").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "onDestroy"));
     Check("installed game stun owner field exists for birth readiness", game.GetType("EnemyStateStunned").Fields.Any(f => f.Name == "enemy" && f.FieldType.FullName == "Enemy"));
@@ -244,12 +283,18 @@ if (args.Length > 0)
     Check("native explosion exposes its HurtCollider", game.GetType("ParticlePrefabExplosion").Fields.Any(f => f.Name == "HurtCollider" && f.FieldType.FullName == "HurtCollider"));
     Check("native HurtCollider supports exact enemy self-hit exclusion", game.GetType("HurtCollider").Fields.Any(f => f.Name == "enemyHost" && f.FieldType.FullName == "Enemy"));
     var enemyHurtInstructions = game.GetType("HurtCollider").Methods.Single(m => m.Name == "EnemyHurt").Body.Instructions;
+    Check("native enemy wind-hit entry controls physical knockback", enemyHurtInstructions.Any(i => i.Operand is MethodReference m && m.Name == "PhysObjectHurt"));
+    Check("native enemy wind-hit entry controls enemy stun", enemyHurtInstructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.FullName == "EnemyStateStunned" && m.Name == "Set"));
     int ownerCheck = enemyHurtInstructions.ToList().FindIndex(i => i.Operand is FieldReference f && f.Name == "enemyHost");
     Check("native owner exclusion returns before damage and stun", ownerCheck >= 0 && enemyHurtInstructions.Skip(ownerCheck).Take(6).Any(i => i.OpCode.Code == Code.Ret) &&
         enemyHurtInstructions.Take(ownerCheck + 6).All(i => i.Operand is not MethodReference m || (m.Name != "Hurt" && m.Name != "Set")));
     foreach ((string type, string rpc) in new[] { ("ClownTrap", "TouchNoseRPC"), ("EnemyTricycle", "SetStateRPC"), ("PhysGrabObject", "GrabPlayerAddRPC") })
         Check($"Bella native RPC is master-only: {type}.{rpc}", game.GetType(type).Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
     Check("Bella bait grab request authenticates grabbing player", game.GetType("PhysGrabObject").Methods.Single(m => m.Name == "GrabStartedRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "OwnerOnlyRPC"));
+    foreach (string rpc in new[] { "UpdateStateRPC", "UpdatePlayerTargetRPC", "TransformSmallToBigRPC", "TransformBigToSmallRPC" })
+        Check($"native Elsa RPC is master-only: {rpc}", game.GetType("EnemyElsa").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native Elsa growth uses a 4.1-second transformation", game.GetType("EnemyElsa").Methods.Single(m => m.Name == "StateTransformSmallToBig").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_R4 && i.Operand is float f && Math.Abs(f - 4.1f) < .001f));
+    Check("native Elsa despawn is completed by animation event", game.GetType("EnemyElsaAnim").Methods.Single(m => m.Name == "Despawn").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.FullName == "EnemyParent" && m.Name == "Despawn"));
     foreach (string rpc in new[] { "SpawnBalloonRPC", "RemoveBalloonRPC", "PopAllBalloonsRPC" })
         Check($"native balloon RPC is master-only: {rpc}", game.GetType("EnemyBirthdayBoy").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 }

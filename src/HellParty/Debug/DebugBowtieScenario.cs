@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 namespace HellParty.Debugging;
 
-internal static class DebugBellaScenario
+internal static class DebugBowtieScenario
 {
     internal const int ForcedDifficulty = 5;
 
@@ -18,7 +18,7 @@ internal static class DebugBellaScenario
         {
             if (Time.time >= deadline)
             {
-                Plugin.ModLogger.LogError("DEBUG Bella: truck/item catalog setup timed out.");
+                Plugin.ModLogger.LogError("DEBUG Bowtie: truck/item catalog setup timed out.");
                 yield break;
             }
             yield return null;
@@ -33,19 +33,19 @@ internal static class DebugBellaScenario
             {
                 try
                 {
-                    SpawnBella(point);
+                    SpawnBowtie(point);
                 }
-                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Bella spawn failed: {exception}"); }
+                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Bowtie spawn failed: {exception}"); }
                 yield break;
             }
             yield return new WaitForSeconds(0.5f);
         }
-        Plugin.ModLogger.LogError($"DEBUG Bella: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
+        Plugin.ModLogger.LogError($"DEBUG Bowtie: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
     }
 
-    private static EnemyParent SpawnBella(Vector3 point)
+    private static EnemyParent SpawnBowtie(Vector3 point)
     {
-        return SummonedEnemySpawnTicket.Create(VanillaCatalog.BellaPrefab().ResourcePath, point);
+        return SummonedEnemySpawnTicket.Create(VanillaCatalog.BowtiePrefab().ResourcePath, point);
     }
 
     private static void SpawnWeapon(Transform anchor, bool tranquilizer)
@@ -65,7 +65,7 @@ internal static class DebugBellaScenario
             }
             throw new InvalidOperationException($"Native {(tranquilizer ? "tranquilizer gun" : "shotgun")} not found.");
         }
-        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Bella weapon spawn failed: {exception}"); }
+        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Bowtie weapon spawn failed: {exception}"); }
     }
 
     private static bool TryFindPosition(Vector3 origin, out Vector3 result)

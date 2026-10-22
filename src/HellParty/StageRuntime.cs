@@ -20,13 +20,16 @@ internal sealed class StageRuntime : MonoBehaviour
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugBellaScenario.SpawnTestSet();
+        yield return Debugging.DebugBowtieScenario.SpawnTestSet();
 #endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.DifficultyRules.BowtieBrothersUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyBowtie>(true) != null &&
+            parent.GetComponent<BowtieBrothers>() == null)
+            parent.gameObject.AddComponent<BowtieBrothers>();
         if (Rules.DifficultyRules.BellaSuicideUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyTricycle>(true) != null &&
             parent.GetComponent<BellaAbilities>() == null)
             parent.gameObject.AddComponent<BellaAbilities>();
