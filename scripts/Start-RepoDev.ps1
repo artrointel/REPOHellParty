@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param(
-    [switch]$EnableDebugger
+    [switch]$EnableDebugger,
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Debug",
+    [switch]$NoBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +24,10 @@ if (Get-Process -Name "REPO" -ErrorAction SilentlyContinue) {
     throw "R.E.P.O. is already running. Close it before rebuilding or starting another test."
 }
 
+if (-not $NoBuild) {
+    & (Join-Path $PSScriptRoot "Build-Dev.ps1") -Configuration $Configuration -NoRestore -Deploy
+}
+
 $launchArguments = @(
     "--doorstop-enabled", "true",
     "--doorstop-target-assembly", "`"$preloader`""
@@ -29,20 +36,20 @@ $launchArguments = @(
 if ($EnableDebugger) {
     $launchArguments += @(
         "--doorstop-mono-debug-enabled", "true",
-        "--doorstop-mono-debug-suspend", "true",
+        "--doorstop-mono-debug-suspend", "false",
         "--doorstop-mono-debug-address", "127.0.0.1:10000"
     )
 }
 
 Start-Process `
     -FilePath $gameExecutable `
-    -WindowStyle Hidden `
+    -WindowStyle Normal `
     -WorkingDirectory $gameDirectory `
     -ArgumentList $launchArguments
 
 if ($EnableDebugger) {
-    Write-Host "R.E.P.O. started with the Mono debugger at 127.0.0.1:10000."
+    Write-Host "R.E.P.O. started in a visible window with the Mono debugger at 127.0.0.1:10000 (no startup suspension)."
 }
 else {
-    Write-Host "R.E.P.O. started with the Thunderstore REPO profile."
+    Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }

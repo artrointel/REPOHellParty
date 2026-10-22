@@ -1,5 +1,6 @@
 [CmdletBinding()]
 param(
+    [ValidateSet("Release")]
     [string]$Configuration = "Release",
     [switch]$NoRestore
 )

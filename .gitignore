@@ -6,3 +6,4 @@ artifacts/
 .nuget/
 *.user
 Directory.Repo.props
+.tools/

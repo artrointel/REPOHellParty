@@ -11,6 +11,22 @@
       "group": { "kind": "build", "isDefault": true }
     },
     {
+      "label": "HellParty: Build (Release)",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Build-Dev.ps1", "-Configuration", "Release"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "HellParty: Test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Test-Dev.ps1", "-Offline"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "HellParty: Build + Deploy (Debug)",
       "type": "process",
       "command": "powershell.exe",
@@ -22,7 +38,7 @@
       "label": "HellParty: Start game",
       "type": "process",
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1"],
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-NoBuild"],
       "dependsOn": "HellParty: Build + Deploy (Debug)",
       "problemMatcher": []
     },
@@ -30,7 +46,7 @@
       "label": "HellParty: Start game with debugger",
       "type": "process",
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-EnableDebugger"],
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-EnableDebugger", "-NoBuild"],
       "dependsOn": "HellParty: Build + Deploy (Debug)",
       "problemMatcher": []
     },

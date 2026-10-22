@@ -1,6 +1,6 @@
 # 개발 환경
 
-REPOPocketCartTurret의 첫 커밋 `e788f0741f08436f0349089e68ca3bd48d0f3d1c`과 같은 범위의 셋업이다. 플러그인 로딩과 Harmony 초기화만 포함하며 난이도 진행, 몬스터 능력, 인지 판정은 구현하지 않는다.
+REPOPocketCartTurret의 첫 커밋 `e788f0741f08436f0349089e68ca3bd48d0f3d1c`을 기반으로 개발 환경을 준비했고, 첫 기능으로 공용 난이도 모듈과 Apex Predator 능력을 구현했다. 다른 몬스터의 능력과 공통 인지 판정 연결은 아직 구현하지 않았다.
 
 ## 도구와 참조
 
@@ -47,7 +47,26 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 실행 스크립트와 로그 작업은 기준 커밋처럼 기본 Steam 경로와 Thunderstore `REPO` 프로필을 사용한다. 다른 프로필로 바꾸면 `Directory.Repo.props`뿐 아니라 `scripts/Start-RepoDev.ps1`과 `.vscode/tasks.json`의 실행·로그 경로도 맞춘다.
 
-로딩 시 `HellParty v0.1.0 loaded.`가 기록된다. 이번 셋업에서는 게임을 실행하거나 프로필에 자동 배포하지 않는다.
+로딩 시 `HellParty v0.1.0 loaded.`가 기록된다. 스테이지 준비 후 현재 스테이지와 모드 난이도가 로그에 기록된다.
+
+## Debug와 Release
+
+- `src/HellParty/Debug/`는 Debug 구성에서만 컴파일한다. 호출부도 `#if DEBUG`로 분리한다.
+- Debug와 Release 모두 완료 스테이지 수로 난이도를 계산한다. `min(5, max(0, levelsCompleted) / 3)`을 사용하므로 stage1은 0, stage4는 1, stage7은 2, stage10은 3, stage13은 4, stage16 이상은 5다.
+- 오리 테스트용 강제 난이도, 시작 위치 근처 오리·샷건·수면총 생성, 상태·디스폰 호출 추적 코드는 제거했다. 현재 Debug에도 임시 게임플레이 코드는 없다.
+- `DifficultyService`는 공용 난이도 조회 지점이며, `StageRuntime.TryAttach`는 향후 몬스터 능력을 연결할 지점이다.
+- `scripts/Start-RepoDev.ps1`은 기본적으로 Debug를 빌드·배포하고 게임을 실행한다. `-Configuration Release`로 실제 진행 모드를 실행할 수 있다. 복원을 먼저 수행해야 하며, 이미 배포한 빌드를 시작할 때는 `-NoBuild`를 사용한다.
+- 게임은 `WindowStyle Normal`로 표시한다. 일반 플레이 테스트는 디버거 연결 없이 실행할 수 있으며, `-EnableDebugger`나 F5를 사용해도 디버거 연결을 기다리며 시작을 정지하지 않는다.
+
+```powershell
+# Debug로 시작 (실행 전 게임 종료)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+
+# 실제 진행도 기반 Release 시작
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
+```
+
+임시 테스트 코드는 `Debug/`에 추가한다. Release에 테스트 코드를 추가하거나 순정 진행도에 강제 난이도 값을 기록하지 않는다.
 
 ## 패키징
 
@@ -55,10 +74,14 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderstore.ps1 -NoRestore
 ```
 
-`artifacts/HellParty-0.1.0.zip`을 생성하며 프로필에 배포하지 않는다. `thunderstore/icon.png`는 이전 프로젝트에서 재사용한 임시 개발용 아이콘이다. 공개 배포 전 교체한다. DLL 외 게임·Unity·BepInEx 어셈블리는 패키지에 포함하지 않는다.
+`artifacts/HellParty-0.1.0.zip`을 생성하며 프로필에 배포하지 않는다. 패키징은 Release 구성만 허용한다. `thunderstore/icon.png`는 이전 프로젝트에서 재사용한 임시 개발용 아이콘이다. 공개 배포 전 교체한다. DLL 외 게임·Unity·BepInEx 어셈블리는 패키지에 포함하지 않는다.
 
 ## 검증과 다음 단계
 
-이번 범위의 검증은 오프라인 복원, Debug/Release 컴파일, PowerShell·JSON·XML 구문과 패키지 내용 확인이다. 빈 프로젝트를 통과시키기 위한 형식적인 단위 테스트는 추가하지 않는다. 아직 능력 구현이나 단위 테스트 실행 결과는 없다.
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, 분신 상한, 15m 회수 기준, 공유 재소환 쿨타임을 검사한다. Mono.Cecil로 Debug/Release의 임시 오리 테스트 코드 제거, 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
-다음 구현부터 순수 규칙을 Unity와 분리하고, 인지 여부·쿨타임·소환 상한·보상 선택 같은 규칙에 실제 단위 테스트를 추가한다. 게임 객체 생성, RPC, 바닐라 참가자 화면·피해는 별도 실제 멀티플레이 검증 대상으로 둔다. 기획 문서는 `docs/`에서 계속 관리한다.
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
+```
+
+게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Apex Predator 플레이테스트](apex-playtest.md)를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.

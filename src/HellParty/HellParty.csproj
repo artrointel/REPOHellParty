@@ -8,10 +8,14 @@
     <RootNamespace>HellParty</RootNamespace>
     <Authors>artrointel</Authors>
     <Version>0.1.0</Version>
-    <Description>HellParty mod development scaffold for R.E.P.O.</Description>
+    <Description>Host-only stage difficulty and Apex Predator abilities for R.E.P.O.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <Compile Remove="Debug/**/*.cs" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>portable</DebugType>
