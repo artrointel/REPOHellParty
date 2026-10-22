@@ -29,7 +29,7 @@
 | --- | --- |
 | 0(stage1) | 모든 몬스터가 순정 상태 그대로 진행한다. 추가 특수 능력과 수치 변경이 없다. |
 | 1(stage4) | **[Apex Predator — 분신1](monsters/apex-predator.md):** 본체 스폰 즉시 분신 최대 1마리의 소환을 시작하며 Crown은 본체 식별 표시와 처치 보상으로 사용된다.<br>**[Bella — 자폭](monsters/bella.md):** 의자에 고정한 Clown Doll이 벨 1·2회에 경고하고 3회에 순정 자폭을 시작하며, Bella 사망 시 남은 인형을 수집할 수 있다.<br>**[Birthday Boy — 풍선강화1](monsters/birthday-boy.md):** 풍선이 반경 3m 내 장애물에 가리지 않은 플레이어를 감지하면 초속 0.5m로 천천히 추적한다. |
-| 2(stage7) | **[Animal — 독가스1](monsters/animal.md):** 인지 상태에서 60초마다 자신의 위치에 Cleanup Crew 헤드 폭발 후의 가스를 방출하며 플레이어에게만 피해를 준다. |
-| 3(stage10) | **[Apex Predator — 분신2](monsters/apex-predator.md):** 분신 최대 수가 2마리로 증가한다. |
+| 2(stage7) | **[Animal — 독가스](monsters/animal.md):** 현재 타깃이 3m 이내이면 10초 쿨타임으로 해당 플레이어 위치에 플레이어만 피해를 받는 순정 독가스를 생성한다. |
+| 3(stage10) | **[Apex Predator — 분신2](monsters/apex-predator.md):** 분신 최대 수가 2마리로 증가한다.<br>**[Animal — 분화](monsters/animal.md):** 사망 0.5초 후 코어 대신 체력 50%인 Animal 2마리를 생성하며, 각 개체는 20초 내 처치 시 코어를 드랍하고 시간 만료 시 사라진다. |
 | 4(stage13) | **[Birthday Boy — 풍선강화2](monsters/birthday-boy.md):** 플레이어가 터뜨린 풍선에서 Gnome을 생성하고, 본체 사망 시에는 최근 풍선 최대 3개에서만 Eyeball을 생성한다. |
-| 5(stage16) | **[Apex Predator — 분신3](monsters/apex-predator.md):** 분신 최대 수가 3마리로 증가한다.<br>**[Animal — 독가스2](monsters/animal.md):** 독가스 방출 쿨타임이 60초에서 30초로 줄어든다. |
+| 5(stage16) | **[Apex Predator — 분신3](monsters/apex-predator.md):** 분신 최대 수가 3마리로 증가한다. |

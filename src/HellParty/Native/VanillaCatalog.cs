@@ -9,6 +9,16 @@ namespace HellParty.Native;
 
 internal static class VanillaCatalog
 {
+    internal static PrefabRef AnimalPrefab()
+    {
+        foreach (var setups in new[] { EnemyDirector.instance.enemiesDifficulty1, EnemyDirector.instance.enemiesDifficulty2, EnemyDirector.instance.enemiesDifficulty3 })
+        foreach (EnemySetup setup in setups)
+        foreach (PrefabRef prefab in setup.spawnObjects)
+            if (prefab != null && prefab.IsValid() && prefab.Prefab.GetComponentInChildren<EnemyAnimal>(true) != null)
+                return prefab;
+        throw new InvalidOperationException("Vanilla Animal prefab not found.");
+    }
+
     internal static PrefabRef DuckPrefab()
     {
         foreach (EnemySetup setup in EnemyDirector.instance.enemiesDifficulty1)

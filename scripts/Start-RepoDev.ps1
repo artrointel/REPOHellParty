@@ -53,3 +53,6 @@ if ($EnableDebugger) {
 else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
+if ($Configuration -eq "Debug") {
+    Write-Host "Animal test: difficulty 5; Animal + shotgun + tranquilizer. Gas: target within 3m / 10s. Death: two half-health children / 20s lifetime."
+}

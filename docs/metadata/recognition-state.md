@@ -36,7 +36,7 @@ authority: host
 ## 참조 문서
 
 - [난이도별 특수 능력 기획표](../monster-abilities.md)
-- [Animal — 독가스](../monsters/animal.md): 최초 인지 순간 즉시 1회 방출하고 이후 쿨타임 적용.
+- [Animal — 독가스·분화](../monsters/animal.md): 독가스는 현재 타깃 3m 이내에서 10초 쿨타임으로 발동한다. 분화는 인지 상태 조건의 예외로 원본 사망 시 발동하며, 생성된 개체는 재분화하지 않는다.
 - [Bella — 자폭](../monsters/bella.md): 타깃 보유 상태에서 순정 벨 경고에 연동하며 세 번째 벨에 인형의 순정 자폭 시작.
 - [Birthday Boy — 풍선 강화](../monsters/birthday-boy.md): 인지 상태에서 풍선별 감지·ray 판정으로 추적하며, 본체 사망 시 Eyeball 생성은 별도의 사망 후 보상 처리.
 - [Apex Predator — 분신](../monsters/apex-predator.md): 본체 스폰 즉시 시작하는 예외.

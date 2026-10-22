@@ -19,13 +19,24 @@ internal sealed class StageRuntime : MonoBehaviour
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) yield break;
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
+#if DEBUG
+        yield return Debugging.DebugAnimalScenario.SpawnTestSet();
+#endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
-        if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel() || DifficultyService.Current == 0 ||
-            parent.GetComponent<DuckClone>() != null || NativeEnemy.Duck(parent) == null || parent.GetComponent<DuckFamily>() != null) return;
-        parent.gameObject.AddComponent<DuckFamily>();
+        if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (DifficultyService.Current > 0 && parent.GetComponent<DuckClone>() == null &&
+            NativeEnemy.Duck(parent) != null && parent.GetComponent<DuckFamily>() == null)
+            parent.gameObject.AddComponent<DuckFamily>();
+        if (Rules.DifficultyRules.AnimalGasCooldown(DifficultyService.Current) > 0 &&
+            parent.GetComponentInChildren<EnemyAnimal>(true) != null && parent.GetComponent<AnimalPoison>() == null)
+            parent.gameObject.AddComponent<AnimalPoison>();
+        if (Rules.DifficultyRules.AnimalDivisionUnlocked(DifficultyService.Current) &&
+            parent.GetComponentInChildren<EnemyAnimal>(true) != null && parent.GetComponent<AnimalOffspring>() == null &&
+            parent.GetComponent<AnimalDivision>() == null)
+            parent.gameObject.AddComponent<AnimalDivision>();
     }
 
     internal static void EmitDeathGas(EnemyDuck duck)

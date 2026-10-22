@@ -15,7 +15,7 @@ internal static class NativeEnemy
 
     internal static EnemyDuck? Duck(EnemyParent parent) => parent.GetComponentInChildren<EnemyDuck>(true);
     internal static EnemyParent Parent(Component component) => component.GetComponentInParent<EnemyParent>();
-    internal static Vector3 Position(EnemyDuck duck)
+    internal static Vector3 Position(Component duck)
     {
         EnemyRigidbody body = Parent(duck).GetComponentInChildren<EnemyRigidbody>(true);
         return body != null ? body.transform.position : duck.transform.position;
