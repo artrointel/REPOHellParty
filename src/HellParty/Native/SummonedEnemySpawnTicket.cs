@@ -80,6 +80,16 @@ internal static class SummonedEnemyReadyPatch
         }
         ticket.Pending = false;
         __instance.GetComponent<BowtieBrother>()?.Born();
+        if (__instance.GetComponentInChildren<EnemyBang>(true) is EnemyBang bang && EnemyBangDirector.instance != null)
+        {
+            EnemyBangDirector.instance.SetupSingle(bang);
+            if (ticket.InitialTarget != null && !ticket.InitialTarget.deadSet && !ticket.InitialTarget.isDisabled)
+            {
+                EnemyBangDirector.instance.playerTarget = ticket.InitialTarget;
+                AccessTools.Method(typeof(EnemyBangDirector), "UpdateState").Invoke(EnemyBangDirector.instance,
+                    new object[] { EnemyBangDirector.State.AttackSet });
+            }
+        }
         if (__instance.GetComponentInChildren<EnemyGnome>(true) != null && ticket.InitialTarget != null &&
             !ticket.InitialTarget.isDisabled && !ticket.InitialTarget.deadSet && EnemyGnomeDirector.instance != null)
         {

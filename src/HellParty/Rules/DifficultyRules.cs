@@ -24,4 +24,6 @@ internal static class DifficultyRules
     internal static bool ChefMimicUnlocked(int difficulty) => difficulty >= 1;
     internal static bool StalkingDollCompanionUnlocked(int difficulty) => difficulty >= 1;
     internal static bool StalkingDollRampageUnlocked(int difficulty) => difficulty >= 3;
+    internal static bool PeeperGnomeUnlocked(int difficulty) => difficulty >= 1;
+    internal static bool PeeperBangerUnlocked(int difficulty) => difficulty >= 2;
 }

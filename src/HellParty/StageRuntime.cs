@@ -27,6 +27,9 @@ internal sealed class StageRuntime : MonoBehaviour
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.DifficultyRules.PeeperGnomeUnlocked(DifficultyService.Current) &&
+            parent.GetComponentInChildren<EnemyCeilingEye>(true) != null && parent.GetComponent<PeeperAbilities>() == null)
+            parent.gameObject.AddComponent<PeeperAbilities>();
         if (Rules.DifficultyRules.StalkingDollCompanionUnlocked(DifficultyService.Current) &&
             (parent.GetComponentInChildren<EnemyShadow>(true) != null || parent.GetComponentInChildren<EnemyRobe>(true) != null) &&
             parent.GetComponent<StalkingDollCompanion>() == null)

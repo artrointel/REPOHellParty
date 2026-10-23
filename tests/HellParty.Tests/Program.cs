@@ -36,6 +36,24 @@ Check("Stalking Doll two simultaneous grabbers each take one hit", grabAttempts.
 Check("Stalking Doll retry after release lockout is a new attempt", grabAttempts.Accept(1, 0.5f));
 Check("Stalking Doll repeated new attempt is also deduplicated", !grabAttempts.Accept(1, 0.5f));
 var stalkingLife = new StalkingDollLife();
+Check("Peeper summon tiers preserve difficulty zero", !DifficultyRules.PeeperGnomeUnlocked(0) && !DifficultyRules.PeeperBangerUnlocked(0));
+Check("Peeper Gnome unlock precedes Banger unlock", DifficultyRules.PeeperGnomeUnlocked(1) && !DifficultyRules.PeeperBangerUnlocked(1) && DifficultyRules.PeeperBangerUnlocked(2));
+Check("Peeper only real health loss is a valid hit", PeeperSummonRules.EffectiveHit(100, 98) && !PeeperSummonRules.EffectiveHit(100, 100) && !PeeperSummonRules.EffectiveHit(98, 100));
+Check("Peeper lethal hit also counts but an already-dead player does not", PeeperSummonRules.EffectiveHit(2, 0) && !PeeperSummonRules.EffectiveHit(0, 0));
+Check("Peeper Banger probability includes zero and excludes thirty percent boundary", PeeperSummonRules.BangerRoll(0) && PeeperSummonRules.BangerRoll(0.299999) && !PeeperSummonRules.BangerRoll(0.3));
+Check("Peeper Banger probability rejects invalid draws", !PeeperSummonRules.BangerRoll(-1) && !PeeperSummonRules.BangerRoll(double.NaN) && !PeeperSummonRules.BangerRoll(1));
+var peeperSummons = new PeeperSummonRules();
+bool combinedSummons = true;
+for (int hit = 0; hit < 5; hit++)
+{
+    combinedSummons &= peeperSummons.Spawned(); // Gnome
+    combinedSummons &= peeperSummons.Spawned(); // bonus Banger
+}
+Check("Peeper Gnomes and Bangers share one cumulative ten-unit budget", combinedSummons && peeperSummons.Total == 10 && !peeperSummons.Available && !peeperSummons.Spawned());
+var lastPeeperSlot = new PeeperSummonRules();
+for (int unit = 0; unit < 9; unit++) lastPeeperSlot.Spawned();
+Check("Peeper ninth summon leaves only one slot and cannot overflow with bonus Banger", lastPeeperSlot.Spawned() && !lastPeeperSlot.Spawned() && lastPeeperSlot.Total == 10);
+Check("Peeper instances have independent lifetime budgets", new PeeperSummonRules().Total == 0 && peeperSummons.Total == 10);
 Check("Stalking Doll companions preserve pure difficulty zero", !DifficultyRules.StalkingDollCompanionUnlocked(0));
 Check("Stalking Doll companions unlock at difficulty one", DifficultyRules.StalkingDollCompanionUnlocked(1) && DifficultyRules.StalkingDollCompanionUnlocked(5));
 Check("Stalking Doll Rampage unlocks only from difficulty three", !DifficultyRules.StalkingDollRampageUnlocked(2) && DifficultyRules.StalkingDollRampageUnlocked(3) && DifficultyRules.StalkingDollRampageUnlocked(5));
@@ -136,9 +154,9 @@ Check("Stalking Doll a late hit cannot reactivate expired rage", !staleRage.Enra
 staleRage = StartRage(0);
 staleRage.GrabAttempt(30);
 Check("Stalking Doll grab at timeout starts a fresh counter", !staleRage.Enraged && staleRage.GrabCount == 1);
-Check("Stalking Doll has exactly two hundred health", stalkingLife.Health == 200 && !stalkingLife.Dead);
-Check("Stalking Doll ignores nonpositive damage", !stalkingLife.Hurt(0) && !stalkingLife.Hurt(-50) && stalkingLife.Health == 200);
-Check("Stalking Doll preserves remaining HP across distinct hits", stalkingLife.Hurt(75) && stalkingLife.Health == 125 && stalkingLife.Hurt(124) && stalkingLife.Health == 1);
+Check("Stalking Doll has exactly one hundred health", stalkingLife.Health == 100 && !stalkingLife.Dead);
+Check("Stalking Doll ignores nonpositive damage", !stalkingLife.Hurt(0) && !stalkingLife.Hurt(-50) && stalkingLife.Health == 100);
+Check("Stalking Doll preserves remaining HP across distinct hits", stalkingLife.Hurt(25) && stalkingLife.Health == 75 && stalkingLife.Hurt(74) && stalkingLife.Health == 1);
 Check("Stalking Doll exact lethal hit reaches zero HP", stalkingLife.Hurt(1) && stalkingLife.Dead && stalkingLife.Health == 0);
 Check("Stalking Doll dead hits cannot repeat death rewards", !stalkingLife.Hurt(200) && !stalkingLife.Kill());
 var environmentalLife = new StalkingDollLife();
@@ -147,22 +165,22 @@ var overkillLife = new StalkingDollLife();
 Check("Stalking Doll overkill clamps to zero health", overkillLife.Hurt(int.MaxValue) && overkillLife.Health == 0);
 var pricedLife = new StalkingDollLife();
 Check("Stalking Doll full HP keeps its native full price", pricedLife.RemainingValue(10000) == 10000);
-pricedLife.Hurt(50);
-Check("Stalking Doll seventy-five percent HP has seventy-five percent price", pricedLife.Health == 150 && pricedLife.RemainingValue(10000) == 7500);
-pricedLife.Hurt(50);
-Check("Stalking Doll half HP has half price", pricedLife.Health == 100 && pricedLife.RemainingValue(10000) == 5000);
-pricedLife.Hurt(99);
-Check("Stalking Doll value below native break threshold remains alive", !pricedLife.Dead && pricedLife.Health == 1 && pricedLife.RemainingValue(10000) == 50);
-Check("Stalking Doll price rounds down to native display precision without changing HP", pricedLife.RemainingValue(100) == 0 && !pricedLife.Dead);
+pricedLife.Hurt(25);
+Check("Stalking Doll seventy-five percent HP has seventy-five percent price", pricedLife.Health == 75 && pricedLife.RemainingValue(10000) == 7500);
+pricedLife.Hurt(25);
+Check("Stalking Doll half HP has half price", pricedLife.Health == 50 && pricedLife.RemainingValue(10000) == 5000);
+pricedLife.Hurt(49);
+Check("Stalking Doll value below native break threshold remains alive", !pricedLife.Dead && pricedLife.Health == 1 && pricedLife.RemainingValue(10000) == 100);
+Check("Stalking Doll price rounds down to native display precision without changing HP", pricedLife.RemainingValue(1) == 0 && !pricedLife.Dead);
 Check("Stalking Doll invalid base values cannot produce invalid prices", pricedLife.RemainingValue(-1) == 0 && pricedLife.RemainingValue(double.NaN) == 0 && pricedLife.RemainingValue(double.PositiveInfinity) == 0);
 pricedLife.Kill();
 Check("Stalking Doll environmental death zeroes its price", pricedLife.RemainingValue(10000) == 0);
 var gradualLife = new StalkingDollLife();
 bool exactValues = true;
-for (int hit = 1; hit <= 200; hit++)
+for (int hit = 1; hit <= 100; hit++)
 {
     gradualLife.Hurt(1);
-    exactValues &= gradualLife.RemainingValue(12300) == Math.Floor(12300.0 * (200 - hit) / 200);
+    exactValues &= gradualLife.RemainingValue(12300) == Math.Floor(12300.0 * (100 - hit) / 100);
 }
 Check("Stalking Doll repeated hits always derive price from full value without cumulative drift", exactValues);
 
@@ -509,12 +527,18 @@ Check("Debug no longer contains Bowtie scenario", debug.GetType("HellParty.Debug
 Check("Release includes Bowtie Brothers and summoned Elsa lifecycle", release.GetType("HellParty.BowtieBrothers") != null && release.GetType("HellParty.BowtieBrother") != null);
 Check("Debug no longer contains Bella scenario", debug.GetType("HellParty.Debugging.DebugBellaScenario") == null);
 Check("Release includes Birthday Boy ability", release.GetType("HellParty.BirthdayBoyAbilities") != null);
+Check("Release includes Peeper hit-confirmed summon abilities", release.GetType("HellParty.PeeperAbilities") != null && release.GetType("HellParty.PeeperDamageRequestPatch") != null && release.GetType("HellParty.PeeperLethalHitConfirmationPatch") != null);
 Check("Release includes Animal division and native spawn support", release.GetType("HellParty.AnimalDivision") != null && release.GetType("HellParty.Native.AnimalSpawnTicket") != null);
 Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t => t.Methods).Any(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "PunRPC")));
 
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    var peeperAttack = game.GetType("EnemyCeilingEye").Methods.Single(m => m.Name == "StateHasTarget").Body.Instructions;
+    Check("native Peeper damage uses HurtOther with an enemy attribution index", peeperAttack.Any(i => i.Operand is MethodReference m && m.Name == "HurtOther") && peeperAttack.Any(i => i.Operand is MethodReference m && m.Name == "EnemyGetIndex"));
+    Check("native Peeper has a player target to snapshot for summons", game.GetType("EnemyCeilingEye").Fields.Any(f => f.Name == "targetPlayer" && f.FieldType.Name == "PlayerAvatar"));
+    Check("native Banger director supports dynamic unit registration", game.GetType("EnemyBangDirector").Methods.Any(m => m.Name == "SetupSingle" && m.Parameters.Count == 1));
+    Check("native Banger director supports assigning its attack player", game.GetType("EnemyBangDirector").Fields.Any(f => f.Name == "playerTarget" && f.FieldType.Name == "PlayerAvatar") && game.GetType("EnemyBangDirector").Methods.Any(m => m.Name == "UpdateState" && m.Parameters.Count == 1));
     Check("native Robe component exists for companion identification", game.GetType("EnemyRobe") != null);
     var playerDeath = game.GetType("PlayerAvatar").Methods.Single(m => m.Name == "PlayerDeathRPC");
     Check("native player death authenticates sender before rage notification", playerDeath.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterAndOwnerOnlyRPC"));

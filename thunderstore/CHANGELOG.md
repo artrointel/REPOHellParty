@@ -2,6 +2,9 @@
 
 ## 0.1.0
 
+- Reduced Stalking Doll health to 100 and kept displayed price proportional to remaining HP / 100.
+- Peeper summons a Gnome on each confirmed damaging hit from difficulty 1, with a 30% bonus Banger chance from difficulty 2. Both types share a cumulative ten-unit limit per Peeper. Summons inherit the snapshotted victim through native group AI; overlapping remote damage has attribution limitations.
+
 - From difficulty 1, native Loom and Robe spawns each bring one Stalking Doll companion per instance per stage. Rage is innate; difficulty 3 adds Rampage, triggering that same rage on a confirmed normal attack regardless of direction. Grab retaliation does not trigger Rampage. Player-death and 30-second inactivity exits remain.
 
 - Added Stalking Doll rage: three accepted grab attempts shared across players trigger triple-speed pursuit that ignores observation and keeps native attacks active while moving. Any confirmed player death or 30 seconds without a valid hit ends rage and resets its counter. With no hits, the timer starts at rage entry. Remote hit confirmation correlates pending attacks with native health decreases; overlapping damage cannot be attributed exactly by vanilla messages. Repeated death messages do not reset a later activation.

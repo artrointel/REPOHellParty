@@ -4,7 +4,7 @@ namespace HellParty.Rules;
 
 internal sealed class StalkingDollLife
 {
-    internal const int MaximumHealth = 200;
+    internal const int MaximumHealth = 100;
     internal int Health { get; private set; } = MaximumHealth;
     internal bool Dead => Health == 0;
     internal double RemainingValue(double fullValue) => double.IsNaN(fullValue) || double.IsInfinity(fullValue) || fullValue <= 0
