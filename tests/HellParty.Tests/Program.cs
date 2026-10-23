@@ -12,6 +12,30 @@ void Check(string name, bool condition)
     passed++;
 }
 
+StalkingDollContactRules.Slide(1, 0, 1, 0, out double slideX, out double slideZ);
+Check("Wall contact permits the stalker to move away", slideX == 1 && slideZ == 0);
+StalkingDollContactRules.Slide(0, 1, 1, 0, out slideX, out slideZ);
+Check("Wall contact permits motion parallel to the wall", slideX == 0 && slideZ == 1);
+StalkingDollContactRules.Slide(-1, 0, 1, 0, out slideX, out slideZ);
+Check("Head-on wall contact redirects rather than stopping forever", slideX == 0 && Math.Abs(slideZ) == 1);
+StalkingDollContactRules.Slide(1, 0, -1, 0, out double otherX, out double otherZ);
+Check("Opposing stalkers choose different passing sides", slideX == -otherX && slideZ == -otherZ);
+StalkingDollContactRules.Slide(-1, 2, 1, 0, out slideX, out slideZ);
+Check("Glancing wall contact keeps progress along the desired side", Math.Abs(slideX) < .000001 && slideZ > 0);
+StalkingDollContactRules.Slide(0, 0, 1, 0, out slideX, out slideZ);
+Check("Collision steering cannot move a stopped stalker", slideX == 0 && slideZ == 0);
+bool contactInvariants = true;
+for (int angle = 0; angle < 360; angle += 5)
+    for (int heading = 0; heading < 360; heading += 5)
+    {
+        double nx = Math.Cos(angle * Math.PI / 180), nz = Math.Sin(angle * Math.PI / 180);
+        double dx = 3 * Math.Cos(heading * Math.PI / 180), dz = 3 * Math.Sin(heading * Math.PI / 180);
+        StalkingDollContactRules.Slide(dx, dz, nx, nz, out slideX, out slideZ);
+        contactInvariants &= slideX * nx + slideZ * nz >= -.003001 &&
+            Math.Abs(slideX * slideX + slideZ * slideZ - 9) < .000001;
+    }
+Check("Wall steering over all headings preserves speed without driving into the contact", contactInvariants);
+
 Check("Headman Protection unlocks at four", !ProtectionRules.Eligible(3, false, 1) && ProtectionRules.Eligible(4, false, 1));
 Check("Protection includes exactly twenty metres", ProtectionRules.Eligible(5, false, 400) && !ProtectionRules.Eligible(5, false, 400.001));
 Check("Protection never replaces an existing target", !ProtectionRules.Eligible(5, true, 1));
@@ -24,6 +48,25 @@ Check("Repeated floor callbacks cannot queue a duplicate pair", !trudgeCall.Stri
 trudgeCall.Begin();
 Check("The next swing can summon again", trudgeCall.Strike(5));
 Check("Blind preserves vanilla difficulty zero", !BlindTargetClock.Unlocked(0));
+Check("Stalker landing on terrain cannot damage itself", !StalkingDollRules.IncomingCollisionHurts(false, false, 20));
+Check("Stalker falling onto a stationary valuable cannot damage itself", !StalkingDollRules.IncomingCollisionHurts(true, false, 0));
+Check("Stalker pushing an object away cannot take self-impact damage", !StalkingDollRules.IncomingCollisionHurts(true, false, -5));
+Check("Thrown objects moving into the stalker remain valid physical attacks", StalkingDollRules.IncomingCollisionHurts(true, false, 5));
+Check("Passive player and monster body contacts cannot damage the stalker", !StalkingDollRules.IncomingCollisionHurts(true, true, 5));
+Check("Slow contact and invalid speed cannot cause self-damage", !StalkingDollRules.IncomingCollisionHurts(true, false, .5) && !StalkingDollRules.IncomingCollisionHurts(true, false, double.NaN) && !StalkingDollRules.IncomingCollisionHurts(true, false, double.PositiveInfinity));
+Check("Stalker can climb a small grounded threshold", StalkingDollStepRules.CanStep(.05, true, true, true));
+Check("Stalker can climb above its previous 25cm limit", StalkingDollStepRules.CanStep(.4, true, true, true));
+Check("Stalker includes the 50cm maximum step", StalkingDollStepRules.CanStep(.5, true, true, true));
+Check("Stalker cannot climb above 50cm", !StalkingDollStepRules.CanStep(.501, true, true, true));
+Check("Stalker does not step on flat or descending surfaces", !StalkingDollStepRules.CanStep(0, true, true, true) && !StalkingDollStepRules.CanStep(-.1, true, true, true));
+Check("Stalker cannot step repeatedly while airborne", !StalkingDollStepRules.CanStep(.1, false, true, true));
+Check("Stalker steps require body clearance and walkable ground", !StalkingDollStepRules.CanStep(.1, true, false, true) && !StalkingDollStepRules.CanStep(.1, true, true, false));
+Check("Stalker step heights reject invalid numbers", !StalkingDollStepRules.CanStep(double.NaN, true, true, true) && !StalkingDollStepRules.CanStep(double.PositiveInfinity, true, true, true));
+Check("Three steps each use their current support height", new[] { (0d, .2), (.2, .4), (.4, .6) }.All(step => StalkingDollStepRules.CanStep(step.Item2 - step.Item1, true, true, true)));
+Check("Total staircase height does not expand the single-step limit", !StalkingDollStepRules.CanStep(.6, true, true, true));
+Check("Stalker can step its centre a short distance past the riser", StalkingDollStepRules.CanAdvance(.2));
+Check("Stalker step-in displacement is capped at half a metre", StalkingDollStepRules.CanAdvance(.5) && !StalkingDollStepRules.CanAdvance(.501));
+Check("Stalker step-in rejects backwards or invalid displacement", !StalkingDollStepRules.CanAdvance(0) && !StalkingDollStepRules.CanAdvance(-.1) && !StalkingDollStepRules.CanAdvance(double.NaN) && !StalkingDollStepRules.CanAdvance(double.PositiveInfinity));
 Check("Clown Staff unlocks at three and Shield at five", !DifficultyRules.ClownStaffUnlocked(2) && DifficultyRules.ClownStaffUnlocked(3) && !DifficultyRules.ClownShieldUnlocked(4) && DifficultyRules.ClownShieldUnlocked(5));
 var clownReward = new ClownStaffLife();
 Check("Clown Staff starts pinned", clownReward.Pinned);

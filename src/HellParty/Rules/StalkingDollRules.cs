@@ -10,6 +10,8 @@ internal static class StalkingDollRules
     internal const float AttackDistance = 1.2f;
     internal const int PlayerDamage = 10;
     internal static int AdditionalPlayerDamage(int nativeDamage) => Math.Max(0, PlayerDamage - nativeDamage);
+    internal static bool IncomingCollisionHurts(bool physicalObject, bool actor, double incomingSpeed) =>
+        physicalObject && !actor && !double.IsNaN(incomingSpeed) && !double.IsInfinity(incomingSpeed) && incomingSpeed > .5;
 
     internal static StalkingDollMode Decide(bool observed, bool held, bool hasTarget, bool inReach, bool enraged = false) =>
         enraged && hasTarget && !held ? StalkingDollMode.Rushing :

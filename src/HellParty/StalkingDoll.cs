@@ -19,6 +19,7 @@ internal sealed class StalkingDoll : MonoBehaviour
     private Rigidbody _body = null!;
     private Animator _animator = null!;
     private HurtCollider[] _hurts = Array.Empty<HurtCollider>();
+    private Collider[] _solidColliders = Array.Empty<Collider>();
     private PlayerAvatar? _target;
     private readonly NavMeshPath _path = new();
     private Vector3[] _corners = Array.Empty<Vector3>();
@@ -30,6 +31,11 @@ internal sealed class StalkingDoll : MonoBehaviour
     private float _halfHeight;
     private float _radius;
     private bool _ready;
+    private bool _driving;
+    private readonly StalkingDollContacts _contacts = new();
+#if DEBUG
+    private float _navigationLogAt;
+#endif
     private readonly StalkingDollRage _rage = new();
     private ScreamDollValuable.States? _sentState;
     internal StalkingDollMode Mode { get; private set; } = StalkingDollMode.Waiting;
@@ -82,8 +88,13 @@ internal sealed class StalkingDoll : MonoBehaviour
         _doll = GetComponent<ScreamDollValuable>();
         _physical = GetComponent<PhysGrabObject>();
         _body = GetComponent<Rigidbody>();
+        _physical.OverrideZeroGravity(0);
+        _body.useGravity = true;
+        _body.rotation = Quaternion.Euler(0, _body.rotation.eulerAngles.y, 0);
+        _body.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         _animator = GetComponent<Animator>();
         _hurts = GetComponentsInChildren<HurtCollider>(true);
+        _solidColliders = GetComponentsInChildren<Collider>(true);
         Bounds bounds = new(transform.position, Vector3.zero);
         bool first = true;
         foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true))
@@ -95,7 +106,7 @@ internal sealed class StalkingDoll : MonoBehaviour
         _centerOffset = transform.InverseTransformPoint(bounds.center);
         _halfHeight = Mathf.Max(0.15f, bounds.extents.y * 0.8f);
         _radius = Mathf.Clamp(Mathf.Max(bounds.extents.x, bounds.extents.z) * 0.8f, 0.1f, 0.3f);
-        _height = transform.position.y - bounds.min.y + 0.25f;
+        _height = transform.position.y - bounds.min.y;
         _ready = true;
         ApplyDecision();
     }
@@ -186,38 +197,99 @@ internal sealed class StalkingDoll : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!_ready || !SemiFunc.IsMasterClientOrSingleplayer() || _physical.dead || !SemiFunc.RunIsLevel()) return;
+        if (!_ready || !SemiFunc.IsMasterClientOrSingleplayer() || !_physical.spawned || _physical.dead || !SemiFunc.RunIsLevel()) return;
         ApplyDecision();
-        if (_physical.playerGrabbing.Count > 0) return; // Native grab physics remain usable.
-        _physical.OverrideZeroGravity(0.2f);
-        if (!_body.isKinematic) { _body.velocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
-        _physical.OverrideKinematic(0.2f);
-        if (Mode == StalkingDollMode.Following || Mode == StalkingDollMode.Rushing) Follow();
-        else if (Mode == StalkingDollMode.Attacking && _target != null) Face(_target.transform.position);
+        if (_physical.playerGrabbing.Count > 0) { ReleaseMotion(); return; }
+        if (_body.isKinematic) return; // Respect native setup/deactivation and other temporary physics controls.
+        if ((Mode == StalkingDollMode.Following || Mode == StalkingDollMode.Rushing) && Follow()) return;
+        ReleaseMotion();
+        if (Mode == StalkingDollMode.Attacking && _target != null) Face(_target.transform.position);
     }
 
-    private void Follow()
+    private void ReleaseMotion()
     {
-        if (_target == null) return;
+        if (!_driving) return;
+        // Stop our horizontal pursuit once, preserving gravity/fall velocity
+        // and any impulses applied on subsequent stationary ticks.
+        if (!_body.isKinematic)
+            _body.velocity = new Vector3(0, _body.velocity.y, 0);
+        _driving = false;
+        _pathAt = 0;
+    }
+
+    private void DriveMotion(Vector3 velocity)
+    {
+        // Drive only along the floor. Vertical motion remains gravity-driven
+        // rather than pinning the doll to a floating NavMesh offset.
+        _body.velocity = new Vector3(velocity.x, _body.velocity.y, velocity.z);
+        _driving = true;
+    }
+
+    private void OnCollisionEnter(Collision collision) => _contacts.Record(collision);
+    private void OnCollisionStay(Collision collision) => _contacts.Record(collision);
+    private void OnCollisionExit(Collision collision) => _contacts.Forget(collision.collider);
+
+    private bool Follow()
+    {
+        if (_target == null) return false;
         if (Time.time >= _pathAt)
         {
             _pathAt = Time.time + 0.25f;
             _corners = Array.Empty<Vector3>();
-            if (NavMesh.SamplePosition(transform.position - Vector3.up * _height, out NavMeshHit start, 2f, NavMesh.AllAreas) &&
+            Vector3 ground = transform.position - Vector3.up * _height;
+            if (StalkingDollStep.GroundPosition(_body, _solidColliders, out Vector3 support)) ground = support;
+            if (NavMesh.SamplePosition(ground, out NavMeshHit start, 2f, NavMesh.AllAreas) &&
                 NavMesh.SamplePosition(_target.transform.position, out NavMeshHit end, 3f, NavMesh.AllAreas) &&
                 NavMesh.CalculatePath(start.position, end.position, NavMesh.AllAreas, _path) && _path.status == NavMeshPathStatus.PathComplete)
             { _corners = _path.corners; _corner = 0; }
+#if DEBUG
+            else DebugNavigation("no complete NavMesh path");
+#endif
         }
-        while (_corner < _corners.Length && Vector3.Distance(transform.position, _corners[_corner] + Vector3.up * _height) < 0.08f) _corner++;
-        if (_corner >= _corners.Length) return;
-        Vector3 next = Vector3.MoveTowards(_body.position, _corners[_corner] + Vector3.up * _height, MovementSpeed * Time.fixedDeltaTime);
-        Vector3 delta = next - _body.position;
-        foreach (RaycastHit hit in Physics.SphereCastAll(transform.TransformPoint(_centerOffset), _radius, delta.normalized,
-                     delta.magnitude, LayerMask.GetMask("Default", "PhysGrabObject"), QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(_target.transform)) return;
-        Face(next);
-        _body.MovePosition(next);
+        while (_corner < _corners.Length)
+        {
+            Vector3 gap = _corners[_corner] + Vector3.up * _height - _body.position;
+            // NavMesh stairs can be smoothed above the physical tread. A
+            // same-XZ corner must not stall a horizontal-only motor forever.
+            if (gap.x * gap.x + gap.z * gap.z >= .0144f) break;
+            _corner++;
+        }
+        if (_corner >= _corners.Length) return false;
+        Vector3 direction = _corners[_corner] - _body.position;
+        direction.y = 0;
+        Vector3 delta = Vector3.ClampMagnitude(direction, MovementSpeed * Time.fixedDeltaTime);
+        if (delta.sqrMagnitude < .000001f) return false;
+        if (StalkingDollStep.TryClimb(_body, _solidColliders, delta, out string? blocked))
+        {
+            // The step already swept and placed the body beyond the ledge.
+            // Do not reuse the old pre-step direction/corner this physics tick.
+            _pathAt = 0;
+            _corners = Array.Empty<Vector3>();
+            _corner = 0;
+            _driving = false;
+            Face(_body.position + delta);
+            return true;
+        }
+#if DEBUG
+        if (blocked != null) DebugNavigation(blocked);
+#endif
+        // Let native collisions stop the actual body, then slide along their
+        // contact normals. An overlapping speculative sphere must not cancel
+        // movement out of a wall or keep two neighbouring dolls locked forever.
+        delta = _contacts.Steer(delta);
+        DriveMotion(delta / Time.fixedDeltaTime);
+        Face(_body.position + delta);
+        return true;
     }
+
+#if DEBUG
+    private void DebugNavigation(string reason)
+    {
+        if (!Debugging.DebugLoomRobeScenario.Enabled || Time.time < _navigationLogAt) return;
+        _navigationLogAt = Time.time + 3;
+        Plugin.ModLogger.LogInfo($"DEBUG Stalker navigation at {_body.position}: {reason}.");
+    }
+#endif
 
     private void Face(Vector3 point)
     {

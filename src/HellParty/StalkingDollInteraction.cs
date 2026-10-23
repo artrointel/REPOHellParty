@@ -43,8 +43,9 @@ internal static class StalkingDollPlayerDamagePatch
     }
 }
 
-// Suppress wall/floor collision damage only within this native callback.
-// Weapon HurtColliders and collisions with thrown physical objects still hurt.
+// Ignore self-driven impacts (including landing on stationary props). Only an
+// external physical object's incoming motion can deal ordinary impact damage.
+// Explicit weapon/monster HurtColliders remain separate from this callback.
 [HarmonyPatch(typeof(PhysGrabObjectImpactDetector), "OnCollisionStay")]
 internal static class StalkingDollTerrainCollisionPatch
 {
@@ -55,10 +56,32 @@ internal static class StalkingDollTerrainCollisionPatch
         __state = health != null && health.TerrainCollision;
         if (health == null || !SemiFunc.IsMasterClientOrSingleplayer()) return;
         Collider other = collision.collider;
-        health.TerrainCollision = __state || other != null &&
-            (other.attachedRigidbody == null || other.attachedRigidbody.isKinematic) &&
-            other.GetComponentInParent<PhysGrabObject>() == null &&
-            other.GetComponentInParent<Enemy>() == null && other.GetComponentInParent<PlayerAvatar>() == null;
+        health.TerrainCollision = __state || !IncomingObject(collision, other);
+    }
+
+    private static bool IncomingObject(Collision collision, Collider other)
+    {
+        if (other == null || other.attachedRigidbody == null) return false;
+        PhysGrabObject physical = other.GetComponentInParent<PhysGrabObject>();
+        bool actor = other.GetComponentInParent<Enemy>() != null || other.GetComponentInParent<PlayerAvatar>() != null ||
+            other.GetComponentInParent<PlayerController>() != null || other.GetComponentInParent<PlayerTumble>() != null ||
+            other.GetComponentInParent<StalkingDollHealth>() != null;
+        if (physical == null || actor) return false;
+        Rigidbody body = other.attachedRigidbody;
+        PhysGrabObjectImpactDetector impact = physical.GetComponent<PhysGrabObjectImpactDetector>();
+        float incoming = 0;
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            ContactPoint contact = collision.GetContact(i);
+            // Use the other object's native pre-impact velocity. Its solved
+            // velocity may already point away after a legitimate thrown hit.
+            Vector3 velocity = impact != null
+                ? impact.previousVelocityRaw + Vector3.Cross(impact.previousAngularVelocity * Time.fixedDeltaTime,
+                    contact.point - body.worldCenterOfMass)
+                : body.GetPointVelocity(contact.point);
+            incoming = Mathf.Max(incoming, Vector3.Dot(velocity, contact.normal));
+        }
+        return StalkingDollRules.IncomingCollisionHurts(true, false, incoming);
     }
 
     [HarmonyFinalizer]
