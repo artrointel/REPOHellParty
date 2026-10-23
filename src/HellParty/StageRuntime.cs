@@ -18,6 +18,8 @@ internal sealed class StageRuntime : MonoBehaviour
         yield return null;
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) yield break;
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
+        if (DifficultyService.Current >= 1 && GetComponent<Events.MonsterWave>() == null)
+            gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
         yield return Debugging.DebugMentalistScenario.SpawnTestSet();
@@ -74,6 +76,7 @@ internal sealed class StageRuntime : MonoBehaviour
         {
             PrefabRef source = VanillaCatalog.Valuable(HasNativeDeathCloud);
             instance = VanillaCatalog.Spawn(source, position, Quaternion.identity);
+            instance.AddComponent<Events.InternalWaveExcluded>();
             // This prop is only a native all-client cloud carrier, never extra loot
             // or an addition to the round's possible dollar haul.
             if (SemiFunc.IsMultiplayer()) instance.GetComponent<PhotonView>().RPC("DollarValueSetRPC", RpcTarget.All, 0f);

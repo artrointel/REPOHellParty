@@ -15,6 +15,9 @@ internal static class VanillaCatalog
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
     internal static PrefabRef MentalistPrefab() => EnemyPrefab<EnemyFloater>();
+    internal static PrefabRef RugratPrefab() => EnemyPrefab<EnemyValuableThrower>();
+    internal static PrefabRef UpscreamPrefab() => EnemyPrefab<EnemyUpscream>();
+    internal static PrefabRef HeadgrabPrefab() => EnemyPrefab<EnemyHeadGrabber>();
     internal static PrefabRef LaserGunPrefab()
     {
         foreach (Item item in StatsManager.instance.itemDictionary.Values)

@@ -74,8 +74,19 @@ internal static class SummonedEnemyReadyPatch
         if (navigation != null)
         {
             navigation.Enable();
+            // Native Enable only acts when DisableTimer > 0. A disabled agent
+            // with no timer (including an off-mesh creation) needs explicit
+            // enabling before Warp can bind it to the level's navigation.
+            var agent = navigation.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            agent.enabled = true;
             navigation.Warp(ticket.Position, true);
-            if (!navigation.GetComponent<UnityEngine.AI.NavMeshAgent>().isOnNavMesh)
+            if (!agent.isOnNavMesh)
+            {
+                agent.enabled = false;
+                agent.enabled = true;
+                navigation.Warp(ticket.Position, true);
+            }
+            if (!agent.isOnNavMesh)
                 Plugin.ModLogger.LogError($"Summoned enemy navigation could not bind at {ticket.Position}: {__instance.name}");
         }
         ticket.Pending = false;
