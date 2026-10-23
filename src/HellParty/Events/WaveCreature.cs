@@ -65,7 +65,7 @@ internal static class WaveCreatureSpawnPatch
         SummonedEnemySpawnTicket ticket = __instance.GetComponent<SummonedEnemySpawnTicket>();
         if (member.Retired || member.Owner == null || !member.Owner.CanSpawn || ticket == null || !ticket.Pending ||
             !WaveSpawnPoints.Find(member.Owner.Center, out Vector3 point, __instance.GetComponentInChildren<UnityEngine.AI.NavMeshAgent>(true)))
-        { __instance.DespawnedTimerSet(.25f); return false; }
+        { __instance.DespawnedTimerSet(HellParty.Rules.WaveSpawnRules.RetryInterval); return false; }
         ticket.Position = point;
         ticket.InitialTarget = null; // Avoid the shared native Gnome group's target setter.
         member.Target = WaveSpawnPoints.Nearest(point);

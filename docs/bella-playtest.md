@@ -1,12 +1,12 @@
 # Bella 플레이테스트
 
-현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Bella는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
+Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Bella는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-순정 AI가 길을 막은 플레이어에게 벨을 울리도록 둔다. Release는 stage4부터 자폭, stage10부터 미끼를 해금하며 임시 개체·무기는 추가 생성하지 않는다.
+순정 AI가 길을 막은 플레이어에게 벨을 울리도록 둔다. Release는 stage1부터 자폭, stage7부터 미끼를 해금하며 임시 개체·무기는 추가 생성하지 않는다.
 
 1. 살아 있는 Bella의 의자에 Clown Doll이 1개 붙어 있고 이동·회전 시 함께 움직이는지 확인한다. 잡아 떼어낼 수 없어야 한다. 자연 디스폰 후 재등장에는 같은 인형이 따라와야 한다.
 2. 첫 번째·두 번째·세 번째 경고 단계에서 인형이 순정 경고·경고·자폭을 진행해야 한다. 짧은 여러 울림을 경고 단계로 중복 계산하면 안 된다. 인형 애니메이션이 끝나기 전에 다음 단계가 오면 순정 애니메이션 종료 후 이어서 진행해야 한다.

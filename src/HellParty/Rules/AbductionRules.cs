@@ -28,8 +28,8 @@ internal sealed class AbductionClock
         Holding = false;
         _readyAt = now + 5;
     }
-    internal static bool Eligible(int difficulty, int alivePlayers, bool combat, double squaredDistance) =>
-        difficulty >= 2 && alivePlayers >= 2 && combat && squaredDistance >= 0 && squaredDistance <= 49;
+    internal static bool Eligible(int difficulty, int alivePlayers, bool combat, double squaredDistance, int unlockDifficulty = 2) =>
+        difficulty >= unlockDifficulty && alivePlayers >= 2 && combat && squaredDistance >= 0 && squaredDistance <= 49;
 }
 
 internal sealed class AbductionSlot<T> where T : class

@@ -1,6 +1,6 @@
 # Upscream
 
-0단계는 순정 상태 그대로 진행한다. 난이도 **1(stage4)**부터 **변장(미믹)**을 부여한다. [Chef의 기획](chef.md)과 동일한 내구도·해제 조건을 사용하며, 공격은 Upscream의 순정 AI를 사용한다.
+0단계는 순정 상태 그대로 진행한다. 난이도 **1(stage1)**부터 **변장(미믹)**을 부여한다. [Chef의 기획](chef.md)과 동일한 내구도·해제 조건을 사용하며, 공격은 Upscream의 순정 AI를 사용한다.
 
 호스트만 모드를 설치하고 바닐라 참가자와 완벽하게 호환되는 능력만 기획한다.
 
@@ -28,6 +28,6 @@
 
 순정 코드명은 `EnemyUpscream`이다. Chef와 `ChefMimic`·`ChefMimicFrog`·내구도·시야 상태 로직을 공유하고, Upscream용 AI 어댑터에서 `PlayerNotice → GoToPlayer → Attack`을 사용한다. 참가자 전용 코드나 사용자 정의 RPC는 추가하지 않는다.
 
-자동 검사는 단계·소환 출신 제외·Debug 예외의 Release 제외, 기존 공용 변장 상태·체력 규칙을 검사한다. 실제 변장·코어·드론·노움·원격 참가자 동기화는 [Upscream 플레이테스트](../upscream-playtest.md)로 확인한다. 게임 내 검증은 아직 수행하지 않았다.
+자동 검사는 단계·소환 출신 제외·Debug 예외의 Release 제외, 기존 공용 변장 상태·체력 규칙을 검사한다. 실제 변장·코어·드론·노움·원격 참가자 동기화는 [Upscream 플레이테스트](../upscream-playtest.md)로 확인한다. 실제 게임의 회귀 확인은 플레이테스트 항목을 따른다.
 
 단계별 요약은 [난이도별 기획표](../monster-abilities.md)에서 관리한다.

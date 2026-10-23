@@ -1,12 +1,12 @@
 # Bowtie 플레이테스트
 
-현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Bowtie는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
+Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Bowtie는 게임 종료 후 Release를 실행해 자연 생성 개체로 검증한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-Release는 실제 진행도를 따라 stage7부터 형제, stage13부터 복수를 해금한다. 아래 항목은 해당 난이도의 자연 생성 Bowtie로 확인한다.
+Release는 실제 진행도를 따라 stage4부터 형제, stage10부터 복수를 해금한다. 아래 항목은 해당 난이도의 자연 생성 Bowtie로 확인한다.
 
 1. 난이도 0·1에는 추가 Elsa가 없어야 한다. 2 이상에서 플레이어 발견 후 실제 바람이 시작될 때 대상 위치 근처에 한 마리만 생성되어야 한다. 발견 예고 시점에는 생성되지 않아야 한다.
 2. Bowtie 타깃이 A이고 근처에 B가 있는 경우 Elsa가 A를 대상으로 변신 후 접근·공격하는지 확인한다. 가구 위·공중에 있는 플레이어 주변에서도 유효한 바닥에 나타나고 제자리에 멈추지 않아야 한다.

@@ -22,6 +22,8 @@ internal sealed class StageRuntime : MonoBehaviour
             gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
+        if (Debugging.DebugClownScenario.Enabled) StartCoroutine(Debugging.DebugClownScenario.SpawnTestSet());
+        if (Debugging.DebugReaperScenario.Enabled) StartCoroutine(Debugging.DebugReaperScenario.SpawnTestSet());
         if (Debugging.DebugUpscreamScenario.Enabled) StartCoroutine(Debugging.DebugUpscreamScenario.SpawnTestSet());
         if (Debugging.DebugCleanupScenario.Enabled) StartCoroutine(Debugging.DebugCleanupScenario.SpawnTestSet());
         if (Debugging.DebugHuntsmanScenario.Enabled)
@@ -33,10 +35,16 @@ internal sealed class StageRuntime : MonoBehaviour
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
         if (Rules.BlindTargetClock.Unlocked(DifficultyService.Current) &&
-            (parent.GetComponentInChildren<EnemyRunner>(true) != null || parent.GetComponentInChildren<EnemyThinMan>(true) != null) &&
+            parent.GetComponentInChildren<EnemyThinMan>(true) != null &&
             parent.GetComponent<BlindAbility>() == null) parent.gameObject.AddComponent<BlindAbility>();
+        if (Rules.ReaperSprintClock.Unlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyRunner>(true) != null &&
+            parent.GetComponent<ReaperSprint>() == null) parent.gameObject.AddComponent<ReaperSprint>();
         if (DifficultyService.Current >= 2 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
             parent.GetComponent<HuntsmanAbduction>() == null) parent.gameObject.AddComponent<HuntsmanAbduction>();
+        if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyShadow>(true) != null &&
+            parent.GetComponent<HuntsmanAbduction>() == null) parent.gameObject.AddComponent<HuntsmanAbduction>();
+        if (Rules.DifficultyRules.ClownStaffUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyBeamer>(true) != null &&
+            parent.GetComponent<ClownAbilities>() == null) parent.gameObject.AddComponent<ClownAbilities>();
         if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
             parent.GetComponent<HuntsmanDeathTactics>() == null) parent.gameObject.AddComponent<HuntsmanDeathTactics>();
         if (Rules.DifficultyRules.MentalistReflectionUnlocked(DifficultyService.Current) &&

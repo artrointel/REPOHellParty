@@ -3,20 +3,33 @@ namespace HellParty.Rules;
 internal sealed class MonsterWaveClock
 {
     internal const double Duration = 20;
-    internal const float Radius = 30;
+    internal const int WarningDuration = 3;
+    internal const int GnomesPerTick = 2;
+    internal const float Radius = 20;
     internal bool Active { get; private set; }
+    internal bool Spawning { get; private set; }
     private double _start;
     private int _next;
 
-    internal void Start(double now) { Active = true; _start = now; _next = 1; }
+    internal void Start(double now) { Active = true; Spawning = false; _start = now; _next = WarningDuration + 1; }
     internal bool Expired(double now) => Active && now - _start >= Duration;
+    internal bool AwaitingDecision(double now) => Active && !Spawning && !Expired(now) && now - _start >= WarningDuration;
+    internal bool Decide(double now, bool exposedPlayer)
+    {
+        if (!AwaitingDecision(now)) return false;
+        if (!exposedPlayer) { Stop(); return false; }
+        Spawning = true;
+        return true;
+    }
     internal bool TakeGnome(double now)
     {
-        if (!Active || Expired(now) || _next >= Duration || now - _start < _next) return false;
+        if (!Spawning || !Active || Expired(now) || _next >= Duration || now - _start < _next) return false;
         _next++;
         return true;
     }
-    internal void Stop() => Active = false;
+    internal void Stop() { Active = false; Spawning = false; }
+    internal static bool Exposed(bool alive, float squaredDistance, bool crouching, bool crawling, bool tumbling) =>
+        alive && squaredDistance <= Radius * Radius && !crouching && !crawling && !tumbling;
     internal static bool SuppressTrigger(bool active, float squaredDistance) => active && squaredDistance <= Radius * Radius;
     internal static bool CanStart(int difficulty, bool nearbyPlayer, bool hiddenPosition) => difficulty >= 1 && nearbyPlayer && hiddenPosition;
 }

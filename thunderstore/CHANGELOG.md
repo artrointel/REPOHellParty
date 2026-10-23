@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Implement Clown tier-3 Laser Staff Summon and tier-5 Laser Shield. Shield blocks gun damage/stun while targetless and fires a fixed-aim Staff after two seconds. Surviving staves become collectible loot on owner death. Prepare exclusive difficulty-5 Debug.Clown with shotgun and tranquilizer.
+- Add Loom tier-4 Abduction using the Huntsman shared rules and global captive slot. Both check a clear native vision ray immediately before capture.
+- Remove Birthday Boy Eyeball generation entirely; death balloon pops have no extra loot or Gnomes.
+- Replace Reaper Blind with tier-2 Sprint: transform into native Headman at 10m target distance, return to Reaper within 3m, ten-second use cooldown, shared health and original Reaper core rules. Retain Blind on Shadow Child only. The selectable Reaper debug scenario uses difficulty 2.
+
+- Advance normal difficulty by one tier: stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ now use tiers 1 / 2 / 3 / 4 / 5. Preserve difficulty 0 as a vanilla baseline and existing Debug scenario overrides.
+- Refresh repository and package documentation, stage unlock labels, implementation status and profile-driven Debug instructions.
+- Document current Huntsman Abduction: 7m range, 2 damage every second after a three-second delay, no shooting while carrying, captive sound filtering, carrier-grab rejection, and a five-second release cooldown. Add tier-4 Death Tactics with a native recoverable Human Grenade.
+- Add Cleanup Crew Hatching/Hatching2 and natural Upscream Big-valuable disguises; ability/wave-summoned Upscreams are excluded from disguise.
+- Add Reaper/Shadow Child Blind: native gas at the target's eye position every three seconds of continuous targeting; target changes/loss reset the timer.
+- Update Monster Wave: 20m radius, three-second posture-based evasion warning, two Gnomes per second, twenty-second total lifetime, one-second retries, revalidated spawn-position caches, nearest-player candidate ordering, and a strict greater-than-three-metre player clearance. Break the Gramophone through native effects on combat end; cancel warnings silently.
+
 ## 0.1.0
 
 - Mentalist Reflection Shield now always retaliates with a native laser gun regardless of the incoming gun. Aim locks on creation, laser firing starts after two seconds, and native laser damage/duration are retained.

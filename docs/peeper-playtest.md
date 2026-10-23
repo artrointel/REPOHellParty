@@ -1,6 +1,6 @@
 # Peeper 플레이테스트
 
-구현·빌드 검사는 통과했으며 아래 게임 내 검증은 아직 실행하지 않았다. 현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Peeper의 단계별 확인은 실제 진행도를 사용하는 Release 또는 해당 단계의 Peeper가 존재하는 테스트 세션에서 수행한다.
+구현·빌드 검사는 통과했으며 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Peeper의 단계별 확인은 실제 진행도를 사용하는 Release 또는 해당 단계의 Peeper가 존재하는 테스트 세션에서 수행한다.
 
 1. 난이도 0에서는 Peeper가 피해를 주어도 소환하지 않는다. 난이도 1에서는 실제 타격마다 Peeper 아래 바닥에 Gnome 1마리만 나타난다. 무적·피해 없는 상태에서는 소환하지 않는다. 체력이 감소한 치명타도 한 번으로 센다.
 2. 난이도 2 이상에서는 기본 Gnome에 추가로 매 타격 30% 확률의 Banger가 나타난다. 확률이므로 몇 번의 타격만으로 비율을 판정하지 않는다. 한 타격에서 최대 Gnome 1마리와 Banger 1마리만 나타나야 한다.
@@ -9,4 +9,4 @@
 5. 순정 그룹 AI 특성상 Gnome·Banger의 기존 그룹 대상도 함께 바뀔 수 있다. 다른 Peeper·Birthday Boy 소환과 겹칠 때 최신 대상 지정의 영향과 오류 로그를 확인한다.
 6. 호스트·바닐라 참가자가 각각 피격하는 경우를 확인한다. 무피해 요청, 중복 체력 메시지, 다른 피해와 겹치는 상황, 타깃 사망 뒤 소환 완료를 확인한다. 코어·수명은 순정 규칙을 유지한다.
 
-자동 검사 481개와 Debug/Release 빌드는 Unity·실제 멀티플레이 테스트를 대체하지 않는다.
+자동 검사와 Debug/Release 빌드는 Unity·실제 멀티플레이 테스트를 대체하지 않는다.

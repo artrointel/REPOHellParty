@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
@@ -13,6 +14,7 @@ internal sealed class WaveGramophone : MonoBehaviour
     private PhysGrabObject _physical = null!;
     private Rigidbody _body = null!;
     private Vector3 _position;
+    private bool _ending;
     private readonly StalkingDollGrabAttempts _attempts = new();
     private readonly HashSet<int> _releasing = new();
 
@@ -74,6 +76,30 @@ internal sealed class WaveGramophone : MonoBehaviour
     internal void Remove()
     {
         NetworkLifetime.Remove(gameObject);
+    }
+
+    internal void BreakAtEnd()
+    {
+        if (_ending) return;
+        _ending = true;
+        try
+        {
+            if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel() || !NetworkLifetime.Live(this)) return;
+            PhysGrabObjectImpactDetector impact = GetComponent<PhysGrabObjectImpactDetector>();
+            // Keep the WaveGramophone marker: destruction must remain excluded
+            // from wave triggers and native immediate view removal. The native
+            // reliable destruction RPC supplies particles/sound on vanilla peers.
+            impact.destroyDisable = false;
+            impact.DestroyObject(effects: true);
+        }
+        catch (Exception exception) { Plugin.ModLogger.LogError($"Wave Gramophone destruction failed: {exception}"); }
+        finally
+        {
+            // Retire only after native effects have detached, keeping the
+            // existing grace period for grab RPCs already in flight.
+            GetComponent<PhysGrabObjectImpactDetector>().destroyDisable = true;
+            Remove();
+        }
     }
 }
 

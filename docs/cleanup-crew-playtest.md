@@ -1,8 +1,11 @@
 # Cleanup Crew 부화 플레이테스트
 
-현재 기본 테스트는 [Upscream 변장](upscream-playtest.md)이다. 아래 기존 테스트를 실행하려면 먼저 `[Debug.Upscream] Enabled = false`로 바꾸고 게임을 재시작한다.
+아래 전용 Debug 테스트는 `[Debug.Clown]
+Enabled = false
 
-구현과 Debug/Release 빌드·자동 검사를 완료했다. 아래 게임 내 확인은 아직 수행하지 않았다. 호스트만 HellParty를 설치하고 바닐라 참가자로도 확인한다.
+[Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`와 해당 시나리오의 `Enabled = true`를 설정한 뒤 재시작하여 선택한다. 실제 실행 대상은 프로필 설정을 따르며 [개발 환경](development.md#debug와-release)에서 우선순위를 확인한다.
+
+구현과 Debug/Release 빌드·자동 검사를 완료했다. 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. 호스트만 HellParty를 설치하고 바닐라 참가자로도 확인한다.
 
 ## 실행과 Debug 키
 
@@ -12,13 +15,13 @@
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
 ```
 
-Debug는 기본적으로 난이도 5와 시작 위치 20m 이내의 Cleanup Crew·Huntsman 각 1마리, 샷건·수면총 각 1개를 준비한다. 두 몬스터의 생성 지점은 최소 3m 떨어뜨리고 각각 독립적으로 탐색한다. 유효한 NavMesh가 없는 트럭 내부는 피하며, 몬스터 위치 탐색이 실패해도 무기는 따로 생성한다.
+Reaper·Upscream을 끄고 Cleanup Crew와 Huntsman을 켠 Debug는 난이도 5와 시작 위치 20m 이내의 각 1마리, 샷건·수면총 각 1개를 준비한다. Huntsman을 false로 두면 Cleanup Crew만 생성한다. 두 몬스터의 생성 지점은 최소 3m 떨어뜨리고 각각 독립적으로 탐색한다. 유효한 NavMesh가 없는 트럭 내부는 피하며, 몬스터 위치 탐색이 실패해도 무기는 따로 생성한다.
 
 - **F9:** 난이도 5(부화2·Upscream)와 1(부화·Spewer)을 전환한다. 다음 폭발부터 적용하며 이미 예약된 소환은 폭발 시점의 종류를 유지한다.
 - **F10:** 테스트 Cleanup Crew가 호스트를 순정 인지 경로로 발견하도록 요청한다. 순정 스폰·기절·이미 진행 중인 공격 조건은 유지하므로 반응하지 않으면 연출이 끝난 뒤 다시 누른다.
 - **F11:** 이미 분리되어 활성화된 헤드의 폭발 예고를 시작한다. 즉시 소환하는 키가 아니며 순정 폭발 연출 후 2초를 기다린다. 활성 헤드가 없으면 로그로 안내한다.
 
-프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `[Debug.CleanupCrew]`와 `[Debug.Huntsman]`의 `Enabled = true`가 기본값이다. 둘 다 켜면 두 몬스터가 함께 생성된다. 하나만 테스트하려면 다른 몬스터의 설정을 false로 바꾸고 재시작한다. Huntsman 키는 F6(1인 조건 우회)·F7(조준 요청)·F8(납치 해제)이다. F9는 공용 난이도를 바꾸므로 1단계에서는 Huntsman이 새 납치를 시작하지 않는다. 함께 테스트하려면 다시 5단계로 돌린다. 종합 테스트에서는 두 설정을 모두 false로 바꾸거나 Release를 사용한다. Release에는 자동 생성·키·강제 난이도 코드가 포함되지 않는다.
+프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `[Debug.CleanupCrew]`와 `[Debug.Huntsman]`의 `Enabled = true`가 기본값이다. 둘 다 켜면 두 몬스터가 함께 생성된다. 하나만 테스트하려면 다른 몬스터의 설정을 false로 바꾸고 재시작한다. Huntsman 키는 F6(1인 조건 우회)·F7(조준 요청)·F8(납치 해제)이다. F9는 공용 난이도를 바꾸므로 1단계에서는 Huntsman이 새 납치를 시작하지 않는다. 함께 테스트하려면 다시 5단계로 돌린다. 종합 테스트에서는 Clown·Reaper·Upscream·CleanupCrew·Huntsman 네 설정을 모두 false로 바꾸거나 Release를 사용한다. Release에는 자동 생성·키·강제 난이도 코드가 포함되지 않는다.
 
 ## 확인 항목
 

@@ -10,6 +10,8 @@ internal static class DifficultyService
         get
         {
 #if DEBUG
+            if (Debugging.DebugClownScenario.Enabled) return Debugging.DebugClownScenario.ForcedDifficulty;
+            if (Debugging.DebugReaperScenario.Enabled) return Debugging.DebugReaperScenario.ForcedDifficulty;
             if (Debugging.DebugUpscreamScenario.Enabled) return Debugging.DebugUpscreamScenario.ForcedDifficulty;
             if (Debugging.DebugCleanupScenario.Enabled) return Debugging.DebugCleanupScenario.Difficulty;
             if (Debugging.DebugHuntsmanScenario.Enabled) return Debugging.DebugHuntsmanScenario.ForcedDifficulty;

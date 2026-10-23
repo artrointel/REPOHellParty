@@ -6,6 +6,18 @@
 
 공통 발동 조건은 [인지 상태 메타데이터](../metadata/recognition-state.md)를 참조한다. 몬스터별 문서에 예외가 있으면 해당 명세를 따른다.
 
+난이도는 [공용 진행 규칙](../metadata/difficulty.md)에 따라 stage1부터 1로 시작한다. 자연 진행에서 0단계를 사용하지 않으며, 기존 능력의 해금 단계는 유지한다.
+
+## 구현 상태
+
+- 구현됨: Clown의 레이저스태프소환·레이저쉴드, Loom의 납치, Animal, Apex Predator, Bella, Birthday Boy, Bowtie, Chef, Cleanup Crew, Huntsman, Loom·Robe의 스토커 동반, Mentalist, Peeper, Reaper의 전력질주와 Shadow Child의 블라인드, 자연 생성 Upscream의 변장, 독립 스토커.
+- 현재 기획표의 능력은 구현되었으며 실제 바닐라 동반 플레이 검증은 각 플레이테스트 문서를 따른다.
+- 그 밖의 순정 몬스터: 별도 능력 기획 미정이며 순정 동작 유지.
+
+구현·자동 검사 통과와 실제 바닐라 참가자 검증은 구분한다. 각 상세 문서와 플레이테스트에 확인 범위를 기록한다. 전용 Debug 시나리오 선택은 [개발 환경](../development.md#debug와-release)의 프로필 설정을 따른다.
+
+## 순정 몬스터 목록
+
 - [Animal](animal.md)
 - [Apex Predator](apex-predator.md)
 - [Banger](banger.md)

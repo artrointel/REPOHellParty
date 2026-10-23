@@ -26,12 +26,7 @@ internal sealed class BirthdayBoyAbilities : MonoBehaviour
     {
         _birthday = GetComponentInChildren<EnemyBirthdayBoy>(true);
         _health = _birthday.GetComponent<EnemyHealth>();
-        // Existing balloons can survive a native despawn. Native balloonIndex
-        // preserves their placement order when this controller attaches late.
-        var existing = new List<KeyValuePair<Vector3, GameObject>>(_birthday.balloons);
-        existing.Sort((a, b) => a.Value.GetComponentInChildren<BirthdayBoyBalloon>().balloonIndex.CompareTo(
-            b.Value.GetComponentInChildren<BirthdayBoyBalloon>().balloonIndex));
-        foreach (var balloon in existing) Register(balloon.Key);
+        foreach (var balloon in _birthday.balloons) Register(balloon.Key);
     }
 
     internal void Register(Vector3 key)

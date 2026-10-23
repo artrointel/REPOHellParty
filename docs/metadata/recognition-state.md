@@ -23,7 +23,7 @@ authority: host
 
 - `null → non-null`: 인지 시작.
 - `non-null → null`: 인지 해제.
-- 플레이어 A의 타깃 참조에서 플레이어 B의 참조로 변경: 인지 상태 유지. 타깃 교체만으로 스킬이나 쿨타임을 다시 시작하지 않는다.
+- 플레이어 A의 타깃 참조에서 플레이어 B의 참조로 변경: 인지 상태 유지. 타깃 교체 시 타이머·쿨타임 처리는 개별 스킬 명세를 따른다. 블라인드는 같은 대상의 연속 유지 시간을 새로 세고, Animal 독가스는 기존 쿨타임을 유지한다.
 
 ## 스킬에서의 사용
 
@@ -35,16 +35,25 @@ authority: host
 
 ## 참조 문서
 
-- [Reaper·Shadow Child — 블라인드](blind.md): 각각 `EnemyRunner.targetPlayer`, `EnemyThinMan.playerTarget`을 사용한다. 같은 타깃을 3초간 유지하면 발동하고 3초마다 반복한다. 이 스킬은 타깃 교체·상실 시 유지 시간을 초기화하는 개별 규칙을 갖는다.
+- [공용 난이도](difficulty.md): stage1부터 난이도 1이며, 공통 인지 상태 정의와 난이도 해금은 별도로 적용한다.
+- [Huntsman — 납치·죽음의전술](../monsters/huntsman.md): 납치는 공통 타깃 참조 대신 순정 Aim·Shoot 또는 플레이어 Transform을 추적하는 InvestigateWalk를 조건으로 한다. 사망 수류탄은 인지 조건의 예외다.
+- [Cleanup Crew — 부화](../monsters/cleanup-crew.md): 본체가 아닌 폭발헤드의 폭발 시점 타깃을 계승한다. 폭발 후 2초 동안 대상 유효성을 유지해야 한다.
+- [Upscream — 변장](../monsters/upscream.md): 자연 생성 개체가 Chef와 같은 탐색·해제 규칙을 사용한다. 다른 능력·웨이브 소환 개체는 제외한다.
+
+- [Shadow Child — 블라인드](blind.md): `EnemyThinMan.playerTarget`을 사용한다. 같은 타깃을 3초간 유지하면 발동하고 3초마다 반복한다. 타깃 교체·상실 시 유지 시간을 초기화한다.
+- [Reaper — 전력질주](../monsters/reaper.md): `EnemyRunner.targetPlayer`를 보유한 순정 추적 상태에서 10m 이상일 때 Headman으로 전환한다. 3m 복귀와 사용부터 10초 쿨타임은 개별 규칙이다. 블라인드는 사용하지 않는다.
 
 - [Mentalist — 반사쉴드](../monsters/mentalist.md): 공통 인지 조건의 반대로, 본체 `targetPlayer == null`일 때만 총격을 차단하고 2초 뒤 반격한다. 반격 발동 이후 타깃을 얻어도 이미 고정한 사선을 변경하거나 발사를 취소하지 않는다.
 
 - [난이도별 특수 능력 기획표](../monster-abilities.md)
 - [Animal — 독가스·분화](../monsters/animal.md): 독가스는 현재 타깃 3m 이내에서 10초 쿨타임으로 발동한다. 분화는 인지 상태 조건의 예외로 원본 사망 시 발동하며, 생성된 개체는 재분화하지 않는다.
 - [Bella — 자폭·미끼](../monsters/bella.md): 순정 벨 경고 중에는 `playerTarget`이 아직 비어 있을 수 있으므로 벨 연동 자체를 발동 조건으로 사용한다. 자폭은 경고 단계에, 미끼는 개별 울림에 연동한다. 미끼 Grab은 기존 타깃과 무관하게 잡은 플레이어를 새 공격 대상으로 지정한다. 이 이벤트들은 타깃 보유 조건의 예외다.
-- [Birthday Boy — 풍선강화](../monsters/birthday-boy.md): 근접 자동 파열·일반 파열 Gnome·피격 지원 파열·사망 보상은 인지 조건의 예외다. 자동 파열은 3m 내 연속 3초 체류로, 일반 파열 Gnome은 파열 순간 10m 내 플레이어 존재로 발동한다. 풍선강화2부터 자동 파열 시 감지 플레이어를 본체 타깃으로 지정한다. 풍선강화3은 실제 비치명 피해로 발동하며 본체 타깃 유무를 요구하지 않는다.
+- [Birthday Boy — 풍선강화](../monsters/birthday-boy.md): 근접 자동 파열·일반 파열 Gnome·피격 지원 파열은 인지 조건의 예외다. 사망 파열은 순정 정리만 수행하며 추가 생성 효과가 없다. 자동 파열은 3m 내 연속 3초 체류로, 일반 파열 Gnome은 파열 순간 10m 내 플레이어 존재로 발동한다. 풍선강화2부터 자동 파열 시 감지 플레이어를 본체 타깃으로 지정한다. 풍선강화3은 실제 비치명 피해로 발동하며 본체 타깃 유무를 요구하지 않는다.
 - [Bowtie — 형제·복수](../monsters/bowtie.md): 타깃을 보유한 상태에서 순정 바람 공격의 실제 시작에 발동한다. 소환 Elsa는 당시 타깃을 이어받고 변신 완료 후 공격한다. 본체의 인지 해제만으로 소환수를 제거하지 않으며 별도 10초 수명을 따른다. 복수는 인지 조건의 예외로 난이도 4부터 사망 0.5초 후 발동하며 처치자 또는 가까운 플레이어를 대상으로 한다.
 - [Apex Predator — 분신](../monsters/apex-predator.md): 본체 스폰 즉시 시작하는 예외.
 - [순정 코드 구조 검토](../monsters/recognition-review.md): 실제 타깃 필드 연결 시 참고할 기술 기록.
 
 - [Chef — 변장(미믹)](../monsters/chef.md): 타깃 보유 조건의 예외다. 배회·대기 중 반경 20m와 장애물 없는 ray로 플레이어를 탐색해 변장한다. Frog를 Grab한 플레이어가 새 공격 대상이 되며, 사망·추격 종료 후에는 타깃을 해제하고 배회한다.
+
+- [Clown](../monsters/clown.md): 레이저스태프소환은 순정 공격 진입 시 타깃을 사용한다. 레이저쉴드는 예외로 `EnemyBeamer.playerTarget == null`일 때 총격 피해·기절을 막고 2초 후 반격한다.
+- [Loom 납치](../monsters/loom.md): `EnemyShadow.playerTarget`이 있고 Follow·Slap 상태일 때 사용한다. Huntsman과 [공용 납치 규칙](abduction.md)의 납치 직전 ray 차폐 검사를 공유한다.

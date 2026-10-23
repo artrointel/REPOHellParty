@@ -1,12 +1,18 @@
 # Huntsman 납치 플레이테스트
 
-현재 기본 테스트는 [Upscream 변장](upscream-playtest.md)이다. 아래 기존 테스트를 실행하려면 먼저 `[Debug.Upscream] Enabled = false`로 바꾸고 게임을 재시작한다.
+아래 전용 Debug 테스트는 `[Debug.Clown]
+Enabled = false
 
-구현·Debug/Release 빌드 및 자동 검사를 완료했다. 아래 게임 내 검증은 아직 실행하지 않았다. 바닐라 참가자를 포함한 실제 동기화 확인이 필요하다.
+[Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`와 해당 시나리오의 `Enabled = true`를 설정한 뒤 재시작하여 선택한다. 실제 실행 대상은 프로필 설정을 따르며 [개발 환경](development.md#debug와-release)에서 우선순위를 확인한다.
+
+구현·Debug/Release 빌드 및 자동 검사를 완료했다. 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. 바닐라 참가자를 포함한 실제 동기화 확인이 필요하다.
 
 ## Debug 테스트 준비
 
-현재 Debug는 기본적으로 Huntsman과 Cleanup Crew를 각각 1마리씩 함께 생성한다. 두 시나리오의 설정은 독립적이며, Huntsman만 테스트하려면 `[Debug.CleanupCrew] Enabled = false`로 바꾸고 재시작한다. 아래 F6·F7·F8은 Huntsman용이고 Cleanup Crew는 F9·F10·F11을 사용한다. F9로 공용 난이도를 1로 내린 동안에는 Huntsman이 새 납치를 시작하지 않으므로 함께 확인하려면 5로 돌린다.
+`[Debug.Clown]
+Enabled = false
+
+[Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`, `[Debug.Huntsman] Enabled = true`로 선택한다. Cleanup Crew도 true면 둘을 각각 1마리씩 생성하며, Huntsman만 테스트하려면 `[Debug.CleanupCrew] Enabled = false`로 설정한다. 아래 F6·F7·F8은 Huntsman용이고 Cleanup Crew는 F9·F10·F11을 사용한다. F9로 공용 난이도를 1로 내린 동안에는 Huntsman이 새 납치를 시작하지 않으므로 함께 확인하려면 5로 돌린다. 기존 프로필 값이 코드상 기본값보다 우선한다.
 
 호스트만 HellParty를 설치한다. 게임을 종료한 상태에서 저장소 루트에서 실행한다.
 
@@ -20,7 +26,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 - **F6:** 테스트로 생성한 Huntsman만 생존자 2명 조건을 우회한다. 기본 OFF다. 혼자 확인할 때만 켠다. 거리·공격 상태·쿨타임·동시 1명 제한은 그대로다.
 - **F7:** 순정 접촉 반응을 호출하여 테스트 Huntsman이 호스트를 조준하도록 요청한다. 스폰 연출·기절 등 순정 조건에서는 즉시 반응하지 않을 수 있다. 납치하려면 7m 안으로 접근해야 한다.
 - **F8:** 테스트 Huntsman의 납치를 강제로 해제한다.
-- 종합 테스트는 두 시나리오의 `Enabled`를 모두 false로 바꾸거나 Release를 사용한다. 끄면 실제 스테이지 난이도를 사용하고 몬스터·무기를 자동 생성하지 않는다. Release에는 위 설정·키·난이도 강제·생존자 조건 우회 코드가 포함되지 않는다.
+- 종합 테스트는 Clown·Reaper·Upscream·CleanupCrew·Huntsman 네 시나리오의 `Enabled`를 모두 false로 바꾸거나 Release를 사용한다. stage1부터 난이도 1인 실제 진행도를 사용하고 몬스터·무기를 자동 생성하지 않는다. Release에는 위 설정·키·난이도 강제·생존자 조건 우회 코드가 포함되지 않는다.
 
 ## 확인 순서
 
@@ -31,14 +37,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 5. 해제 후 정상 회복·이동·충돌·Grab이 가능한지 확인한다. 동일 Huntsman은 5초가 지나기 전에 재납치하면 안 된다.
 6. 벽 뒤의 플레이어는 7m 안이어도 납치하면 안 된다. 운반 중 벽에 접근해 등 위치가 막히면 해제되어야 한다. 피해자가 지형에 갇히지 않는지 확인한다.
 7. Huntsman 여러 마리가 있어도 동시에 1명만 납치하는지 확인한다. 납치 중 다른 생존자만 죽은 경우에는 피해자 납치가 유지되어야 한다.
-8. Release에서 난이도 0·1은 순정이고 2(stage7)부터 납치가 적용되는지 확인한다. 소음 위치만 조사하는 이동은 납치 조건이 아니어야 한다.
+8. Release에서 stage1~3(난이도 1)의 Huntsman은 추가 납치가 없고 stage4(난이도 2)부터 적용되는지 확인한다. 소음 위치만 조사하는 이동은 납치 조건이 아니어야 한다.
 9. 납치 피해자가 말하거나 물체·총기로 소리를 내도 납치한 Huntsman이 그 소리 때문에 뒤돌아 조준·조사하지 않는지 확인한다. 같은 위치 근처에서 다른 플레이어가 낸 소리에는 정상적으로 반응해야 한다. 다른 Huntsman·몬스터는 납치 피해자의 소리도 정상 감지하고, 납치 해제 후에는 운반하던 Huntsman도 다시 감지해야 한다.
 10. 납치 중 다른 플레이어가 소리를 내어도 Huntsman이 총을 발사하면 안 된다. 이동·배회와 납치 주기 피해는 유지되며, 해제 후에는 다시 순정 사격이 가능해야 한다. 납치하지 않은 다른 Huntsman의 사격도 정상이어야 한다.
 11. 납치 피해자가 자신을 운반하는 Huntsman을 Grab하면 즉시 잡기가 해제되고 본체가 흔들리거나 잡힌 상태로 남으면 안 된다. 이미 잡고 있던 중 납치된 경우도 확인한다. 다른 플레이어는 Huntsman을 Grab할 수 있어야 하며, 납치 해제 후에는 피해자도 정상 Grab이 가능해야 한다. 호스트·바닐라 참가자를 각각 납치하여 확인한다.
 
 12. 난이도 5인 현재 Huntsman Debug에서 샷건으로 본체를 처치하면 사망 위치에서 Human Grenade가 핀을 뽑고 던져져야 한다. 한 사망에서 하나만 나오는지, 본체 코어도 정상 드랍되는지 확인한다. 기절·일반 디스폰은 수류탄을 만들면 안 된다.
 13. 바닐라 참가자가 폭발 전 수류탄을 Grab하고 인벤토리에 넣어 확보할 수 있는지 확인한다. Grab만 유지하면 1.5~3초 지연 후 폭발하고, 수납하면 핀·타이머가 초기화되어야 한다. 확보한 수류탄의 다음 스테이지 보존·재사용·폭발 후 소모도 확인한다.
-14. 정상 진행의 난이도 0~3에서는 죽음의전술이 없어야 하고 4부터 적용되어야 한다. 서로 다른 Huntsman과 같은 본체의 새 생명에서 각각 한 번씩 발동하는지 확인한다.
+14. 정상 진행의 stage1~9(난이도 1~3)에서는 죽음의전술이 없어야 하고 stage10(난이도 4)부터 적용되어야 한다. 서로 다른 Huntsman과 같은 본체의 새 생명에서 각각 한 번씩 발동하는지 확인한다.
 
 상세 사양은 [Huntsman](monsters/huntsman.md)을 따른다. 자동 검사는 다음 명령으로 실행한다.
 

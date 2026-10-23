@@ -19,6 +19,8 @@ public sealed class Plugin : BaseUnityPlugin
     {
         ModLogger = Logger;
 #if DEBUG
+        Debugging.DebugClownScenario.Initialize(Config);
+        Debugging.DebugReaperScenario.Initialize(Config);
         Debugging.DebugUpscreamScenario.Initialize(Config);
         Debugging.DebugCleanupScenario.Initialize(Config);
         Debugging.DebugHuntsmanScenario.Initialize(Config);

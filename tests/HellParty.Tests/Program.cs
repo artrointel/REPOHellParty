@@ -13,6 +13,49 @@ void Check(string name, bool condition)
 }
 
 Check("Blind preserves vanilla difficulty zero", !BlindTargetClock.Unlocked(0));
+Check("Clown Staff unlocks at three and Shield at five", !DifficultyRules.ClownStaffUnlocked(2) && DifficultyRules.ClownStaffUnlocked(3) && !DifficultyRules.ClownShieldUnlocked(4) && DifficultyRules.ClownShieldUnlocked(5));
+var clownReward = new ClownStaffLife();
+Check("Clown Staff starts pinned", clownReward.Pinned);
+Check("Clown death converts a surviving Staff exactly once", clownReward.Reward() && clownReward.Rewarded && !clownReward.Pinned && !clownReward.Reward());
+Check("Laser expiry cannot remove rewarded Staff", !clownReward.Remove() && !clownReward.Removed);
+var clownExpired = new ClownStaffLife();
+Check("Laser expiry removes an unrewarded Staff once", clownExpired.Remove() && !clownExpired.Remove());
+Check("Later Clown death cannot recreate an expired Staff", !clownExpired.Reward() && !clownExpired.Rewarded);
+Check("Separate Staff rewards do not share lifecycle", new ClownStaffLife().Pinned);
+Check("Loom Abduction stays locked until four", !AbductionClock.Eligible(3, 2, true, 49, 4) && AbductionClock.Eligible(4, 2, true, 49, 4));
+Check("Loom Abduction shares living-player range and pursuit requirements", !AbductionClock.Eligible(5, 1, true, 1, 4) && !AbductionClock.Eligible(5, 2, false, 1, 4) && !AbductionClock.Eligible(5, 2, true, 49.001, 4));
+for (int tier = 0; tier <= 5; tier++)
+{
+    var noDeathLoot = new BirthdayBalloonRewards<int>();
+    for (int i = 0; i < 8; i++) noDeathLoot.Register(i);
+    noDeathLoot.BeginDeath();
+    Check($"Birthday death generates no rewards or summons at tier {tier}", Enumerable.Range(0, 8).All(i => noDeathLoot.Remove(i, BalloonPopCause.Damage, true, tier) == BalloonReward.None));
+}
+Check("Reaper Sprint unlocks at difficulty two", !ReaperSprintClock.Unlocked(0) && !ReaperSprintClock.Unlocked(1) && ReaperSprintClock.Unlocked(2) && ReaperSprintClock.Unlocked(5));
+var sprint = new ReaperSprintClock();
+Check("Reaper Sprint requires actual pursuit", !sprint.Begin(0, false, 100));
+Check("Reaper Sprint does not trigger just below ten metres", !sprint.Begin(0, true, 99.999));
+Check("Reaper Sprint rejects invalid distances", !sprint.Begin(0, true, double.NaN) && !sprint.Begin(0, true, -1));
+Check("Reaper Sprint triggers exactly at ten metres", sprint.Begin(0, true, 100) && sprint.Mode == ReaperSprintMode.Preparing);
+Check("Reaper Sprint cannot create a second body during preparation", !sprint.Begin(1, true, 400));
+Check("Reaper remains visible until Headman birth is confirmed", sprint.Born() && sprint.Mode == ReaperSprintMode.Headman && !sprint.Born());
+Check("Headman cannot recursively sprint even after its cooldown", !sprint.Begin(11, true, 400));
+Check("Headman returns exactly at three metres", !sprint.ShouldReturn(true, 9.001) && sprint.ShouldReturn(true, 9));
+Check("Headman returns if the inherited victim disappears", sprint.ShouldReturn(false, 400));
+sprint.Restore();
+Check("Return preparation cannot start another sprint", sprint.Mode == ReaperSprintMode.Restoring && !sprint.Begin(11, true, 400));
+sprint.ReturnFailed();
+Check("Failed return retains Headman instead of enabling a duplicate Reaper", sprint.Mode == ReaperSprintMode.Headman);
+sprint.Restore();
+sprint.Restored();
+Check("Restoring Reaper does not reset its ten-second cooldown", !sprint.Begin(9.999, true, 100) && sprint.Begin(10, true, 100));
+sprint.Cancel();
+Check("Cancelled setup cannot thrash on every frame", !sprint.Begin(10.5, true, 100) && sprint.Begin(20, true, 100));
+sprint.Die();
+Check("Death prevents transformation and duplicate return", !sprint.Begin(100, true, 100) && !sprint.ShouldReturn(false, 0));
+sprint.NewLife();
+Check("A native new life restores Sprint eligibility", sprint.Begin(101, true, 100));
+Check("Separate Reapers have independent sprint cooldowns", new ReaperSprintClock().Begin(0, true, 100));
 Check("Blind unlocks at one and persists through five", Enumerable.Range(1, 5).All(BlindTargetClock.Unlocked));
 var blind = new BlindTargetClock();
 object blindA = new(), blindB = new();
@@ -31,8 +74,11 @@ Check("Blind monsters have independent target timers", !secondBlind.TryCast(204,
 Check("Monster wave never changes difficulty zero", !MonsterWaveClock.CanStart(0, true, true));
 Check("Monster wave unlocks at one and persists at five", MonsterWaveClock.CanStart(1, true, true) && MonsterWaveClock.CanStart(5, true, true));
 Check("Monster wave admission requires both a nearby living player and a blind spawn", !MonsterWaveClock.CanStart(1, false, true) && !MonsterWaveClock.CanStart(1, true, false));
-Check("Active wave rejects destruction at its centre and radius boundary", MonsterWaveClock.SuppressTrigger(true, 0) && MonsterWaveClock.SuppressTrigger(true, 900));
-Check("Outside-radius destruction can attempt replacement", !MonsterWaveClock.SuppressTrigger(true, 900.01f));
+Check("Active wave rejects destruction at its centre and twenty-metre boundary", MonsterWaveClock.SuppressTrigger(true, 0) && MonsterWaveClock.SuppressTrigger(true, 400));
+Check("Outside twenty metres destruction can attempt replacement", !MonsterWaveClock.SuppressTrigger(true, 400.01f));
+Check("Wave no longer suppresses triggers in the old twenty-to-thirty-metre annulus", !MonsterWaveClock.SuppressTrigger(true, 625));
+Check("Wave spawns cannot be within or exactly three metres of any player", !WaveSpawnRules.PlayerDistanceAllowed(0) && !WaveSpawnRules.PlayerDistanceAllowed(8.999f) && !WaveSpawnRules.PlayerDistanceAllowed(9));
+Check("Wave allows a blind spawn just beyond three metres", WaveSpawnRules.PlayerDistanceAllowed(9.001f));
 Check("Inactive wave does not suppress local destruction", !MonsterWaveClock.SuppressTrigger(false, 0));
 var retirement = new RpcRetirementClock();
 Check("Network retirement is inactive until explicitly started", !retirement.Due(100));
@@ -64,32 +110,50 @@ Check("Stage instances have independent admission windows", new MonsterWaveTrigg
 var wave = new MonsterWaveClock();
 Check("Inactive wave has no scheduled spawns or expiry", !wave.TakeGnome(1000) && !wave.Expired(1000));
 wave.Start(100);
-Check("Wave first Gnome waits a full second", !wave.TakeGnome(100) && !wave.TakeGnome(100.999));
-Check("Wave first Gnome is due at one second", wave.TakeGnome(101));
-Check("Wave cannot duplicate a scheduled second", !wave.TakeGnome(101));
-int waveGnomes = 1;
-for (int second = 2; second < 20; second++) if (wave.TakeGnome(100 + second)) waveGnomes++;
-Check("Wave requests exactly nineteen Gnomes before its deadline", waveGnomes == 19);
+Check("Wave warning cannot spawn or decide before three seconds", !wave.Spawning && !wave.TakeGnome(102.999) && !wave.Decide(102.999, true));
+Check("Wave checks posture at exactly three seconds", wave.AwaitingDecision(103) && wave.Decide(103, true) && wave.Spawning);
+Check("Wave posture check runs only once", !wave.AwaitingDecision(103) && !wave.Decide(104, false) && wave.Spawning);
+Check("Wave first Gnome pair waits one second after the warning", !wave.TakeGnome(103) && !wave.TakeGnome(103.999) && wave.TakeGnome(104));
+Check("Wave cannot duplicate a scheduled pair", !wave.TakeGnome(104));
+int waveGnomes = MonsterWaveClock.GnomesPerTick;
+for (int second = 5; second < 20; second++) if (wave.TakeGnome(100 + second)) waveGnomes += MonsterWaveClock.GnomesPerTick;
+Check("Wave requests exactly thirty-two Gnomes before its deadline", waveGnomes == 32);
 Check("Wave stays active before twenty seconds", !wave.Expired(119.999));
 Check("Wave expires at exactly twenty seconds", wave.Expired(120));
 Check("Wave cannot spawn at or beyond its end", !wave.TakeGnome(120) && !wave.TakeGnome(121));
 var extendedWave = new MonsterWaveClock();
 extendedWave.Start(0);
+extendedWave.Decide(3, true);
 Check("Extended wave remains active at the old fifteen-second deadline", !extendedWave.Expired(15));
 int extendedGnomes = 0;
-while (extendedWave.TakeGnome(19.999)) extendedGnomes++;
-Check("Extended wave permits nineteen requests and none at twenty seconds", extendedGnomes == 19 && !extendedWave.TakeGnome(20));
+while (extendedWave.TakeGnome(19.999)) extendedGnomes += MonsterWaveClock.GnomesPerTick;
+Check("Extended wave permits thirty-two Gnomes and none at twenty seconds", extendedGnomes == 32 && !extendedWave.TakeGnome(20));
 wave.Start(200);
-Check("Replacement resets the first-spawn deadline", !wave.TakeGnome(200.999) && wave.TakeGnome(201));
+Check("Replacement resets warning and first-spawn deadline", !wave.Spawning && !wave.TakeGnome(202.999) && wave.Decide(203, true) && wave.TakeGnome(204));
 Check("Replacement resets duration", !wave.Expired(219.999) && wave.Expired(220));
 wave.Start(300);
+wave.Decide(303, true);
 int overdueGnomes = 0;
-while (wave.TakeGnome(305.5)) overdueGnomes++;
-Check("Delayed frames enqueue only already-due Gnomes", overdueGnomes == 5 && !wave.TakeGnome(305.5));
+while (wave.TakeGnome(305.5)) overdueGnomes += MonsterWaveClock.GnomesPerTick;
+Check("Delayed frames enqueue only already-due Gnome pairs", overdueGnomes == 4 && !wave.TakeGnome(305.5));
 wave.Stop();
 Check("Cancellation discards unissued spawns", !wave.Active && !wave.TakeGnome(319));
 wave.Start(400);
 Check("Expired wave never catches up missed requests", !wave.TakeGnome(420));
+Check("Expired warning cannot start a wave", !wave.Decide(420, true));
+var hiddenWave = new MonsterWaveClock();
+hiddenWave.Start(500);
+Check("All hidden players cancel at the warning deadline", !hiddenWave.Decide(503, false) && !hiddenWave.Active && !hiddenWave.Spawning && !hiddenWave.TakeGnome(504));
+Check("Cancelled warning cannot restart when a player later stands", !hiddenWave.Decide(504, true));
+var runningWave = new MonsterWaveClock();
+runningWave.Start(600);
+runningWave.Decide(603, true);
+hiddenWave.Start(605);
+hiddenWave.Decide(608, false);
+Check("Rejected replacement leaves the earlier wave clock running", runningWave.Active && runningWave.Spawning && runningWave.TakeGnome(608));
+Check("Standing walking or running in radius qualifies without a speed requirement", MonsterWaveClock.Exposed(true, 0, false, false, false) && MonsterWaveClock.Exposed(true, 400, false, false, false));
+Check("Crouching and crawling hide even when moving", !MonsterWaveClock.Exposed(true, 1, true, false, false) && !MonsterWaveClock.Exposed(true, 1, false, true, false));
+Check("Dead tumbling and out-of-radius players cannot start combat", !MonsterWaveClock.Exposed(false, 1, false, false, false) && !MonsterWaveClock.Exposed(true, 1, false, false, true) && !MonsterWaveClock.Exposed(true, 400.01f, false, false, false));
 Check("Stalking Doll freezes when any observer sees it, even at attack range", StalkingDollRules.Decide(true, false, true, true) == StalkingDollMode.Observed);
 Check("Stalking Doll observation takes precedence over target absence", StalkingDollRules.Decide(true, false, false, false) == StalkingDollMode.Observed);
 Check("Stalking Doll unseen target can be followed", StalkingDollRules.Decide(false, false, true, false) == StalkingDollMode.Following);
@@ -282,7 +346,7 @@ for (int hit = 1; hit <= 100; hit++)
 }
 Check("Stalking Doll repeated hits always derive price from full value without cumulative drift", exactValues);
 
-foreach ((int completed, int expected) in new[] { (-1, 0), (0, 0), (2, 0), (3, 1), (5, 1), (6, 2), (8, 2), (9, 3), (11, 3), (12, 4), (14, 4), (15, 5), (99, 5), (int.MaxValue, 5) })
+foreach ((int completed, int expected) in new[] { (int.MinValue, 1), (-1, 1), (0, 1), (2, 1), (3, 2), (5, 2), (6, 3), (8, 3), (9, 4), (11, 4), (12, 5), (14, 5), (15, 5), (99, 5), (int.MaxValue, 5) })
     Check($"completed stages {completed} -> difficulty {expected}", DifficultyRules.FromCompletedStages(completed) == expected);
 Check("stage starts at one", DifficultyRules.StageNumber(0) == 1);
 Check("stage seven after six completions", DifficultyRules.StageNumber(6) == 7);
@@ -516,23 +580,23 @@ deathRewards.BeginDeath();
 deathRewards.BeginDeath();
 Check("older balloons do not award death loot", deathRewards.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.None && deathRewards.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 foreach (int key in new[] { 3, 4, 5 })
-    Check($"recent balloon {key} awards Eyeball independent of recognition", deathRewards.Remove(key, BalloonPopCause.Automatic, false, 2) == BalloonReward.Eyeball);
-Check("death cleanup cannot duplicate an Eyeball", deathRewards.Remove(5, BalloonPopCause.Player, true, 2) == BalloonReward.None);
+    Check($"recent balloon {key} creates no death reward", deathRewards.Remove(key, BalloonPopCause.Automatic, false, 2) == BalloonReward.None);
+Check("death cleanup cannot duplicate a reward", deathRewards.Remove(5, BalloonPopCause.Player, true, 2) == BalloonReward.None);
 var sparseDeath = new BirthdayBalloonRewards<int>();
 sparseDeath.Register(10);
 sparseDeath.BeginDeath();
-Check("death with one balloon awards only one Eyeball", sparseDeath.Remove(10, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball);
+Check("death with one balloon grants no loot", sparseDeath.Remove(10, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 var basicDeath = new BirthdayBalloonRewards<int>();
 basicDeath.Register(1);
 basicDeath.BeginDeath();
-Check("tier one death cleanup creates neither Gnome nor Eyeball", basicDeath.Remove(1, BalloonPopCause.Player, true, 1) == BalloonReward.None);
+Check("tier one death cleanup creates no summons or loot", basicDeath.Remove(1, BalloonPopCause.Player, true, 1) == BalloonReward.None);
 var otherOwner = new BirthdayBalloonRewards<int>();
 otherOwner.Register(1);
 Check("balloon identities are isolated by owner", otherOwner.Remove(1, BalloonPopCause.Automatic, true, 1) == BalloonReward.Gnome);
 var reusedPosition = new BirthdayBalloonRewards<int>();
 foreach (int key in new[] { 1, 2, 3, 4, 1 }) reusedPosition.Register(key);
 reusedPosition.BeginDeath();
-Check("reused placement position counts as newest generation", reusedPosition.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball && reusedPosition.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
+Check("reused placement position cannot restore removed death loot", reusedPosition.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.None && reusedPosition.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 reusedPosition.Remove(3, BalloonPopCause.Other, false, 2);
 reusedPosition.Remove(4, BalloonPopCause.Other, false, 2);
 reusedPosition.NewLife();
@@ -568,13 +632,13 @@ foreach (int tier in new[] { 0, 1, 2, 3 })
 var fatalBurst = new BirthdayBalloonRewards<int>();
 fatalBurst.Register(1);
 fatalBurst.BeginDeath();
-Check("death reward overrides a concurrent damage burst", fatalBurst.Remove(1, BalloonPopCause.Damage, true, 3) == BalloonReward.Eyeball);
+Check("death cleanup suppresses a concurrent damage burst", fatalBurst.Remove(1, BalloonPopCause.Damage, true, 3) == BalloonReward.None);
 var remainingDeath = new BirthdayBalloonRewards<int>();
 foreach (int key in new[] { 1, 2, 3, 4, 5 }) remainingDeath.Register(key);
 remainingDeath.Remove(5, BalloonPopCause.Automatic, false, 1);
 remainingDeath.BeginDeath();
 Check("already popped newest balloon is excluded from death rewards", remainingDeath.Remove(5, BalloonPopCause.Other, false, 2) == BalloonReward.None);
-Check("death rewards select newest remaining balloon", remainingDeath.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.Eyeball);
+Check("all remaining balloons lack death loot", remainingDeath.Remove(2, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 remainingDeath.BeginDeath();
 Check("repeated death notifications cannot refill reward slots with older balloons", remainingDeath.Remove(1, BalloonPopCause.Other, false, 2) == BalloonReward.None);
 Check("no respawn without a loss", !clock.IsReady(1000));
@@ -693,6 +757,14 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+Check("Clown debug forces maximum difficulty", (int)debug.GetType("HellParty.Debugging.DebugClownScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Clown debug suppresses all other specimens", new[] { "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugClownScenario" && m.Name == "get_Enabled")));
+Check("Reaper debug uses the first unlocked difficulty", (int)debug.GetType("HellParty.Debugging.DebugReaperScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 2);
+Check("Reaper debug suppresses every older specimen", new[] { "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugReaperScenario" && m.Name == "get_Enabled")));
+var blindDebugDifficulty = debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions;
+Check("Clown debug takes priority over all older scenarios", blindDebugDifficulty.First(i => i.Operand is MethodReference m && m.Name == "get_Enabled").Operand is MethodReference firstScenario && firstScenario.DeclaringType.Name == "DebugClownScenario");
+var blindDebugBirth = debug.GetType("HellParty.Debugging.DebugReaperScenario").NestedTypes.Single(t => t.Name.Contains("SpawnTestSet")).Methods.Single(m => m.Name == "MoveNext").Body.Instructions;
+Check("Reaper debug creates its Reaper on a validated NavMesh", blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugSpawnSupport" && m.Name == "TryFindPosition") && blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
 Check("Debug removes the previous Mentalist scenario", debug.GetType("HellParty.Debugging.DebugMentalistScenario") == null);
 Check("Debug removes automatic Stalking Doll test spawning", debug.GetType("HellParty.Debugging.DebugStalkingDollScenario") == null);
 Check("Debug removes Mentalist target and F6 overrides", debug.GetType("HellParty.Debugging.DebugMentalistController") == null && debug.GetType("HellParty.Debugging.DebugMentalistVisionPatch") == null && debug.GetType("HellParty.Debugging.DebugMentalistGrabPatch") == null);
@@ -727,6 +799,7 @@ Check("Cleanup pursuer lifetime begins at actual SpawnRPC", release.GetType("Hel
 Check("Cleanup debug scenario is the default maximum-tier test", (int)debug.GetType("HellParty.Debugging.DebugCleanupScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Huntsman debug remains enabled independently of Cleanup Crew", !debug.GetType("HellParty.Debugging.DebugHuntsmanScenario").Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugCleanupScenario"));
 var captureCalls = release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions;
+Check("Both abduction carriers ray-test before the native capture", captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.DeclaringType.Name == "AbductionSight" && m.Name == "Clear") is int sightIndex && sightIndex >= 0 && sightIndex < captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.Name == "TumbleSet"));
 Check("Abduction invokes synchronous native host TumbleSet", captureCalls.Any(i => i.Operand is MethodReference m && m.Name == "TumbleSet") && !captureCalls.Any(i => i.Operand is MethodReference m && m.Name == "TumbleRequest"));
 Check("Abduction physics does not send a timer RPC every tick", !release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "Hold").Body.Instructions.Any(i => i.Operand is MethodReference m && (m.Name == "RPC" || m.Name == "TumbleOverrideTime")));
 Check("Abduction authenticates remote grab attempts", release.GetType("HellParty.HuntsmanAbductionGrabRpcPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "OwnerOnlyRPC"));
@@ -769,8 +842,9 @@ Check("Wave rate limit runs before player and blind-spot searches", waveGateInde
 var waveDestruction = release.GetType("HellParty.Events.MonsterWaveDestructionPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions;
 Check("Wave destruction filter excludes native cores by component", waveDestruction.Any(i => i.Operand is GenericInstanceMethod m && m.Name == "GetComponentInParent" && m.GenericArguments.Any(a => a.Name == "EnemyValuable")));
 var waveSpawnSearch = release.GetType("HellParty.Events.WaveSpawnPoints").Methods.Single(m => m.Name == "Find").Body.Instructions;
-Check("Wave spawn search validates a path to its nearest player", waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "CalculatePath") && waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_status"));
-Check("Wave navigation queries use the spawning agent's type and areas", waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_agentTypeID") && waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_areaMask") && waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "CalculatePath" && m.Parameters.Any(p => p.ParameterType.Name == "NavMeshQueryFilter")));
+var wavePointValidation = release.GetType("HellParty.Events.WaveSpawnPoints").Methods.Single(m => m.Name == "Validate").Body.Instructions;
+Check("Wave spawn search validates a path to its nearest player", wavePointValidation.Any(i => i.Operand is MethodReference m && m.Name == "CalculatePath") && wavePointValidation.Any(i => i.Operand is MethodReference m && m.Name == "get_status"));
+Check("Wave navigation queries use the spawning agent's type and areas", waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_agentTypeID") && waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_areaMask") && wavePointValidation.Any(i => i.Operand is MethodReference m && m.Name == "CalculatePath" && m.Parameters.Any(p => p.ParameterType.Name == "NavMeshQueryFilter")));
 Check("Wave clearance uses the actual enemy agent dimensions", waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_height") && waveSpawnSearch.Any(i => i.Operand is MethodReference m && m.Name == "get_radius"));
 var waveVisibility = release.GetType("HellParty.Events.WaveSpawnPoints").Methods.Single(m => m.Name == "Visible").Body.Instructions;
 Check("Wave remote visibility considers camera direction rather than a full circle", waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InverseTransformPoint") && waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InView"));
@@ -784,6 +858,19 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    Check("Native Staff beam RPC authorizes only the host", game.GetType("ValuableWizardStaff").Methods.Single(m => m.Name == "StaffLaserRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("Native Clown target and attack hooks exist", game.GetType("EnemyBeamer").Fields.Any(f => f.Name == "playerTarget" && f.FieldType.Name == "PlayerAvatar") && game.GetType("EnemyBeamer").Methods.Any(m => m.Name == "UpdateState"));
+    Check("Native Loom target-switch method and hurt hook exist", game.GetType("EnemyShadow").Methods.Any(m => m.Name == "UpdatePlayerTarget") && game.GetType("EnemyShadow").Methods.Any(m => m.Name == "OnHurt"));
+    foreach ((string type, string method) in new[] { ("EnemyHeadController", "OnSpawn"), ("EnemyRunner", "UpdateState"), ("EnemyRunner", "TargetPlayerRPC") })
+        Check($"Sprint native transform/resume hook exists: {type}.{method}", game.GetType(type).Methods.Any(m => m.Name == method));
+    foreach (string field in new[] { "Speed", "Acceleration", "VisionTimer", "VisionTime" })
+        Check($"Sprint can retain native Headman chase configuration: {field}", game.GetType("EnemyStateChase").Fields.Any(f => f.Name == field));
+    var sprintNativeSync = game.GetType("Enemy").Methods.Single(m => m.Name == "OnPhotonSerializeView").Body.Instructions;
+    foreach (string field in new[] { "TargetPlayerViewID", "CurrentState" })
+        Check($"Sprint pursuit state is sent and received natively: {field}", sprintNativeSync.Any(i => i.OpCode.Code == Code.Ldfld && i.Operand is FieldReference f && f.Name == field) && sprintNativeSync.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == field));
+    var serializedPosture = game.GetType("PlayerAvatar").Methods.Single(m => m.Name == "OnPhotonSerializeView").Body.Instructions;
+    foreach (string posture in new[] { "isCrouching", "isCrawling" })
+        Check($"Wave hiding posture is sent and received natively: {posture}", serializedPosture.Any(i => i.OpCode.Code == Code.Ldfld && i.Operand is FieldReference f && f.Name == posture) && serializedPosture.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == posture));
     foreach ((string type, string field) in new[] { ("EnemyRunner", "targetPlayer"), ("EnemyThinMan", "playerTarget") })
     {
         Check($"Blind native target remains a PlayerAvatar: {type}.{field}", game.GetType(type).Fields.Any(f => f.Name == field && f.FieldType.Name == "PlayerAvatar"));

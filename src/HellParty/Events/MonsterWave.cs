@@ -10,24 +10,34 @@ namespace HellParty.Events;
 internal sealed class MonsterWave : MonoBehaviour
 {
     internal static MonsterWave? Current;
-    private readonly MonsterWaveClock _clock = new();
+    private MonsterWaveClock _clock = new();
     private readonly MonsterWaveTriggerGate _triggerGate = new();
     private readonly Queue<string> _pending = new();
     private readonly List<WaveCreature> _creatures = new();
     private WaveGramophone? _music;
+    private Warning? _warning;
     private Vector3 _center;
     private float _retryAt;
-    internal bool Active => _clock.Active;
-    internal bool CanSpawn => Active && !_clock.Expired(Time.time);
+    internal bool Active => _clock.Active || _warning != null;
+    internal bool CanSpawn => _clock.Spawning && !_clock.Expired(Time.time);
     internal Vector3 Center => _center;
     internal bool CanCheckTrigger => _triggerGate.Ready(Time.timeAsDouble);
 
-    private void Awake() => Current = this;
+    private void Awake() { Current = this; WaveSpawnPoints.PrepareStage(); }
+
+    private sealed class Warning
+    {
+        internal readonly MonsterWaveClock Clock = new();
+        internal WaveGramophone Music = null!;
+        internal Vector3 Center;
+        internal string Rugrat = null!, Upscream = null!, Headgrab = null!;
+    }
 
     internal void Destroyed(Vector3 point)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel() ||
-            MonsterWaveClock.SuppressTrigger(Active, (point - _center).sqrMagnitude)) return;
+            MonsterWaveClock.SuppressTrigger(_clock.Active, (point - _center).sqrMagnitude) ||
+            _warning != null && MonsterWaveClock.SuppressTrigger(true, (point - _warning.Center).sqrMagnitude)) return;
         // Consume before player/navmesh/visibility checks, even if admission fails.
         // This also closes reentrant destruction paths during event creation.
         if (!_triggerGate.TryBeginCheck(Time.timeAsDouble)) return;
@@ -52,26 +62,53 @@ internal sealed class MonsterWave : MonoBehaviour
             Plugin.ModLogger.LogError($"Monster wave could not start: {e}");
             return;
         }
-        End();
-        _center = point;
-        _music = next;
-        _clock.Start(Time.time);
-        _pending.Enqueue(rugrat); _pending.Enqueue(upscream); _pending.Enqueue(headgrab);
-        _retryAt = 0;
-        Pump();
+        CancelWarning();
+        _warning = new Warning { Center = point, Music = next, Rugrat = rugrat, Upscream = upscream, Headgrab = headgrab };
+        _warning.Clock.Start(Time.time);
     }
 
     private void Update()
     {
         if (!Active || !SemiFunc.IsMasterClientOrSingleplayer()) return;
-        if (!SemiFunc.RunIsLevel() || _clock.Expired(Time.time)) { End(); return; }
-        while (_clock.TakeGnome(Time.time)) _pending.Enqueue("Enemies/Enemy - Gnome");
+        if (!SemiFunc.RunIsLevel()) { End(); return; }
+        if (_clock.Expired(Time.time)) EndCombat();
+        CheckWarning();
+        if (!_clock.Spawning) return;
+        while (_clock.TakeGnome(Time.time))
+            for (int i = 0; i < MonsterWaveClock.GnomesPerTick; i++) _pending.Enqueue("Enemies/Enemy - Gnome");
         if (Time.time >= _retryAt) Pump();
+    }
+
+    private void CheckWarning()
+    {
+        Warning? next = _warning;
+        if (next == null) return;
+        if (next.Clock.Expired(Time.time) || next.Music == null) { CancelWarning(); return; }
+        if (!next.Clock.AwaitingDecision(Time.time)) return;
+
+        bool exposed = false;
+        foreach (PlayerAvatar player in SemiFunc.PlayerGetList())
+        {
+            if (!WaveSpawnPoints.Alive(player)) continue;
+            if (MonsterWaveClock.Exposed(true, (player.transform.position - next.Center).sqrMagnitude,
+                    player.isCrouching, player.isCrawling, player.isTumbling)) { exposed = true; break; }
+        }
+        if (!next.Clock.Decide(Time.time, exposed)) { CancelWarning(); return; }
+
+        // A cancelled warning must never retire an already running wave.
+        // Only commit replacement once the three-second evasion check passes.
+        _warning = null;
+        EndCombat();
+        _clock = next.Clock;
+        _center = next.Center;
+        _music = next.Music;
+        _pending.Enqueue(next.Rugrat); _pending.Enqueue(next.Upscream); _pending.Enqueue(next.Headgrab);
+        _retryAt = 0;
     }
 
     private void Pump()
     {
-        _retryAt = Time.time + .25f;
+        _retryAt = Time.time + WaveSpawnRules.RetryInterval;
         // Native registration defers birth. Its Spawn prefix rechecks visibility
         // and chooses the nearest player at actual birth, not at request time.
         int attempts = Math.Min(4, _pending.Count);
@@ -105,19 +142,31 @@ internal sealed class MonsterWave : MonoBehaviour
             if (member == null || member.Retired) continue;
             EnemyParent parent = member.GetComponent<EnemyParent>();
             if (parent == ignore) continue;
+            SummonedEnemySpawnTicket ticket = parent.GetComponent<SummonedEnemySpawnTicket>();
+            if (ticket != null && ticket.Pending && (ticket.Position - point).sqrMagnitude < 4) return true;
             if (NativeEnemy.Spawned(parent) && (NativeEnemy.Position(parent) - point).sqrMagnitude < 4) return true;
         }
         return false;
     }
 
-    private void End()
+    private void EndCombat()
     {
         _clock.Stop(); _pending.Clear();
         foreach (WaveCreature creature in _creatures) if (creature != null) creature.Retire();
         _creatures.Clear();
-        if (_music != null) _music.Remove();
+        if (_music != null) _music.BreakAtEnd();
         _music = null;
     }
+
+    private void CancelWarning()
+    {
+        if (_warning == null) return;
+        _warning.Clock.Stop();
+        if (_warning.Music != null) _warning.Music.Remove();
+        _warning = null;
+    }
+
+    private void End() { CancelWarning(); EndCombat(); }
 
     private void OnDestroy() { End(); if (Current == this) Current = null; }
 }
@@ -141,6 +190,7 @@ internal static class MonsterWaveDestructionPatch
             __instance.GetComponentInChildren<EnemyValuable>(true) != null ||
             __instance.GetComponent<EnemyRigidbody>() != null || __instance.GetComponent<WaveGramophone>() != null ||
             __instance.GetComponent<ChefMimicFrog>() != null || __instance.GetComponent<StalkingDoll>() != null ||
+            __instance.GetComponent<ClownStaff>() is ClownStaff staff && staff.Pinned ||
             __instance.GetComponent<CrownCarrier>() is CrownCarrier crown && crown.IsPinned ||
             __instance.GetComponent<BellaDollCarrier>() is BellaDollCarrier doll && doll.IsPinned ||
             __instance.GetComponent<InternalWaveExcluded>() != null) return;

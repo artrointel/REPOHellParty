@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using HarmonyLib;
 using HellParty.Native;
 using HellParty.Rules;
@@ -8,17 +6,14 @@ using UnityEngine;
 
 namespace HellParty;
 
-// Reaper and Shadow Child share the same host-side clock and native cloud.
+// Shadow Child uses a host-side stable-target clock and native cloud.
 internal sealed class BlindAbility : MonoBehaviour
 {
-    private static readonly AccessTools.FieldRef<EnemyRunner, PlayerAvatar> ReaperTarget =
-        AccessTools.FieldRefAccess<EnemyRunner, PlayerAvatar>("targetPlayer");
     private static readonly AccessTools.FieldRef<EnemyThinMan, PlayerAvatar> ChildTarget =
         AccessTools.FieldRefAccess<EnemyThinMan, PlayerAvatar>("playerTarget");
     private readonly BlindTargetClock _clock = new();
     private EnemyParent _parent = null!;
     private EnemyHealth _health = null!;
-    private EnemyRunner? _reaper;
     private EnemyThinMan? _child;
     private bool _loggedError;
 
@@ -26,7 +21,6 @@ internal sealed class BlindAbility : MonoBehaviour
     {
         _parent = GetComponent<EnemyParent>();
         _health = GetComponentInChildren<EnemyHealth>(true);
-        _reaper = GetComponentInChildren<EnemyRunner>(true);
         _child = GetComponentInChildren<EnemyThinMan>(true);
     }
 
@@ -44,7 +38,7 @@ internal sealed class BlindAbility : MonoBehaviour
             return;
         }
 
-        PlayerAvatar? target = _reaper != null ? ReaperTarget(_reaper) : _child != null ? ChildTarget(_child) : null;
+        PlayerAvatar? target = _child != null ? ChildTarget(_child) : null;
         if (target == null || target.isDisabled || target.deadSet || target.PlayerVisionTarget == null ||
             target.PlayerVisionTarget.VisionTransform == null)
         {
@@ -68,15 +62,9 @@ internal sealed class BlindAbility : MonoBehaviour
     }
 }
 
-[HarmonyPatch]
+[HarmonyPatch(typeof(EnemyThinMan), nameof(EnemyThinMan.OnSpawn))]
 internal static class BlindNewLifePatch
 {
-    private static IEnumerable<MethodBase> TargetMethods()
-    {
-        yield return AccessTools.Method(typeof(EnemyRunner), nameof(EnemyRunner.OnSpawn));
-        yield return AccessTools.Method(typeof(EnemyThinMan), nameof(EnemyThinMan.OnSpawn));
-    }
-
     [HarmonyPostfix]
     private static void Postfix(Component __instance)
     {

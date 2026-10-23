@@ -1,6 +1,6 @@
 # Mentalist 반사쉴드 플레이테스트
 
-현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Mentalist 전용 임시 생성·인지 차단은 없다. 일반 진행에서 Mentalist와 총기를 확보해 검증한다. 반사쉴드는 난이도 2(stage7)부터 적용된다.
+Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Mentalist 전용 임시 생성·인지 차단은 없다. 일반 진행에서 Mentalist와 총기를 확보해 검증한다. 반사쉴드는 난이도 2(stage4)부터 적용된다.
 
 게임을 종료한 뒤 저장소 루트에서 실행한다.
 
@@ -20,4 +20,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 6. 반격이 자기 본체에 피해를 주거나 다른 Mentalist와 무한 반사되면 안 된다. 다른 플레이어와 몬스터의 총격 판정은 순정대로 동작한다.
 7. 호스트와 바닐라 참가자가 각각 사격하고 피해를 받는 경우를 확인한다. 총의 위치·조준 방향·소리·발사 시점·소멸과 오류 로그를 비교한다. 위치 동기화와 RPC 지연으로 표시상 2초와 판정 시점이 얼마나 차이나는지 확인한다.
 
-자동 검사 506개와 Debug/Release 빌드는 실제 게임 플레이 검증을 대체하지 않는다.
+자동 검사와 Debug/Release 빌드는 실제 게임 플레이 검증을 대체하지 않는다.

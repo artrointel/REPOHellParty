@@ -15,6 +15,9 @@ internal static class VanillaCatalog
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
     internal static PrefabRef HuntsmanPrefab() => EnemyPrefab<EnemyHunter>();
+    internal static PrefabRef ReaperPrefab() => EnemyPrefab<EnemyRunner>();
+    internal static PrefabRef HeadmanPrefab() => EnemyPrefab<EnemyHeadController>();
+    internal static PrefabRef ClownPrefab() => EnemyPrefab<EnemyBeamer>();
     internal static PrefabRef CleanupCrewPrefab() => EnemyPrefab<EnemyBombThrower>();
     internal static PrefabRef SpewerPrefab() => EnemyPrefab<EnemySlowMouth>();
     internal static PrefabRef RugratPrefab() => EnemyPrefab<EnemyValuableThrower>();
