@@ -48,8 +48,7 @@ internal sealed class CrownCarrier : MonoBehaviour
         if (_duck == null)
         {
             // Scene cleanup is not a kill/reward. Native room destruction clears RPC cache.
-            if (SemiFunc.IsMultiplayer() && PhotonNetwork.InRoom) PhotonNetwork.Destroy(gameObject);
-            else Destroy(gameObject);
+            NetworkLifetime.Remove(gameObject);
             return;
         }
         Pin();

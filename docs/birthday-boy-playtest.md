@@ -2,7 +2,7 @@
 
 ## 실행
 
-현재 Debug 자동 생성 대상은 [자율 Scream Doll](stalking-doll-playtest.md)다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
+현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

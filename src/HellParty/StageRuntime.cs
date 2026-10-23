@@ -22,13 +22,23 @@ internal sealed class StageRuntime : MonoBehaviour
             gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugMentalistScenario.SpawnTestSet();
+        if (Debugging.DebugUpscreamScenario.Enabled) StartCoroutine(Debugging.DebugUpscreamScenario.SpawnTestSet());
+        if (Debugging.DebugCleanupScenario.Enabled) StartCoroutine(Debugging.DebugCleanupScenario.SpawnTestSet());
+        if (Debugging.DebugHuntsmanScenario.Enabled)
+            StartCoroutine(Debugging.DebugHuntsmanScenario.SpawnTestSet(spawnWeapons: !Debugging.DebugCleanupScenario.Enabled));
 #endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.BlindTargetClock.Unlocked(DifficultyService.Current) &&
+            (parent.GetComponentInChildren<EnemyRunner>(true) != null || parent.GetComponentInChildren<EnemyThinMan>(true) != null) &&
+            parent.GetComponent<BlindAbility>() == null) parent.gameObject.AddComponent<BlindAbility>();
+        if (DifficultyService.Current >= 2 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
+            parent.GetComponent<HuntsmanAbduction>() == null) parent.gameObject.AddComponent<HuntsmanAbduction>();
+        if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
+            parent.GetComponent<HuntsmanDeathTactics>() == null) parent.gameObject.AddComponent<HuntsmanDeathTactics>();
         if (Rules.DifficultyRules.MentalistReflectionUnlocked(DifficultyService.Current) &&
             parent.GetComponentInChildren<EnemyFloater>(true) != null && parent.GetComponent<MentalistReflection>() == null)
             parent.gameObject.AddComponent<MentalistReflection>();
@@ -42,6 +52,16 @@ internal sealed class StageRuntime : MonoBehaviour
         if (Rules.DifficultyRules.ChefMimicUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyTumbler>(true) != null &&
             parent.GetComponent<ChefMimic>() == null)
             parent.gameObject.AddComponent<ChefMimic>();
+        if (parent.GetComponentInChildren<EnemyUpscream>(true) != null && parent.GetComponent<ChefMimic>() == null)
+        {
+            SummonedEnemySpawnTicket ticket = parent.GetComponent<SummonedEnemySpawnTicket>();
+            bool testMimic = false;
+#if DEBUG
+            testMimic = ticket != null && ticket.AllowUpscreamMimic;
+#endif
+            if (Rules.DifficultyRules.UpscreamMimicUnlocked(DifficultyService.Current, ticket != null, testMimic))
+                parent.gameObject.AddComponent<ChefMimic>();
+        }
         if (Rules.DifficultyRules.BowtieBrothersUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyBowtie>(true) != null &&
             parent.GetComponent<BowtieBrothers>() == null)
             parent.gameObject.AddComponent<BowtieBrothers>();

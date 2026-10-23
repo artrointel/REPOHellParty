@@ -20,6 +20,8 @@ internal sealed class ChefMimic : MonoBehaviour
     private readonly ChefVitality _vitality = new();
     private EnemyParent _parent = null!;
     private EnemyTumbler _chef = null!;
+    private EnemyUpscream? _upscream;
+    private Enemy _enemy = null!;
     private EnemyHealth _health = null!;
     private ChefMimicFrog? _frog;
     private PlayerAvatar? _target;
@@ -34,7 +36,9 @@ internal sealed class ChefMimic : MonoBehaviour
     {
         _parent = GetComponent<EnemyParent>();
         _chef = GetComponentInChildren<EnemyTumbler>(true);
-        _health = _chef.GetComponent<EnemyHealth>();
+        _upscream = GetComponentInChildren<EnemyUpscream>(true);
+        _enemy = GetComponentInChildren<Enemy>(true);
+        _health = _enemy.GetComponent<EnemyHealth>();
     }
 
     private void Update()
@@ -61,27 +65,27 @@ internal sealed class ChefMimic : MonoBehaviour
         if (!NativeEnemy.Spawned(_parent)) return;
         if (_state.Mode == ChefMimicMode.Attacking)
         {
-            if (_state.ShouldReleaseTarget(Valid(_target), false)) { ReturnToRoam(); return; }
-            if (Passive(_chef.currentState))
+            if (_state.ShouldReleaseTarget(Valid(_target), UpscreamPursuitEnded)) { ReturnToRoam(); return; }
+            if (NativePassive)
             {
                 // Post-attack Idle is recovery, not target loss. Give native
                 // pursuit its full timer rather than disguising in front of
                 // the grabber when the vision coroutine briefly sees nothing.
-                SetState(EnemyTumbler.State.MoveToPlayer);
+                ResumePursuit();
             }
-            _pursuingBeforeUpdate = _chef.currentState == EnemyTumbler.State.MoveToPlayer;
+            _pursuingBeforeUpdate = NativePursuing;
             return;
         }
-        if (!_state.TryScan(Time.time, _chef.currentState is EnemyTumbler.State.Idle or EnemyTumbler.State.Roam)) return;
-        Vector3 origin = _chef.enemy.Vision.VisionTransform.position;
-        if (HasVisiblePlayer(origin, NativeEnemy.Position(_chef))) Disguise();
+        if (!_state.TryScan(Time.time, NativeRoaming)) return;
+        Vector3 origin = _enemy.Vision.VisionTransform.position;
+        if (HasVisiblePlayer(origin, NativeEnemy.Position(_enemy))) Disguise();
     }
 
     internal void AfterNativeTick()
     {
         // The native chase timer/navigation decides pursuit expiry. Disguise
         // distance/raycast requirements must never override that decision.
-        if (_state.ShouldReleaseTarget(Valid(_target), _pursuingBeforeUpdate && Passive(_chef.currentState)))
+        if (_state.ShouldReleaseTarget(Valid(_target), UpscreamPursuitEnded || _pursuingBeforeUpdate && NativePassive))
             ReturnToRoam();
     }
 
@@ -122,26 +126,41 @@ internal sealed class ChefMimic : MonoBehaviour
         return true;
     }
     private static bool Passive(EnemyTumbler.State state) => state is EnemyTumbler.State.Idle or EnemyTumbler.State.Roam or EnemyTumbler.State.Investigate or EnemyTumbler.State.Leave;
+    private bool NativePassive => _upscream != null
+        ? _upscream.currentState is EnemyUpscream.State.Idle or EnemyUpscream.State.Roam or EnemyUpscream.State.Investigate or EnemyUpscream.State.Leave or EnemyUpscream.State.IdleBreak
+        : Passive(_chef.currentState);
+    private bool NativeRoaming => _upscream != null
+        ? _upscream.currentState is EnemyUpscream.State.Idle or EnemyUpscream.State.Roam
+        : _chef.currentState is EnemyTumbler.State.Idle or EnemyTumbler.State.Roam;
+    private bool NativePursuing => _upscream != null
+        ? _upscream.currentState == EnemyUpscream.State.GoToPlayer : _chef.currentState == EnemyTumbler.State.MoveToPlayer;
+    private bool UpscreamPursuitEnded => _upscream != null && _upscream.currentState == EnemyUpscream.State.Leave;
+    private void ResumePursuit()
+    {
+        if (_upscream != null) _upscream.UpdateState(EnemyUpscream.State.GoToPlayer);
+        else SetState(EnemyTumbler.State.MoveToPlayer);
+    }
 
     private void Disguise()
     {
         if (_state.Mode != ChefMimicMode.Roaming) return;
         try
         {
-            Vector3 position = NativeEnemy.Position(_chef);
+            Vector3 position = NativeEnemy.Position(_enemy);
             if (NavMesh.SamplePosition(position, out NavMeshHit hit, 2f, NavMesh.AllAreas)) position = hit.position;
-            PrefabRef prefab = VanillaCatalog.Valuable(p => p.GetComponent<FrogTrap>() != null);
+            string disguisePath = _upscream != null ? VanillaCatalog.RandomUpscreamDisguisePath()
+                : VanillaCatalog.Valuable(p => p.GetComponent<FrogTrap>() != null).ResourcePath;
             _savedHealth = NativeEnemy.Health(_health);
             _vitality.CaptureBody(_savedHealth, _health.health);
             _revealPosition = position;
-            _frog = ChefMimicFrog.Create(prefab, position, transform.rotation, this);
+            _frog = ChefMimicFrog.Create(disguisePath, position, transform.rotation, this);
             _state.Disguise();
             _parent.Despawn();
         }
         catch (Exception exception)
         {
             Cleanup();
-            Plugin.ModLogger.LogError($"Chef disguise failed: {exception}");
+            Plugin.ModLogger.LogError($"{_enemy.name} disguise failed: {exception}");
         }
     }
 
@@ -193,7 +212,7 @@ internal sealed class ChefMimic : MonoBehaviour
         {
             _state.Roam(Time.time);
             _parent.DespawnedTimerSet(0);
-            Plugin.ModLogger.LogError($"Chef reveal failed: {exception}");
+            Plugin.ModLogger.LogError($"{_enemy.name} reveal failed: {exception}");
         }
     }
 
@@ -213,10 +232,10 @@ internal sealed class ChefMimic : MonoBehaviour
         }
         // Native Spawn resets health; disguise must never heal the monster.
         NativeEnemy.Health(_health) = Math.Max(1, Math.Min(_health.health, _savedHealth));
-        _chef.enemy.NavMeshAgent.Enable();
-        _chef.enemy.NavMeshAgent.Warp(_revealPosition, true);
-        _chef.enemy.Rigidbody.GrabRelease();
-        _chef.enemy.Rigidbody.GetComponent<PhysGrabObject>().OverrideGrabDisable(0.5f);
+        _enemy.NavMeshAgent.Enable();
+        _enemy.NavMeshAgent.Warp(_revealPosition, true);
+        _enemy.Rigidbody.GrabRelease();
+        _enemy.Rigidbody.GetComponent<PhysGrabObject>().OverrideGrabDisable(0.5f);
         if (_state.Mode == ChefMimicMode.Defeating)
         {
             // The hidden body's proximity timer may have expired while the
@@ -233,6 +252,14 @@ internal sealed class ChefMimic : MonoBehaviour
         }
         _state.Attack();
         if (!Valid(_target)) { ReturnToRoam(); return; }
+        if (_upscream != null)
+        {
+            _enemy.Vision.onVisionTriggeredPlayer = _target;
+            _enemy.Vision.onVisionTriggeredID = _target!.photonView.ViewID;
+            _upscream.UpdateState(EnemyUpscream.State.Idle);
+            _upscream.OnVision();
+            return;
+        }
         _chef.targetPlayer = _target;
         if (SemiFunc.IsMultiplayer())
             _chef.GetComponent<PhotonView>().RPC("TargetPlayerRPC", RpcTarget.All, _target!.photonView.ViewID);
@@ -242,11 +269,20 @@ internal sealed class ChefMimic : MonoBehaviour
 
     internal bool AllowVision(EnemyTumbler chef) => _state.Mode == ChefMimicMode.Attacking &&
         Valid(_target) && chef.enemy.Vision.onVisionTriggeredPlayer == _target;
+    internal bool AllowUpscreamVision() => _state.Mode == ChefMimicMode.Attacking &&
+        Valid(_target) && _enemy.Vision.onVisionTriggeredPlayer == _target;
     internal bool Attacking => _state.Mode == ChefMimicMode.Attacking;
 
     private void ReturnToRoam()
     {
         _target = null;
+        if (_upscream != null)
+        {
+            _upscream.targetPlayer = null!;
+            _state.Roam(Time.time);
+            _upscream.UpdateState(EnemyUpscream.State.Roam);
+            return;
+        }
         _chef.targetPlayer = null!;
         _state.Roam(Time.time);
         SetState(_chef.currentState is EnemyTumbler.State.Tumble or EnemyTumbler.State.TumbleEnd or EnemyTumbler.State.BackToNavmesh
@@ -344,7 +380,7 @@ internal static class ChefMimicDeathPatch
     [HarmonyPrefix]
     private static void Prefix(EnemyHealth __instance)
     {
-        if (SemiFunc.IsMasterClientOrSingleplayer() && __instance.GetComponent<EnemyTumbler>() != null)
+        if (SemiFunc.IsMasterClientOrSingleplayer() && (__instance.GetComponent<EnemyTumbler>() != null || __instance.GetComponent<EnemyUpscream>() != null))
             NativeEnemy.Parent(__instance).GetComponent<ChefMimic>()?.Cleanup();
     }
 }

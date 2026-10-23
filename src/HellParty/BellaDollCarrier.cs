@@ -67,8 +67,7 @@ internal sealed class BellaDollCarrier : MonoBehaviour
         if (_released || !SemiFunc.IsMasterClientOrSingleplayer()) return;
         if (_bella == null)
         {
-            if (SemiFunc.IsMultiplayer() && PhotonNetwork.InRoom) PhotonNetwork.Destroy(gameObject);
-            else Destroy(gameObject);
+            NetworkLifetime.Remove(gameObject);
             return;
         }
         if (_physical.dead) { _sequence.Stop(); Destroy(this); return; }

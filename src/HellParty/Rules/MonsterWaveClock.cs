@@ -2,7 +2,7 @@ namespace HellParty.Rules;
 
 internal sealed class MonsterWaveClock
 {
-    internal const double Duration = 15;
+    internal const double Duration = 20;
     internal const float Radius = 30;
     internal bool Active { get; private set; }
     private double _start;
@@ -12,7 +12,7 @@ internal sealed class MonsterWaveClock
     internal bool Expired(double now) => Active && now - _start >= Duration;
     internal bool TakeGnome(double now)
     {
-        if (!Active || Expired(now) || _next >= 15 || now - _start < _next) return false;
+        if (!Active || Expired(now) || _next >= Duration || now - _start < _next) return false;
         _next++;
         return true;
     }

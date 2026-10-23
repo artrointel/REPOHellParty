@@ -74,29 +74,37 @@ internal sealed class MonsterWave : MonoBehaviour
         _retryAt = Time.time + .25f;
         // Native registration defers birth. Its Spawn prefix rechecks visibility
         // and chooses the nearest player at actual birth, not at request time.
-        while (_pending.Count > 0 && WaveSpawnPoints.Find(_center, out Vector3 point))
+        int attempts = Math.Min(4, _pending.Count);
+        while (attempts-- > 0 && _pending.Count > 0)
         {
+            string path = _pending.Dequeue();
             try
             {
-                string path = _pending.Peek();
+                GameObject prefab = Resources.Load<GameObject>(path);
+                if (!WaveSpawnPoints.Find(_center, out Vector3 point, prefab.GetComponentInChildren<UnityEngine.AI.NavMeshAgent>(true)))
+                {
+                    // A large enemy waiting for space must not block Gnomes.
+                    _pending.Enqueue(path);
+                    continue;
+                }
                 if (path == "Enemies/Enemy - Gnome" && EnemyGnomeDirector.instance == null)
                     VanillaCatalog.Spawn("Enemies/Enemy - Gnome Director", Vector3.zero, Quaternion.identity);
-                EnemyParent parent = SummonedEnemySpawnTicket.Create(path, point);
+                EnemyParent parent = SummonedEnemySpawnTicket.Create(path, point, prepareOnMesh: true);
                 WaveCreature member = parent.gameObject.AddComponent<WaveCreature>();
                 member.Owner = this;
                 _creatures.Add(member);
-                _pending.Dequeue();
             }
-            catch (Exception e) { Plugin.ModLogger.LogError($"Monster wave summon failed: {e}"); break; }
+            catch (Exception e) { _pending.Enqueue(path); Plugin.ModLogger.LogError($"Monster wave summon failed: {e}"); break; }
         }
     }
 
-    internal bool Occupied(Vector3 point)
+    internal bool Occupied(Vector3 point, EnemyParent? ignore = null)
     {
         foreach (WaveCreature member in _creatures)
         {
             if (member == null || member.Retired) continue;
             EnemyParent parent = member.GetComponent<EnemyParent>();
+            if (parent == ignore) continue;
             if (NativeEnemy.Spawned(parent) && (NativeEnemy.Position(parent) - point).sqrMagnitude < 4) return true;
         }
         return false;

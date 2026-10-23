@@ -48,7 +48,7 @@ internal sealed class StalkingDollHealth : MonoBehaviour
 
     private void SynchronizeValue()
     {
-        if (!_valueReady) return;
+        if (!_valueReady || !NetworkLifetime.Live(this)) return;
         float target = (float)_life.RemainingValue(_fullValue);
         float delta = target - _valuable.dollarValueCurrent;
         if (Mathf.Abs(delta) < 0.001f) return;

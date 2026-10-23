@@ -12,17 +12,28 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
     internal bool Pending = true;
     internal PlayerAvatar? InitialTarget;
     internal bool ShareAttackTarget;
+    internal bool AllowUpscreamMimic;
 
-    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false)
+    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool allowUpscreamMimic = false)
     {
-        Vector3 hidden = AssetManager.instance.physDisabledPosition;
-        GameObject root = VanillaCatalog.Spawn(path, hidden, Quaternion.identity);
+        Vector3 holding = AssetManager.instance.physDisabledPosition;
+        if (prepareOnMesh)
+        {
+            // Wave callers have already certified this point is unseen and
+            // navigable for this agent. Creating the agent off-map first emits
+            // native NavMesh errors before a later Warp can repair anything.
+            GameObject prefab = Resources.Load<GameObject>(path);
+            var agent = prefab.GetComponentInChildren<UnityEngine.AI.NavMeshAgent>(true);
+            holding = position - (agent.transform.position - prefab.transform.position);
+        }
+        GameObject root = VanillaCatalog.Spawn(path, holding, Quaternion.identity);
         EnemyParent parent = root.GetComponent<EnemyParent>();
         SummonedEnemySpawnTicket ticket = root.AddComponent<SummonedEnemySpawnTicket>();
         ticket.Position = position;
         ticket.InitialTarget = target;
         ticket.ShareAttackTarget = shareAttackTarget;
-        root.GetComponentInChildren<Enemy>(true).EnemyTeleported(hidden);
+        ticket.AllowUpscreamMimic = allowUpscreamMimic;
+        root.GetComponentInChildren<Enemy>(true).EnemyTeleported(prepareOnMesh ? position : holding);
         NativeEnemy.SetupDone(parent) = true;
         return parent;
     }
@@ -90,6 +101,7 @@ internal static class SummonedEnemyReadyPatch
                 Plugin.ModLogger.LogError($"Summoned enemy navigation could not bind at {ticket.Position}: {__instance.name}");
         }
         ticket.Pending = false;
+        __instance.GetComponent<CleanupPursuer>()?.Born();
         __instance.GetComponent<BowtieBrother>()?.Born();
         if (__instance.GetComponentInChildren<EnemyBang>(true) is EnemyBang bang && EnemyBangDirector.instance != null)
         {

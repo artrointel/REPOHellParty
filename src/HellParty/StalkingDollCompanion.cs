@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using HarmonyLib;
 using HellParty.Native;
+using HellParty.Rules;
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace HellParty;
 
@@ -11,48 +13,96 @@ namespace HellParty;
 // Native despawn/reappearance must not duplicate companions or their rewards.
 internal sealed class StalkingDollCompanion : MonoBehaviour
 {
-    private bool _created;
-    private bool _pending;
+    private readonly CompanionSpawnAttempt _attempt = new();
+    private float _retryAt;
+    private bool _warned;
+
+    private void Update()
+    {
+        if (_attempt.Created || Time.time < _retryAt || !SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        EnemyParent parent = GetComponent<EnemyParent>();
+        // A component can attach after the initial SpawnRPC. The native flag
+        // proves a successful teleport, rather than a prefab awaiting setup.
+        if (NativeEnemy.SetupDone(parent) && NativeEnemy.FirstPointUsed(parent) && NativeEnemy.Spawned(parent) &&
+            parent.EnableObject.activeInHierarchy && parent.Enemy.CurrentState != EnemyState.Despawn)
+            OnNativeSpawn();
+    }
 
     internal void OnNativeSpawn()
     {
-        if (_created || _pending) return;
-        _pending = true;
+        if (Time.time < _retryAt || !_attempt.TryBegin()) return;
         StartCoroutine(SpawnNearOwner());
     }
 
     private IEnumerator SpawnNearOwner()
     {
-        yield return null; // Native teleport and spawn callbacks finish first.
-        EnemyParent parent = GetComponent<EnemyParent>();
-        float deadline = Time.time + 10;
-        while (parent != null && SemiFunc.IsMasterClientOrSingleplayer() && SemiFunc.RunIsLevel() &&
-               NativeEnemy.Spawned(parent) && Time.time < deadline)
+        bool created = false;
+        try
         {
-            if (NativeEnemy.SetupDone(parent) && parent.Enemy != null &&
-                (!parent.Enemy.HasHealth || !NativeEnemy.Dead(parent.Enemy.Health)))
+            yield return null; // Native teleport and spawn callbacks finish first.
+            EnemyParent parent = GetComponent<EnemyParent>();
+            float deadline = Time.time + 10;
+            while (parent != null && SemiFunc.IsMasterClientOrSingleplayer() && SemiFunc.RunIsLevel() &&
+                   NativeEnemy.Spawned(parent) && Time.time < deadline)
             {
-                Vector3 origin = parent.Enemy.transform.position;
-                for (int slot = 0; slot < 3; slot++)
+                if (NativeEnemy.SetupDone(parent) && parent.Enemy != null &&
+                    (!parent.Enemy.HasHealth || !NativeEnemy.Dead(parent.Enemy.Health)))
                 {
-                    if (!VanillaCatalog.Adjacent(origin, slot, out Vector3 point) ||
-                        Physics.CheckCapsule(point + Vector3.up * 0.25f, point + Vector3.up * 0.65f, 0.2f,
-                            LayerMask.GetMask("Default", "PhysGrabObject"), QueryTriggerInteraction.Ignore)) continue;
                     try
                     {
-                        StalkingDoll.Spawn(point, parent.Enemy.transform.rotation);
-                        _created = true;
+                        if (FindPosition(parent, out Vector3 point))
+                        {
+                            StalkingDoll.Spawn(point, parent.Enemy.Rigidbody.transform.rotation);
+                            created = true;
+                            Plugin.ModLogger.LogInfo($"Stalking Doll companion created for {parent.enemyName} at {point}.");
+                        }
                     }
                     catch (Exception exception) { Plugin.ModLogger.LogError($"Stalking Doll companion spawn failed: {exception}"); }
-                    _pending = false;
-                    yield break;
+                    if (created) yield break;
                 }
+                yield return new WaitForSeconds(0.25f);
             }
-            yield return new WaitForSeconds(0.25f);
+            if (!_warned && parent != null && NativeEnemy.Spawned(parent))
+            {
+                _warned = true;
+                Plugin.ModLogger.LogWarning($"No clear nearby ground for Stalking Doll companion: {parent.enemyName}; will retry while alive.");
+            }
         }
-        _pending = false;
-        if (parent != null && NativeEnemy.Spawned(parent))
-            Plugin.ModLogger.LogWarning($"No clear adjacent NavMesh position for Stalking Doll companion: {parent.name}.");
+        finally
+        {
+            _attempt.Complete(created);
+            _retryAt = Time.time + 5;
+        }
+    }
+
+    private static bool FindPosition(EnemyParent parent, out Vector3 position)
+    {
+        position = default;
+        Vector3 body = NativeEnemy.Position(parent);
+        // Navigation roots can lead the visible body, and the body can float
+        // above the mesh. Ground the actual physical position first.
+        if (!Physics.Raycast(body + Vector3.up * .25f, Vector3.down, out RaycastHit ground, 6,
+                LayerMask.GetMask("Default", "NavmeshOnly"), QueryTriggerInteraction.Ignore)) return false;
+        NavMeshAgent loom = VanillaCatalog.LoomPrefab().Prefab.GetComponentInChildren<NavMeshAgent>(true);
+        var filter = new NavMeshQueryFilter { agentTypeID = loom.agentTypeID, areaMask = loom.areaMask };
+        if (!NavMesh.SamplePosition(ground.point, out NavMeshHit start, .75f, filter)) return false;
+        var path = new NavMeshPath();
+        for (int ring = 0; ring < 3; ring++)
+        for (int slot = 0; slot < 12; slot++)
+        {
+            float angle = slot * Mathf.PI / 6;
+            Vector3 candidate = start.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * (1.2f + ring * .8f);
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, .5f, filter) ||
+                (hit.position - start.position).sqrMagnitude > 12.25f ||
+                !NavMesh.CalculatePath(start.position, hit.position, filter, path) || path.status != NavMeshPathStatus.PathComplete ||
+                Physics.Linecast(start.position + Vector3.up * .3f, hit.position + Vector3.up * .3f,
+                    LayerMask.GetMask("Default"), QueryTriggerInteraction.Ignore) ||
+                Physics.CheckCapsule(hit.position + Vector3.up * .25f, hit.position + Vector3.up * .65f, .2f,
+                    LayerMask.GetMask("Default", "PhysGrabObject"), QueryTriggerInteraction.Ignore)) continue;
+            position = hit.position;
+            return true;
+        }
+        return false;
     }
 }
 

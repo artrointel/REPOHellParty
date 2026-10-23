@@ -108,7 +108,7 @@ internal sealed class MentalistReflectedGun : MonoBehaviour
     private IEnumerator Start()
     {
         yield return null; // Native ItemGun / battery / Photon Start initialization.
-        if (_removed) yield break;
+        if (_removed || !NetworkLifetime.Live(this)) yield break;
         _physical.Teleport(_position, _rotation);
         while (!_removed && !MentalistReflectionRules.Due(Time.timeAsDouble, _started)) yield return null;
         if (_removed) yield break;
@@ -129,15 +129,15 @@ internal sealed class MentalistReflectedGun : MonoBehaviour
     private IEnumerator Release(PhysGrabber player)
     {
         yield return null;
-        if (player != null) player.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, 0.5f);
+        if (player != null && NetworkLifetime.Live(this) && NetworkLifetime.Live(player))
+            player.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, 0.5f);
     }
 
     internal void Remove()
     {
         if (_removed) return;
         _removed = true;
-        if (SemiFunc.IsMultiplayer() && PhotonNetwork.InRoom) PhotonNetwork.Destroy(gameObject);
-        else Destroy(gameObject);
+        NetworkLifetime.Remove(gameObject);
     }
 
     private void OnDestroy() { if (_owner != null) _owner.Forget(this); }

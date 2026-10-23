@@ -35,6 +35,8 @@ authority: host
 
 ## 참조 문서
 
+- [Reaper·Shadow Child — 블라인드](blind.md): 각각 `EnemyRunner.targetPlayer`, `EnemyThinMan.playerTarget`을 사용한다. 같은 타깃을 3초간 유지하면 발동하고 3초마다 반복한다. 이 스킬은 타깃 교체·상실 시 유지 시간을 초기화하는 개별 규칙을 갖는다.
+
 - [Mentalist — 반사쉴드](../monsters/mentalist.md): 공통 인지 조건의 반대로, 본체 `targetPlayer == null`일 때만 총격을 차단하고 2초 뒤 반격한다. 반격 발동 이후 타깃을 얻어도 이미 고정한 사선을 변경하거나 발사를 취소하지 않는다.
 
 - [난이도별 특수 능력 기획표](../monster-abilities.md)

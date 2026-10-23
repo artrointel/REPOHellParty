@@ -37,8 +37,9 @@ internal sealed class WaveGramophone : MonoBehaviour
         // All peers must finish native Start (including the synced random/timer)
         // before the existing master-authorized RPC activates the music.
         yield return null; yield return null;
+        if (!NetworkLifetime.Live(this)) yield break;
         SyncedEventTimer timer = GetComponent<SyncedEventTimer>();
-        timer.timerMin = timer.timerMax = 20; // Host owns timeout; wave removes prop at 15s.
+        timer.timerMin = timer.timerMax = (float)MonsterWaveClock.Duration + 5;
         if (SemiFunc.IsMultiplayer()) GetComponent<PhotonView>().RPC("TrapStartRPC", RpcTarget.All);
         else GetComponent<TrapGramophone>().TrapStartRPC();
         Pin();
@@ -66,13 +67,13 @@ internal sealed class WaveGramophone : MonoBehaviour
     private IEnumerator Release(PhysGrabber player, int id)
     {
         yield return null;
-        if (player != null) player.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, StalkingDollGrabAttempts.ReleaseLockout);
+        if (player != null && NetworkLifetime.Live(this) && NetworkLifetime.Live(player))
+            player.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, StalkingDollGrabAttempts.ReleaseLockout);
         _releasing.Remove(id);
     }
     internal void Remove()
     {
-        if (SemiFunc.IsMultiplayer()) PhotonNetwork.Destroy(gameObject);
-        else Destroy(gameObject);
+        NetworkLifetime.Remove(gameObject);
     }
 }
 
@@ -129,6 +130,7 @@ internal static class WaveMusicValuePatch
         while (native.MoveNext()) yield return native.Current;
         if (valuable == null) yield break;
         if (RoundDirector.instance != null) RoundDirector.instance.haulGoalMax -= (int)valuable.dollarValueCurrent;
+        if (!NetworkLifetime.Live(valuable)) yield break;
         if (SemiFunc.IsMultiplayer()) valuable.GetComponent<PhotonView>().RPC("DollarValueSetRPC", RpcTarget.All, 0f);
         else valuable.DollarValueSetRPC(0);
     }

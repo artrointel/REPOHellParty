@@ -1,6 +1,6 @@
 # Chef 플레이테스트
 
-현재 Debug 자동 생성 대상은 [자율 Scream Doll](stalking-doll-playtest.md)이다. Chef는 게임을 종료한 뒤 Release로 자연 생성 개체를 검증한다.
+현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Chef는 게임을 종료한 뒤 Release로 자연 생성 개체를 검증한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

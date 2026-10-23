@@ -38,8 +38,11 @@ internal static class WaveSpawnPoints
         }
         if (settings == null) { position = default; return false; }
         var filter = new NavMeshQueryFilter { agentTypeID = settings.agentTypeID, areaMask = settings.areaMask };
+        float height = Mathf.Max(.3f, settings.height);
+        float radius = Mathf.Clamp(settings.radius, .12f, height * .5f);
         var path = new NavMeshPath();
-        // A single conservative capsule fits every kind used by this wave.
+        // Use this enemy's native dimensions; a full-size capsule rejects
+        // small Gnomes behind low cover and in narrow but navigable spaces.
         // Sample actual level navigation, rather than arbitrary world coordinates.
         if (_stage != StageRuntime.Current || Triangles.Count == 0 || _center != center)
         {
@@ -64,10 +67,10 @@ internal static class WaveSpawnPoints
             if ((candidate - center).sqrMagnitude > MonsterWaveClock.Radius * MonsterWaveClock.Radius ||
                 !NavMesh.SamplePosition(candidate, out NavMeshHit hit, .2f, filter)) continue;
             candidate = hit.position;
-            if (Physics.CheckCapsule(candidate + Vector3.up * .7f, candidate + Vector3.up * 1.8f, .6f,
+            if (Physics.CheckCapsule(candidate + Vector3.up * (radius + .08f), candidate + Vector3.up * (height - radius + .08f), radius,
                     LayerMask.GetMask("Default", "PhysGrabObject", "Enemy"), QueryTriggerInteraction.Ignore) ||
-                Nearest(candidate, 2) != null || MonsterWave.Current != null && MonsterWave.Current.Occupied(candidate) ||
-                Visible(candidate)) continue;
+                Nearest(candidate, 2) != null || MonsterWave.Current != null && MonsterWave.Current.Occupied(candidate, agent != null ? agent.GetComponentInParent<EnemyParent>() : null) ||
+                Visible(candidate, height, radius)) continue;
             PlayerAvatar? target = Nearest(candidate);
             if (target == null || !NavMesh.SamplePosition(target.transform.position, out NavMeshHit destination, 3f, filter) ||
                 !NavMesh.CalculatePath(candidate, destination.position, filter, path) || path.status != NavMeshPathStatus.PathComplete) continue;
@@ -78,11 +81,12 @@ internal static class WaveSpawnPoints
         return false;
     }
 
-    private static bool Visible(Vector3 floor)
+    private static bool Visible(Vector3 floor, float height, float radius)
     {
-        Vector3[] points = { floor + Vector3.up * .15f, floor + Vector3.up * 1.2f, floor + Vector3.up * 2.4f,
-            floor + Vector3.up * 1.2f + Vector3.right * .6f, floor + Vector3.up * 1.2f - Vector3.right * .6f,
-            floor + Vector3.up * 1.2f + Vector3.forward * .6f, floor + Vector3.up * 1.2f - Vector3.forward * .6f };
+        Vector3 center = floor + Vector3.up * (height * .5f);
+        Vector3[] points = { floor + Vector3.up * .1f, center, floor + Vector3.up * (height + .08f),
+            center + Vector3.right * radius, center - Vector3.right * radius,
+            center + Vector3.forward * radius, center - Vector3.forward * radius };
         foreach (PlayerAvatar player in SemiFunc.PlayerGetList())
         {
             if (!Alive(player)) continue;
@@ -90,11 +94,17 @@ internal static class WaveSpawnPoints
             Transform eye = player.localCamera.GetOverrideTransform();
             foreach (Vector3 point in points)
             {
-                // Remote peers do not send FOV. Require world occlusion for them.
+                // Remote peers send camera pose, but not FOV/aspect. Use the
+                // same generous 170 x 140 envelope as the Stalking Doll.
                 if (player.isLocal && Camera.main != null)
                 {
                     Vector3 p = Camera.main.WorldToViewportPoint(point);
                     if (p.z <= 0 || p.x < -.05f || p.x > 1.05f || p.y < -.05f || p.y > 1.05f) continue;
+                }
+                else
+                {
+                    Vector3 p = eye.InverseTransformPoint(point);
+                    if (!StalkingDollRules.InView(p.x, p.y, p.z, Mathf.Tan(85 * Mathf.Deg2Rad), Mathf.Tan(70 * Mathf.Deg2Rad))) continue;
                 }
                 bool blocked = false;
                 Vector3 ray = point - eye.position;

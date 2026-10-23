@@ -24,6 +24,7 @@ internal sealed class AnimalGas : MonoBehaviour
             ? PhotonNetwork.InstantiateRoomObject(CarrierPath, hidden, Quaternion.identity, 0)
             : Instantiate(prefab, hidden, Quaternion.identity);
         AnimalGas carrier = root.AddComponent<AnimalGas>();
+        root.AddComponent<Events.InternalWaveExcluded>();
         carrier._position = position;
         carrier._physical = root.GetComponent<PhysGrabObject>();
         carrier._physical.OverrideKinematic(1);
@@ -50,6 +51,7 @@ internal sealed class AnimalGas : MonoBehaviour
         yield return null;
         yield return null;
         yield return new WaitForSeconds(0.25f);
+        if (!NetworkLifetime.Live(this) || !SemiFunc.RunIsLevel()) yield break;
         try
         {
             // Teleport() alone only changes host state and later serialization.
@@ -60,13 +62,12 @@ internal sealed class AnimalGas : MonoBehaviour
         catch (Exception exception)
         {
             Plugin.ModLogger.LogError($"Animal gas activation failed: {exception}");
-            if (SemiFunc.IsMultiplayer() && PhotonNetwork.InRoom) PhotonNetwork.Destroy(gameObject);
-            else Destroy(gameObject);
+            NetworkLifetime.Remove(gameObject);
             yield break;
         }
         // Let native centerPoint/sound positions update after the teleport.
         yield return new WaitForSeconds(0.1f);
-        if (this != null) GetComponent<PhysGrabObjectImpactDetector>().DestroyObject(false);
+        if (this != null && NetworkLifetime.Live(this)) GetComponent<PhysGrabObjectImpactDetector>().DestroyObject(false);
     }
 }
 

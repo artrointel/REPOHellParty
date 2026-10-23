@@ -133,8 +133,7 @@ internal sealed class BellaBait : MonoBehaviour
         Owner = null;
         // Network destruction removes cached instantiation too. Do not call
         // impact destruction: native tiny valuables may contain other traps.
-        if (SemiFunc.IsMultiplayer()) PhotonNetwork.Destroy(gameObject);
-        else Destroy(gameObject);
+        NetworkLifetime.Remove(gameObject);
     }
 }
 

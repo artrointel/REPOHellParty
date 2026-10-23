@@ -14,7 +14,9 @@ internal static class VanillaCatalog
     internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
-    internal static PrefabRef MentalistPrefab() => EnemyPrefab<EnemyFloater>();
+    internal static PrefabRef HuntsmanPrefab() => EnemyPrefab<EnemyHunter>();
+    internal static PrefabRef CleanupCrewPrefab() => EnemyPrefab<EnemyBombThrower>();
+    internal static PrefabRef SpewerPrefab() => EnemyPrefab<EnemySlowMouth>();
     internal static PrefabRef RugratPrefab() => EnemyPrefab<EnemyValuableThrower>();
     internal static PrefabRef UpscreamPrefab() => EnemyPrefab<EnemyUpscream>();
     internal static PrefabRef HeadgrabPrefab() => EnemyPrefab<EnemyHeadGrabber>();
@@ -27,6 +29,27 @@ internal static class VanillaCatalog
         throw new InvalidOperationException("Native laser gun prefab not found.");
     }
     internal static PrefabRef ScreamDollPrefab() => Valuable(p => p.GetComponent<ScreamDollValuable>() != null);
+    private static List<string>? _upscreamDisguises;
+
+    internal static string RandomUpscreamDisguisePath()
+    {
+        if (_upscreamDisguises == null)
+        {
+            var choices = new List<string>();
+            foreach (string path in Rules.UpscreamDisguiseCatalog.Paths)
+            {
+                GameObject prefab = Resources.Load<GameObject>(path);
+                if (prefab == null || prefab.GetComponent<ValuableObject>() == null ||
+                    prefab.GetComponent<PhysGrabObject>() == null || prefab.GetComponent<PhysGrabObjectImpactDetector>() == null ||
+                    !Rules.UpscreamDisguiseCatalog.Eligible(path, prefab.GetComponent<EnemyValuable>() != null,
+                        prefab.GetComponent<SurplusValuable>() != null)) continue;
+                choices.Add(path);
+            }
+            if (choices.Count == 0) throw new InvalidOperationException("No supported native Big Upscream disguises found.");
+            _upscreamDisguises = choices;
+        }
+        return _upscreamDisguises[UnityEngine.Random.Range(0, _upscreamDisguises.Count)];
+    }
 
     private static PrefabRef EnemyPrefab<T>() where T : Component
     {

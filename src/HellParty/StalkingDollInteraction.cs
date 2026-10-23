@@ -96,7 +96,8 @@ internal sealed class StalkingDollGrabGuard : MonoBehaviour
         // In singleplayer GrabStarted is nested inside the beam's setup.
         // Releasing synchronously would be overwritten by that outer setup.
         yield return null;
-        if (grabber != null) grabber.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, StalkingDollGrabAttempts.ReleaseLockout);
+        if (grabber != null && HellParty.Native.NetworkLifetime.Live(this) && HellParty.Native.NetworkLifetime.Live(grabber))
+            grabber.OverrideGrabRelease(GetComponent<PhotonView>().ViewID, StalkingDollGrabAttempts.ReleaseLockout);
         _releasePending.Remove(id);
     }
 

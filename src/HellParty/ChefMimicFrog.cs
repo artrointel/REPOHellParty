@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using HellParty.Native;
@@ -21,21 +20,21 @@ internal sealed class ChefMimicFrog : MonoBehaviour
     internal static bool BlocksTarget(Component? candidate) => candidate != null &&
         candidate.GetComponentInParent<ChefMimicFrog>() is ChefMimicFrog frog && frog.Active;
 
-    internal static ChefMimicFrog Create(PrefabRef prefab, Vector3 ground, Quaternion rotation, ChefMimic owner)
+    internal static ChefMimicFrog Create(string prefabPath, Vector3 ground, Quaternion rotation, ChefMimic owner)
     {
-        GameObject root = VanillaCatalog.Spawn(prefab, ground + Vector3.up * 0.15f, rotation);
+        GameObject root = VanillaCatalog.Spawn(prefabPath, ground + Vector3.up * 0.15f, rotation);
         ChefMimicFrog frog = root.AddComponent<ChefMimicFrog>();
         frog._owner = owner;
         frog._physical = root.GetComponent<PhysGrabObject>();
         frog._valuable = root.GetComponent<ValuableObject>();
-        // Keep native Frog value/durability so normal weapon and impact damage
+        // Keep native valuable value/durability so normal weapon and impact damage
         // can break it. Its possible-haul contribution is excluded below.
         return frog;
     }
 
     internal void InitializeVitality()
     {
-        if (_initialized || !Active) return;
+        if (_initialized || !Active || !NetworkLifetime.Live(this)) return;
         // Native Start and value initialization have completed on the host.
         // The existing HealRPC accepts a signed delta and only adjusts value,
         // preserving the original value and avoiding fake break effects.
@@ -72,10 +71,7 @@ internal sealed class ChefMimicFrog : MonoBehaviour
     {
         SynchronizeVitality();
         _owner = null;
-        foreach (PhysGrabber player in _physical.playerGrabbing.ToArray())
-            if (player != null) player.OverrideGrabRelease(_physical.GetComponent<PhotonView>().ViewID, 0.5f);
-        if (SemiFunc.IsMultiplayer() && PhotonNetwork.InRoom && SemiFunc.IsMasterClientOrSingleplayer()) PhotonNetwork.Destroy(gameObject);
-        else Destroy(gameObject);
+        NetworkLifetime.Remove(gameObject);
     }
 
     internal void Destroyed()

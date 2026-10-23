@@ -51,9 +51,11 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 ## Debug와 Release
 
+현재 기본 테스트는 `[Debug.Upscream] Enabled = true`의 Upscream 무작위 Big 수집품 변장이다. 이 설정이 켜져 있으면 아래 기존 Huntsman·Cleanup Crew 시나리오와 키 제어는 실행하지 않는다. 난이도 5와 Upscream·샷건·수면총을 준비하며, 자연 생성 개체와 동일하게 변장하도록 Debug 소환 개체만 허용한다. Release는 모든 능력 소환 Upscream을 변장에서 제외한다.
+
 - `src/HellParty/Debug/`는 Debug 구성에서만 컴파일한다. 호출부도 `#if DEBUG`로 분리한다.
 - Release는 완료 스테이지 수로 난이도를 계산한다. `min(5, max(0, levelsCompleted) / 3)`을 사용하므로 stage1은 0, stage4는 1, stage7은 2, stage10은 3, stage13은 4, stage16 이상은 5다.
-- Debug는 자율 Scream Doll 테스트를 위해 난이도를 5로 강제한다. 순정 `levelsCompleted`나 저장 진행도는 변경하지 않는다. 실제 스테이지 시작마다 시작 위치 근처 자율 Scream Doll·샷건·수면총·가치품 대상 드론을 각각 하나씩 생성한다. 테스트용 Chef·Bowtie·Bella·Birthday Boy·Animal·오리 생성과 임시 능력 추적 로그는 제거한 상태다.
+- Upscream 테스트를 끄면 Cleanup Crew와 Huntsman의 `Enabled = true`가 기본이다. 시작 위치 근처에 각 1마리, 샷건·수면총 각 1개를 준비하고 난이도는 5로 시작한다. Huntsman은 F6(1인 조건 우회)·F7(조준 요청)·F8(납치 해제), Cleanup Crew는 F9(공용 난이도 1/5 전환)·F10(인지 요청)·F11(활성 헤드 폭발 예고)을 사용한다. F9로 1단계가 되면 Huntsman은 새 납치를 시작하지 않는다. 몬스터별 설정은 독립적이며 두 설정을 모두 끄면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. Release에는 테스트 코드가 포함되지 않는다.
 - `DifficultyService`는 공용 난이도 조회 지점이며, `StageRuntime.TryAttach`는 향후 몬스터 능력을 연결할 지점이다.
 - `scripts/Start-RepoDev.ps1`은 기본적으로 Debug를 빌드·배포하고 게임을 실행한다. `-Configuration Release`로 실제 진행 모드를 실행할 수 있다. 복원을 먼저 수행해야 하며, 이미 배포한 빌드를 시작할 때는 `-NoBuild`를 사용한다.
 - 게임은 `WindowStyle Normal`로 표시한다. 일반 플레이 테스트는 디버거 연결 없이 실행할 수 있으며, `-EnableDebugger`나 F5를 사용해도 디버거 연결을 기다리며 시작을 정지하지 않는다.
@@ -78,7 +80,21 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderst
 
 ## 검증과 다음 단계
 
-`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 100 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Mono.Cecil로 Debug 전용 Mentalist 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
+### 네트워크 오브젝트 수명과 지연 RPC
+
+`Native/NetworkLifetime.cs`는 로컬에서 보내는 두 종류의 `PhotonView.RPC` 호출 전에 방 접속·ViewID·현재 등록 객체의 일치를 확인한다. 이미 등록 해제된 View로는 보내지 않는다. 다른 참가자의 발송이나 정상 발송 후 네트워크를 이동 중인 메시지까지 취소하는 기능은 아니다.
+
+Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격총, 웨이브 Gramophone 및 가스 생성 실패의 오브젝트 정리는 공통 제거 경로를 사용한다. 잡기를 먼저 해제하고 순정 위치 RPC로 화면 밖으로 이동시킨 뒤 기본 1초 동안 기존 View를 유지한다. 유효한 늦은 잡기 요청에는 해제를 다시 전달하고 유예를 연장하되 총 3초를 넘기지 않는다. 제거 중 재집기·잡기 링크와 지연 코루틴의 추가 전송을 막고 마지막에 네트워크 삭제한다. 코어 보상을 주는 정상 몬스터 사망·순정 가스 생성용 파괴에는 이 무효과 제거 경로를 대신 사용하지 않는다.
+
+로컬 설치된 SharedHealthPacks 1.0.0의 `ItemHealthPackUpdatePatch.Postfix`는 회복팩 사용 여부를 확인하지 않고 `ItemHealthPack.OnDestroy` 때 `SemiFunc.PlayerGetAll()`의 전원에게 `HealOther`를 호출한다. 미사용 팩과 장면 정리에서도 회복 요청이 발생할 수 있다. 네이티브 파괴 콜백 전체를 예외 복구 가능한 범위로 감싸 이 경우의 회복을 막고, `PlayerHealth.HealOther`도 사망·비활성·미등록 대상을 제외한다. 정상 사용된 팩의 플레이 중 공유 회복 동작은 유지한다. SharedHealthPacks DLL 자체는 수정하거나 제거하지 않는다.
+
+호스트만 HellParty를 설치한 경우, 다른 참가자의 SharedHealthPacks 또는 다른 모드가 오래된 ViewID로 보내는 `HealOtherRPC`·잡기 메시지에는 이 발송 방어가 적용되지 않는다. 특히 로그의 `Remote called. By: #02 'Ara'`는 그 참가자가 발송했다는 의미다. 원격 모드의 정리 시 회복 버그는 해당 참가자 측에서도 수정되어야 한다. 수신 경고를 숨기거나 사라진 ViewID를 가짜 객체로 재등록하지 않는다. 실제 멀티플레이에서 장면 전환과 제거 직전 Grab을 확인해야 한다.
+
+스테이지마다 반복된 `RPC_SetWalkieColor`·`RPC_CreateRemoteTalkieOnRightArm`·`RPC_SetLocalAvatarViewId` 오류는 대상 View가 없다는 경고와 다르다. View는 있으나 해당 RPC를 처리할 컴포넌트·메서드가 없다는 뜻이다. 보고 당시 순정 게임 및 호스트 프로필의 플러그인 DLL 총 35개에서 세 이름의 수신 메서드와 직접적인 송신 문자열을 검사했으나 찾지 못했다. 참가자 측 무전기 관련 모드의 전용 통신으로 추정하며, 정확한 모드명은 참가자 설치 목록과 대조해야 한다. HellParty에 가짜 수신 RPC를 추가해 오류만 지우지 않는다. 송수신 모드의 설치·버전·호스트 전용 지원 여부를 맞추거나 송신 측 기능을 조정해야 한다.
+
+플레이 중에는 수정 빌드만 준비하고 설치된 DLL과 실행 프로세스는 변경하지 않는다. 따라서 빌드 후에도 현재 세션에서 발생한 View 645의 `GrabLinkRPC`·`GrabPointSyncRPC` 경고는 새 수명 관리 코드의 검증 결과로 취급하지 않는다. 다음 배포·게임 재시작 이후 별도로 재검증한다. 해당 View가 어떤 오브젝트였는지는 이 두 경고만으로 확정할 수 없다.
+
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 100 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Huntsman 납치의 거리·단계·생존자 수·주기 피해·해제 후 쿨타임·전역 슬롯 경쟁, Cleanup Crew의 단계·폭발 중복·헤드 재사용·소환 수명도 검사한다. Mono.Cecil로 Huntsman Debug 시나리오와 Release 제외, 실제 진행도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
@@ -86,4 +102,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -
 
 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
 
-현재 Debug는 난이도 2·시작 위치 근처 Mentalist·샷건·권총·수면총·레이저총을 제공하며 F6으로 타깃 없는 테스트 상태와 순정 인지를 전환한다. 실행 확인은 [Mentalist 플레이테스트](mentalist-playtest.md)를 따른다. Debug/Release 모두 난이도 1부터 Loom·Robe의 실제 등장 시 개체당 스토커 1마리를 동반 생성한다. Debug의 시작 위치 테스트 Mentalist는 별도 생성이다. 난이도 3부터 폭주가 추가된다.
+현재 Debug는 [Upscream 테스트](upscream-playtest.md)를 위해 난이도 5와 변장 능력을 가진 Upscream 1마리, 샷건·수면총 각 1개를 준비한다. `[Debug.Upscream]`이 이전 시나리오보다 우선하며, Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 바꾸거나 Release를 사용하면 실제 진행도와 자동 생성 없는 종합 테스트로 돌아간다. 현재 Debug 실행 확인은 [Upscream 플레이테스트](upscream-playtest.md)를 따른다. Debug/Release 모두 난이도 1부터 Loom·Robe의 실제 등장 시 개체당 스토커 1마리를 동반 생성한다. 난이도 3부터 폭주가 추가된다.

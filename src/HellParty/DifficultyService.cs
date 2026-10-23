@@ -10,10 +10,11 @@ internal static class DifficultyService
         get
         {
 #if DEBUG
-            return Debugging.DebugMentalistScenario.ForcedDifficulty;
-#else
-            return DifficultyRules.FromCompletedStages(RunManager.instance != null ? RunManager.instance.levelsCompleted : 0);
+            if (Debugging.DebugUpscreamScenario.Enabled) return Debugging.DebugUpscreamScenario.ForcedDifficulty;
+            if (Debugging.DebugCleanupScenario.Enabled) return Debugging.DebugCleanupScenario.Difficulty;
+            if (Debugging.DebugHuntsmanScenario.Enabled) return Debugging.DebugHuntsmanScenario.ForcedDifficulty;
 #endif
+            return DifficultyRules.FromCompletedStages(RunManager.instance != null ? RunManager.instance.levelsCompleted : 0);
         }
     }
 }
