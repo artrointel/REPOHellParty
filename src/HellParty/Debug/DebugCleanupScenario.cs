@@ -11,7 +11,7 @@ internal static class DebugCleanupScenario
 {
     internal const int ForcedDifficulty = 5;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && !DebugUpscreamScenario.Enabled && _enabled?.Value == true;
+    internal static bool Enabled => !DebugLoomRobeScenario.Enabled && !DebugTrudgeScenario.Enabled && !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && !DebugUpscreamScenario.Enabled && _enabled?.Value == true;
     internal static int Difficulty { get; private set; } = ForcedDifficulty;
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.CleanupCrew", "Enabled", true,
         "Spawn Cleanup Crew near the start alongside any enabled Huntsman test. Difficulty 5; F9 toggles 1/5, F10 requests notice, F11 starts an active head's explosion tell. Debug only; restart after changing this setting.");

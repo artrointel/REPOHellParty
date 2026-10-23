@@ -1,6 +1,6 @@
 # Peeper 플레이테스트
 
-구현·빌드 검사는 통과했으며 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Peeper의 단계별 확인은 실제 진행도를 사용하는 Release 또는 해당 단계의 Peeper가 존재하는 테스트 세션에서 수행한다.
+구현·빌드 검사는 통과했으며 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Trudge·Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Peeper의 단계별 확인은 실제 진행도를 사용하는 Release 또는 해당 단계의 Peeper가 존재하는 테스트 세션에서 수행한다.
 
 1. 난이도 0에서는 Peeper가 피해를 주어도 소환하지 않는다. 난이도 1에서는 실제 타격마다 Peeper 아래 바닥에 Gnome 1마리만 나타난다. 무적·피해 없는 상태에서는 소환하지 않는다. 체력이 감소한 치명타도 한 번으로 센다.
 2. 난이도 2 이상에서는 기본 Gnome에 추가로 매 타격 30% 확률의 Banger가 나타난다. 확률이므로 몇 번의 타격만으로 비율을 판정하지 않는다. 한 타격에서 최대 Gnome 1마리와 Banger 1마리만 나타나야 한다.

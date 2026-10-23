@@ -2,7 +2,10 @@
 
 Debug의 전용 테스트 프로필은 **난이도 5**를 강제한다. 시작 위치 근처의 연결된 NavMesh에 Headman 1마리, Headman 반경 20m 내 빈 위치에 특수능력이 없는 Animal 1마리를 준비한다. 샷건·수면총도 시작 지점에 각 1개 생성한다. 동료 위치를 찾지 못하면 경고를 기록하며 자연 생성 동료로 확인할 수 있다.
 
-프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `[Debug.Headman] Enabled = true`로 설정한다. Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman은 false로 설정한다. Headman은 가장 높은 우선순위를 가지며 다른 전용 테스트 생성과 키를 실행하지 않는다. 순정 시야나 AI를 상시 차단하지 않는다.
+프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `[Debug.Trudge]
+Enabled = false
+
+[Debug.Headman] Enabled = true`로 설정한다. Trudge·Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman은 false로 설정한다. LoomRobe·Trudge를 끄면 Headman이 우선하며 다른 전용 테스트 생성과 키를 실행하지 않는다. 순정 시야나 AI를 상시 차단하지 않는다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
@@ -16,4 +19,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 6. Reaper 전력질주의 Headman 몸체에는 보호본능이 부여되지 않고 원래 Reaper 타깃을 유지해야 한다.
 7. 바닐라 참가자가 동료의 타깃 또는 공격자인 경우에도 같은 추적·이동·공격 결과를 확인한다. 자동 검사는 실제 멀티플레이 검증을 대체하지 않는다.
 
-일반 진행으로 돌아가려면 Headman을 포함한 여섯 Debug 시나리오를 모두 끄거나 Release를 사용한다.
+일반 진행으로 돌아가려면 Headman을 포함한 일곱 Debug 시나리오를 모두 끄거나 Release를 사용한다.
+
+이전 테스트를 선택하려면 `[Debug.LoomRobe] Enabled = false`와 `[Debug.Trudge] Enabled = false`도 설정한다.

@@ -55,11 +55,13 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 Release와 모든 시나리오를 끈 Debug는 [공용 난이도](metadata/difficulty.md)를 사용한다. `min(5, 1 + max(0, levelsCompleted) / 3)`으로 stage1/4/7/10/13에서 난이도 1/2/3/4/5가 된다. 난이도 0은 순정 기준이며 자연 진행에는 없다.
 
-실행 대상은 프로필의 `BepInEx/config/artrointel.HellParty.cfg`에 저장된 값이 결정한다. 코드상 초기 기본값은 여섯 시나리오 모두 true지만 우선순위에 따라 실행하며 기존 프로필 설정을 덮어쓰지 않는다. 이번 테스트 프로필은 Headman만 활성화했다. 설정 변경 후 게임을 재시작한다.
+실행 대상은 프로필의 `BepInEx/config/artrointel.HellParty.cfg`에 저장된 값이 결정한다. 코드상 초기 기본값은 여덟 시나리오 모두 true지만 우선순위에 따라 실행하며 기존 프로필 설정을 덮어쓰지 않는다. 이번 테스트 프로필은 Loom·Robe만 활성화했다. 설정 변경 후 게임을 재시작한다.
 
 | 설정 | 활성 시 동작 |
 | --- | --- |
-| `[Debug.Headman] Enabled` | 최우선이다. 난이도 5로 Headman·순정 Animal 동료 각 1마리와 샷건·수면총을 준비한다. |
+| `[Debug.LoomRobe] Enabled` | 최우선이며 난이도 5로 Loom·Robe 각 1마리와 샷건·수면총을 준비한다. 테스트 Loom만 솔로 납치를 허용하며 F8로 해제한다. 스토커는 실제 동반 생성 경로를 사용한다. |
+| `[Debug.Trudge] Enabled` | LoomRobe가 꺼졌을 때 실행하며 난이도 5로 Trudge 1마리와 샷건·수면총을 준비한다. |
+| `[Debug.Headman] Enabled` | Trudge가 꺼졌을 때 실행한다. 난이도 5로 Headman·순정 Animal 동료 각 1마리와 샷건·수면총을 준비한다. |
 | `[Debug.Clown] Enabled` | Headman이 꺼졌을 때 난이도 5로 Clown 1마리와 샷건·수면총을 준비하고 다른 시나리오·전용 키를 중단한다. 순정 AI는 유지한다. |
 | `[Debug.Reaper] Enabled` | Headman·Clown이 꺼졌을 때 난이도 2, Reaper 1마리와 샷건·수면총을 준비한다. 다른 세 시나리오와 전용 키를 실행하지 않는다. 순정 타깃 획득과 AI는 유지한다. |
 | `[Debug.Upscream] Enabled` | Headman·Clown·Reaper가 꺼져 있을 때 난이도 5, 변장 허용 Upscream 1마리와 샷건·수면총을 준비한다. 켜져 있으면 아래 두 시나리오와 전용 키는 실행하지 않는다. |
@@ -70,9 +72,15 @@ Cleanup Crew와 Huntsman은 함께 실행할 수 있다. 두 몬스터를 시작
 
 Headman 테스트는 [Headman 플레이테스트](headman-playtest.md)를 따른다. Clown 테스트는 [Clown 플레이테스트](clown-playtest.md)를 따른다. Reaper 자동 생성과 전력질주 확인 순서는 [Reaper 플레이테스트](reaper-playtest.md)를 따른다. 이 시나리오는 Shadow Child를 추가 생성하지 않으며 Reaper는 블라인드 대신 전력질주를 사용한다.
 
-종합 테스트와 새 난이도 진행 확인에는 다음 여섯 설정을 모두 끈다. Release는 이 설정과 관계없이 실제 진행도를 사용한다.
+종합 테스트와 새 난이도 진행 확인에는 다음 여덟 설정을 모두 끈다. Release는 이 설정과 관계없이 실제 진행도를 사용한다.
 
 ```ini
+[Debug.LoomRobe]
+Enabled = false
+
+[Debug.Trudge]
+Enabled = false
+
 [Debug.Headman]
 Enabled = false
 
@@ -139,3 +147,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -
 추가로 공용 난이도의 stage1/4/7/10/13 경계와 음수·최대 정수 입력, 블라인드의 3초 반복·타깃 상실/교체·재스폰 초기화, 웨이브의 20m 영역·3초 예고·자세 회피·초당 노움 2마리·20초 종료·3m 최소 거리·순정 자세 동기화 계약을 검사한다. 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
 
 현재 테스트 시나리오는 위 Debug 설정을 기준으로 선택한다. Loom·Robe의 스토커 동반과 다른 몬스터 능력은 선택된 공용 난이도를 사용하며, 실제 진행도 검증에는 전용 시나리오를 모두 끄거나 Release를 사용한다.
+
+Trudge 테스트는 [소집 플레이테스트](trudge-playtest.md)를 따른다. Trudge가 켜져 있으면 아래의 모든 기존 시나리오와 전용 키를 중단한다.
+
+현재 테스트 확인 순서는 [Loom·Robe 플레이테스트](loom-robe-playtest.md)를 따른다. LoomRobe가 켜져 있으면 이전 시나리오와 전용 키를 중단한다.

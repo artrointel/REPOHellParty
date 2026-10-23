@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add tier-4 Headman Protection: idle Headmen inherit nearby allies' player targets or identified attackers within 20m; borrowed Reaper bodies are excluded. Switch the temporary test to maximum-tier Headman with a vanilla Animal ally and two guns.
-- Add tier-2 Trudge Muster (소집): every ground slam summons two random native Tick/Gnome/Banger after one second, sharing the last target. No HellParty abilities, timed retirement or post-death respawn; native Banger detonation remains.
+- Add tier-2 Trudge Muster (소집): every ground slam summons two random native Tick/Gnome/Banger after three seconds, sharing the last target. No HellParty abilities, timed retirement or post-death respawn; native Banger detonation remains.
 - Verify Huntsman and Loom share one global abduction reservation and reject new captures while anyone is already captive.
 
 - Implement Clown tier-3 Laser Staff Summon and tier-5 Laser Shield. Shield blocks gun damage/stun while targetless and fires a fixed-aim Staff after two seconds. Surviving staves become collectible loot on owner death. Prepare exclusive difficulty-5 Debug.Clown with shotgun and tranquilizer.
@@ -13,7 +13,7 @@
 
 - Advance normal difficulty by one tier: stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ now use tiers 1 / 2 / 3 / 4 / 5. Preserve difficulty 0 as a vanilla baseline and existing Debug scenario overrides.
 - Refresh repository and package documentation, stage unlock labels, implementation status and profile-driven Debug instructions.
-- Document current Huntsman Abduction: 7m range, 2 damage every second after a three-second delay, no shooting while carrying, captive sound filtering, carrier-grab rejection, and a five-second release cooldown. Add tier-4 Death Tactics with a native recoverable Human Grenade.
+- Document current Huntsman Abduction: 4m range, 2 damage every second after a three-second delay, no shooting while carrying, captive sound filtering, carrier-grab rejection, and a five-second release cooldown. Add tier-4 Death Tactics with a native recoverable Human Grenade.
 - Add Cleanup Crew Hatching/Hatching2 and natural Upscream Big-valuable disguises; ability/wave-summoned Upscreams are excluded from disguise.
 - Add Reaper/Shadow Child Blind: native gas at the target's eye position every three seconds of continuous targeting; target changes/loss reset the timer.
 - Update Monster Wave: 20m radius, three-second posture-based evasion warning, two Gnomes per second, twenty-second total lifetime, one-second retries, revalidated spawn-position caches, nearest-player candidate ordering, and a strict greater-than-three-metre player clearance. Break the Gramophone through native effects on combat end; cancel warnings silently.

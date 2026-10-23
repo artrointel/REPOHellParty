@@ -19,7 +19,7 @@ Check("Protection rejects invalid distance", !ProtectionRules.Eligible(5, false,
 var trudgeCall = new TrudgeCallCycle();
 Check("Trudge Call unlocks at two", !TrudgeCallCycle.Unlocked(1) && TrudgeCallCycle.Unlocked(2));
 Check("Trudge Call cannot queue below unlock", !trudgeCall.Strike(1));
-Check("Every floor strike queues one pair regardless of damage", trudgeCall.Strike(2) && TrudgeCallCycle.Count == 2 && TrudgeCallCycle.Delay == 1);
+Check("Every floor strike queues one pair regardless of damage", trudgeCall.Strike(2) && TrudgeCallCycle.Count == 2 && TrudgeCallCycle.Delay == 3);
 Check("Repeated floor callbacks cannot queue a duplicate pair", !trudgeCall.Strike(5));
 trudgeCall.Begin();
 Check("The next swing can summon again", trudgeCall.Strike(5));
@@ -33,8 +33,8 @@ var clownExpired = new ClownStaffLife();
 Check("Laser expiry removes an unrewarded Staff once", clownExpired.Remove() && !clownExpired.Remove());
 Check("Later Clown death cannot recreate an expired Staff", !clownExpired.Reward() && !clownExpired.Rewarded);
 Check("Separate Staff rewards do not share lifecycle", new ClownStaffLife().Pinned);
-Check("Loom Abduction stays locked until four", !AbductionClock.Eligible(3, 2, true, 49, 4) && AbductionClock.Eligible(4, 2, true, 49, 4));
-Check("Loom Abduction shares living-player range and pursuit requirements", !AbductionClock.Eligible(5, 1, true, 1, 4) && !AbductionClock.Eligible(5, 2, false, 1, 4) && !AbductionClock.Eligible(5, 2, true, 49.001, 4));
+Check("Loom Abduction stays locked until four", !AbductionClock.Eligible(3, 2, true, 16, 4) && AbductionClock.Eligible(4, 2, true, 16, 4));
+Check("Loom Abduction shares living-player range and pursuit requirements", !AbductionClock.Eligible(5, 1, true, 1, 4) && !AbductionClock.Eligible(5, 2, false, 1, 4) && !AbductionClock.Eligible(5, 2, true, 16.001, 4));
 for (int tier = 0; tier <= 5; tier++)
 {
     var noDeathLoot = new BirthdayBalloonRewards<int>();
@@ -676,8 +676,8 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 Check("Abduction unlocks only from tier two", !AbductionClock.Eligible(0, 2, true, 0) && !AbductionClock.Eligible(1, 2, true, 0) && AbductionClock.Eligible(2, 2, true, 0));
 Check("Abduction normally requires at least two living players", !AbductionClock.Eligible(5, 0, true, 1) && !AbductionClock.Eligible(5, 1, true, 1) && AbductionClock.Eligible(5, 3, true, 1));
 Check("Abduction requires combat or player tracking", !AbductionClock.Eligible(5, 2, false, 1));
-Check("Abduction includes seven metres and excludes any further distance", AbductionClock.Eligible(2, 2, true, 49) && !AbductionClock.Eligible(2, 2, true, 49.0001));
-Check("Abduction now accepts players beyond its previous five-metre limit", AbductionClock.Eligible(2, 2, true, 36) && !AbductionClock.Eligible(2, 2, true, 64));
+Check("Abduction includes four metres and excludes any further distance", AbductionClock.Eligible(2, 2, true, 16) && !AbductionClock.Eligible(2, 2, true, 16.0001));
+Check("Both carrier tiers reject the old five-to-seven-metre range", !AbductionClock.Eligible(2, 2, true, 25) && !AbductionClock.Eligible(4, 2, true, 49, 4));
 Check("Abduction rejects invalid distances", !AbductionClock.Eligible(5, 2, true, double.NaN) && !AbductionClock.Eligible(5, 2, true, -1) && !AbductionClock.Eligible(5, 2, true, double.PositiveInfinity));
 var abduction = new AbductionClock();
 Check("First abduction has no initial cooldown", abduction.Ready(0) && abduction.Start(0));
@@ -768,6 +768,15 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+Check("Loom/Robe debug forces maximum difficulty", (int)debug.GetType("HellParty.Debugging.DebugLoomRobeScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Loom/Robe debug excludes all older scenarios", new[] { "DebugTrudgeScenario", "DebugHeadmanScenario", "DebugClownScenario", "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugLoomRobeScenario" && m.Name == "get_Enabled")));
+Check("Solo Loom exception requires an instance marker", debug.GetType("HellParty.Debugging.DebugLoomRobeScenario").Methods.Single(m => m.Name == "SoloEnabledFor").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "DebugSoloLoom")));
+var loomTestSpawn = debug.GetType("HellParty.Debugging.DebugLoomRobeScenario").Methods.Single(m => m.Name == "TrySpawn").Body.Instructions;
+Check("Loom/Robe debug uses both native prefabs", new[] { "LoomPrefab", "RobePrefab" }.All(name => loomTestSpawn.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "VanillaCatalog" && m.Name == name)));
+Check("Loom/Robe test leaves companion generation to production code", !loomTestSpawn.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "StalkingDoll" && m.Name == "Spawn"));
+Check("Release abduction never consults the temporary solo Loom override", !release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugLoomRobeScenario"));
+Check("Trudge debug forces maximum difficulty", (int)debug.GetType("HellParty.Debugging.DebugTrudgeScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Trudge debug excludes all previous automatic spawns", new[] { "DebugHeadmanScenario", "DebugClownScenario", "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugTrudgeScenario" && m.Name == "get_Enabled")));
 Check("Headman debug is maximum tier", (int)debug.GetType("HellParty.Debugging.DebugHeadmanScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Headman debug disables all previous scenarios", new[] { "DebugClownScenario", "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugHeadmanScenario" && m.Name == "get_Enabled")));
 Check("Native-only summons are excluded before ability attachment", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "VanillaAbilityExcluded")));
@@ -783,7 +792,7 @@ Check("Clown debug suppresses all other specimens", new[] { "DebugReaperScenario
 Check("Reaper debug uses the first unlocked difficulty", (int)debug.GetType("HellParty.Debugging.DebugReaperScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 2);
 Check("Reaper debug suppresses every older specimen", new[] { "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugReaperScenario" && m.Name == "get_Enabled")));
 var blindDebugDifficulty = debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions;
-Check("Headman debug takes priority over all older scenarios", blindDebugDifficulty.First(i => i.Operand is MethodReference m && m.Name == "get_Enabled").Operand is MethodReference firstScenario && firstScenario.DeclaringType.Name == "DebugHeadmanScenario");
+Check("Loom/Robe debug takes priority over all older scenarios", blindDebugDifficulty.First(i => i.Operand is MethodReference m && m.Name == "get_Enabled").Operand is MethodReference firstScenario && firstScenario.DeclaringType.Name == "DebugLoomRobeScenario");
 var blindDebugBirth = debug.GetType("HellParty.Debugging.DebugReaperScenario").NestedTypes.Single(t => t.Name.Contains("SpawnTestSet")).Methods.Single(m => m.Name == "MoveNext").Body.Instructions;
 Check("Reaper debug creates its Reaper on a validated NavMesh", blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugSpawnSupport" && m.Name == "TryFindPosition") && blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
 Check("Debug removes the previous Mentalist scenario", debug.GetType("HellParty.Debugging.DebugMentalistScenario") == null);
@@ -821,6 +830,9 @@ Check("Cleanup debug scenario is the default maximum-tier test", (int)debug.GetT
 Check("Huntsman debug remains enabled independently of Cleanup Crew", !debug.GetType("HellParty.Debugging.DebugHuntsmanScenario").Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugCleanupScenario"));
 var captureCalls = release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions;
 Check("Both abduction carriers ray-test before the native capture", captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.DeclaringType.Name == "AbductionSight" && m.Name == "Clear") is int sightIndex && sightIndex >= 0 && sightIndex < captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.Name == "TumbleSet"));
+Check("Loom abduction uses its own native vision origin", release.GetType("HellParty.Native.AbductionSight").Methods.Single(m => m.Name == "Origin").Body.Instructions.Any(i => i.Operand is FieldReference f && f.DeclaringType.Name == "EnemyShadow" && f.Name == "visionTransform"));
+Check("Abduction ray uses the per-species origin resolver", release.GetType("HellParty.Native.AbductionSight").Methods.Single(m => m.Name == "Clear").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "Origin"));
+Check("Loom tries capture before committing a slap", release.GetType("HellParty.LoomAbductionAttackPatch").Methods.Single(m => m.Name == "Prefix").ReturnType.FullName == "System.Boolean" && release.GetType("HellParty.LoomAbductionAttackPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "HuntsmanAbduction" && m.Name == "TryCapture"));
 Check("Abduction invokes synchronous native host TumbleSet", captureCalls.Any(i => i.Operand is MethodReference m && m.Name == "TumbleSet") && !captureCalls.Any(i => i.Operand is MethodReference m && m.Name == "TumbleRequest"));
 Check("Abduction physics does not send a timer RPC every tick", !release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "Hold").Body.Instructions.Any(i => i.Operand is MethodReference m && (m.Name == "RPC" || m.Name == "TumbleOverrideTime")));
 Check("Abduction authenticates remote grab attempts", release.GetType("HellParty.HuntsmanAbductionGrabRpcPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "OwnerOnlyRPC"));

@@ -22,6 +22,8 @@ internal sealed class StageRuntime : MonoBehaviour
             gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
+        if (Debugging.DebugLoomRobeScenario.Enabled) StartCoroutine(Debugging.DebugLoomRobeScenario.SpawnTestSet());
+        if (Debugging.DebugTrudgeScenario.Enabled) StartCoroutine(Debugging.DebugTrudgeScenario.SpawnTestSet());
         if (Debugging.DebugHeadmanScenario.Enabled) StartCoroutine(Debugging.DebugHeadmanScenario.SpawnTestSet());
         if (Debugging.DebugClownScenario.Enabled) StartCoroutine(Debugging.DebugClownScenario.SpawnTestSet());
         if (Debugging.DebugReaperScenario.Enabled) StartCoroutine(Debugging.DebugReaperScenario.SpawnTestSet());

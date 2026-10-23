@@ -22,7 +22,7 @@ internal sealed class DebugHuntsmanController : MonoBehaviour
         if (hunter == null || !NativeEnemy.Spawned(GetComponent<EnemyParent>()) || NativeEnemy.Dead(hunter.enemy.Health)) return;
         hunter.enemy.Rigidbody.onTouchPlayerAvatar = PlayerController.instance.playerAvatarScript;
         hunter.OnTouchPlayer();
-        Plugin.ModLogger.LogInfo($"DEBUG Huntsman native touch response: {hunter.currentState}. Approach within 7m; two living players required unless F6 is ON.");
+        Plugin.ModLogger.LogInfo($"DEBUG Huntsman native touch response: {hunter.currentState}. Approach within 4m; two living players required unless F6 is ON.");
     }
 }
 #endif

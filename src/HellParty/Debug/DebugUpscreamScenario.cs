@@ -11,7 +11,7 @@ internal static class DebugUpscreamScenario
 {
     internal const int ForcedDifficulty = 5;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && _enabled?.Value == true;
+    internal static bool Enabled => !DebugLoomRobeScenario.Enabled && !DebugTrudgeScenario.Enabled && !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && _enabled?.Value == true;
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.Upscream", "Enabled", true,
         "Test Upscream's random Big valuable mimic ability at difficulty 5. Spawns one ability-enabled Upscream, shotgun and tranquilizer near the start. Overrides older debug scenarios. Restart after changing this setting.");
 

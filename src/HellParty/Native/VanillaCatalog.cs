@@ -13,11 +13,13 @@ internal static class VanillaCatalog
     internal static PrefabRef ElsaPrefab() => EnemyPrefab<EnemyElsa>();
     internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
+    internal static PrefabRef RobePrefab() => EnemyPrefab<EnemyRobe>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
     internal static PrefabRef HuntsmanPrefab() => EnemyPrefab<EnemyHunter>();
     internal static PrefabRef ReaperPrefab() => EnemyPrefab<EnemyRunner>();
     internal static PrefabRef HeadmanPrefab() => EnemyPrefab<EnemyHeadController>();
     internal static PrefabRef TickPrefab() => EnemyPrefab<EnemyTick>();
+    internal static PrefabRef TrudgePrefab() => EnemyPrefab<EnemySlowWalker>();
     internal static PrefabRef GnomePrefab()
     {
         var prefab = new PrefabRef();

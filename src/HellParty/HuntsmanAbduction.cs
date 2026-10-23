@@ -78,7 +78,7 @@ internal sealed class HuntsmanAbduction : MonoBehaviour
         TryCapture();
     }
 
-    private void TryCapture()
+    internal void TryCapture()
     {
         if (!Alive || !SemiFunc.RunIsLevel() || !_clock.Ready(Time.timeAsDouble) || Current != null ||
             _enemy.IsStunned() || !Combat()) return;
@@ -94,7 +94,8 @@ internal sealed class HuntsmanAbduction : MonoBehaviour
             if (squared < best) { best = squared; nearest = player; }
         }
 #if DEBUG
-        if (Debugging.DebugHuntsmanScenario.SoloEnabledFor(_parent) && alive == 1) alive = 2;
+        if (alive == 1 && (Debugging.DebugHuntsmanScenario.SoloEnabledFor(_parent) ||
+                          Debugging.DebugLoomRobeScenario.SoloEnabledFor(_parent))) alive = 2;
 #endif
         if (nearest == null || !AbductionClock.Eligible(DifficultyService.Current, alive, true, best, _loom != null ? 4 : 2) ||
             !AbductionSight.Clear(_enemy, _parent, nearest) || !BackClear() || !Slot.Acquire(this)) return;
@@ -279,10 +280,20 @@ internal static class LoomAbductionDeathPatch
 internal static class LoomAbductionAttackPatch
 {
     [HarmonyPrefix]
-    private static void Prefix(EnemyShadow __instance, ref EnemyShadow.State _nextState)
+    private static bool Prefix(EnemyShadow __instance, ref EnemyShadow.State _nextState)
     {
-        if (SemiFunc.IsMasterClientOrSingleplayer() && HuntsmanAbduction.Carrying(__instance) && _nextState == EnemyShadow.State.Slap)
+        if (!SemiFunc.IsMasterClientOrSingleplayer() || _nextState != EnemyShadow.State.Slap) return true;
+        if (HuntsmanAbduction.Carrying(__instance))
+        {
             _nextState = EnemyShadow.State.Follow;
+            return true;
+        }
+        EnemyParent parent = NativeEnemy.Parent(__instance);
+        StageRuntime.TryAttach(parent);
+        parent.GetComponent<HuntsmanAbduction>()?.TryCapture();
+        // Capture chooses Follow (another target) or Leave (solo). Preserve
+        // that choice instead of overwriting it with the pending slap.
+        return !HuntsmanAbduction.Carrying(__instance);
     }
 }
 

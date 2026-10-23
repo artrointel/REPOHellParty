@@ -22,9 +22,9 @@
 
 ## Debug 예외
 
-Release와 모든 전용 시나리오를 끈 Debug는 위 계산을 사용한다. Debug 테스트가 켜져 있으면 기존처럼 해당 시나리오의 강제 난이도가 우선한다. Headman 테스트가 최우선이며 난이도 5를 강제한다. 그다음 Clown의 5, Reaper 전력질주의 2, Upscream의 5, Cleanup Crew의 선택 난이도(1/5), 그다음 Huntsman의 5를 사용한다. F9는 Cleanup Crew 테스트가 켜져 있을 때 공용 강제 난이도를 바꾼다.
+Release와 모든 전용 시나리오를 끈 Debug는 위 계산을 사용한다. Debug 테스트가 켜져 있으면 기존처럼 해당 시나리오의 강제 난이도가 우선한다. Loom·Robe 테스트가 최우선이며 난이도 5를 강제한다. 그다음 Trudge의 5를 사용한다. 그다음 Headman의 5를 사용한다. 그다음 Clown의 5, Reaper 전력질주의 2, Upscream의 5, Cleanup Crew의 선택 난이도(1/5), 그다음 Huntsman의 5를 사용한다. F9는 Cleanup Crew 테스트가 켜져 있을 때 공용 강제 난이도를 바꾼다.
 
-실제 stage1 난이도 1을 확인하려면 [개발 환경](../development.md#debug와-release)에서 여섯 시나리오를 모두 끄거나 Release로 실행한다.
+실제 stage1 난이도 1을 확인하려면 [개발 환경](../development.md#debug와-release)에서 여덟 시나리오를 모두 끄거나 Release로 실행한다.
 
 ## 문서 연결
 

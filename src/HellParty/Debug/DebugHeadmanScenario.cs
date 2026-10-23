@@ -11,7 +11,7 @@ internal static class DebugHeadmanScenario
 {
     internal const int ForcedDifficulty = 5;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => _enabled?.Value == true;
+    internal static bool Enabled => !DebugLoomRobeScenario.Enabled && !DebugTrudgeScenario.Enabled && _enabled?.Value == true;
 
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.Headman", "Enabled", true,
         "Test Headman Protection at difficulty 5. Spawn Headman and a vanilla Animal ally, shotgun and tranquilizer. Restart after changing this setting.");

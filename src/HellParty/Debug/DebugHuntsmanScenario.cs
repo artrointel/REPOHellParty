@@ -12,7 +12,7 @@ internal static class DebugHuntsmanScenario
 {
     internal const int ForcedDifficulty = 5;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && !DebugUpscreamScenario.Enabled && _enabled?.Value == true;
+    internal static bool Enabled => !DebugLoomRobeScenario.Enabled && !DebugTrudgeScenario.Enabled && !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && !DebugReaperScenario.Enabled && !DebugUpscreamScenario.Enabled && _enabled?.Value == true;
 
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.Huntsman", "Enabled", true,
         "Force HellParty difficulty 5 and spawn Huntsman, shotgun and tranquilizer near the start. Debug build only. Restart the game after changing this value.");

@@ -3,6 +3,9 @@
 Debug 빌드에서 프로필의 `BepInEx/config/artrointel.HellParty.cfg`를 다음과 같이 설정하고 게임을 재시작한다.
 
 ```ini
+[Debug.Trudge]
+Enabled = false
+
 [Debug.Headman]
 Enabled = false
 
@@ -36,4 +39,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 6. 대기 중·발사 중 Staff가 있는 상태에서 본체를 죽인다. 발사를 멈추고 떨어진 Staff가 수집·추출 가능해야 한다. 원래 발사 종료 시간이 지나도 남아 있어야 한다. 이미 사라진 Staff는 다시 생성되면 안 된다.
 7. 모드 없는 참가자가 공격자·Grab 시도자인 경우에도 조준·발사·피해·기절 차단·보상 결과를 확인한다. 실제 Unity 플레이는 자동 검증과 별도로 수행한다.
 
-정상 진행으로 돌아가려면 여섯 Debug 시나리오를 모두 끄거나 Release를 사용한다. Release에는 테스트 생성·난이도 강제 코드가 없다.
+정상 진행으로 돌아가려면 일곱 Debug 시나리오를 모두 끄거나 Release를 사용한다. Release에는 테스트 생성·난이도 강제 코드가 없다.

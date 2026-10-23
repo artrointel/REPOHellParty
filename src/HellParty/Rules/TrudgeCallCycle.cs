@@ -2,7 +2,7 @@ namespace HellParty.Rules;
 
 internal sealed class TrudgeCallCycle
 {
-    internal const float Delay = 1;
+    internal const float Delay = 3;
     internal const int Count = 2;
     private bool _queued;
     internal static bool Unlocked(int difficulty) => difficulty >= 2;

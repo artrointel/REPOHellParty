@@ -35,7 +35,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 - [Loom](docs/monsters/loom.md)·[Robe](docs/monsters/robe.md): 난이도 1부터 각 개체가 [스토커](docs/monsters/stalking-doll.md) 1마리를 동반한다. 스토커 체력은 100이며 기본 분노와 난이도 3의 폭주를 보유한다.
 - [Peeper](docs/monsters/peeper.md): 난이도 1의 유효 타격마다 Gnome, 난이도 2부터 30% 확률의 추가 Banger를 소환한다. 둘을 합쳐 본체별 누적 10마리로 제한한다.
 - [Mentalist](docs/monsters/mentalist.md): 난이도 2부터 타깃이 없을 때 총격 피해·기절을 막고 레이저총으로 공격자의 당시 위치를 향해 2초 뒤 반격한다.
-- [Huntsman](docs/monsters/huntsman.md): 난이도 2부터 공격·추적 중 7m 내 최근접 플레이어를 납치한다. 3초 후부터 1초마다 피해 2를 주며, 운반 중 사격·피해자 소음 반응·피해자의 본체 Grab을 차단한다. 피격·넘어짐 등에 해제되고 5초 쿨타임을 적용한다. 난이도 4의 죽음의전술은 사망 시 확보 가능한 Human Grenade를 핀을 뽑아 던진다.
+- [Huntsman](docs/monsters/huntsman.md): 난이도 2부터 공격·추적 중 4m 내 최근접 플레이어를 납치한다. 3초 후부터 1초마다 피해 2를 주며, 운반 중 사격·피해자 소음 반응·피해자의 본체 Grab을 차단한다. 피격·넘어짐 등에 해제되고 5초 쿨타임을 적용한다. 난이도 4의 죽음의전술은 사망 시 확보 가능한 Human Grenade를 핀을 뽑아 던진다.
 - [Cleanup Crew](docs/monsters/cleanup-crew.md): 난이도 1의 부화는 대상이 있는 헤드 폭발 2초 후 무코어 Spewer를 생성한다. 난이도 5의 부화2는 Upscream으로 대체하며, 10초 수명 또는 던지기 적용 시 디스폰한다.
 - [Reaper](docs/monsters/reaper.md): 난이도 2의 전력질주는 추적 대상이 10m 이상 멀어지면 Headman으로 전환해 빠르게 접근하고 3m 이내에 Reaper로 돌아온다. 쿨타임은 사용부터 10초이며 체력·대상·코어 보상을 이어받는다.
 - [Shadow Child](docs/monsters/shadow-child.md): 난이도 1의 [블라인드](docs/metadata/blind.md)는 같은 대상을 유지하면 3초마다 당시 시야 높이에 순정 독가스를 생성한다. 가스는 생성 지점에 남는다.
@@ -43,7 +43,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 [Clown](docs/monsters/clown.md)은 난이도 3의 레이저스태프소환과 난이도 5의 레이저쉴드를 사용한다. 타깃이 없을 때 총격 피해·기절을 차단하고 2초 뒤 고정 조준한 Staff로 반격한다. [Loom](docs/monsters/loom.md)은 난이도 4부터 납치를 사용하며 Huntsman과 장애물 검사·전역 납치 슬롯을 공유한다. 능력 기획이 없는 몬스터는 순정 상태를 유지한다.
 
 - [Headman](docs/monsters/headman.md): 난이도 4의 보호본능은 타깃이 없을 때 20m 내 동료의 타깃 또는 동료를 공격한 플레이어를 공유받는다.
-- [Trudge](docs/monsters/trudge.md): 난이도 2부터 내려찍기마다 1초 후 순정 Tick·Gnome·Banger 중 무작위 2마리를 소환하고 마지막 추적 대상을 전달한다. 소환수에는 특수능력과 시간 제한을 부여하지 않는다.
+- [Trudge](docs/monsters/trudge.md): 난이도 2부터 내려찍기마다 3초 후 순정 Tick·Gnome·Banger 중 무작위 2마리를 소환하고 마지막 추적 대상을 전달한다. 소환수에는 특수능력과 시간 제한을 부여하지 않는다.
 
 ## 글로벌 이벤트
 
@@ -53,7 +53,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 
 ## 개발과 테스트
 
-[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징과 Debug 설정을 확인한다. 전용 Debug 시나리오는 Headman·Clown·Reaper·Upscream·Huntsman·Cleanup Crew이며 실제 활성 대상은 프로필 설정에 따라 달라진다. 종합 테스트는 여섯 시나리오를 모두 끄거나 Release로 실행한다. 종료된 몬스터 테스트의 안내를 현재 자동 생성 시나리오로 사용하지 않는다.
+[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징과 Debug 설정을 확인한다. 전용 Debug 시나리오는 LoomRobe·Trudge·Headman·Clown·Reaper·Upscream·Huntsman·Cleanup Crew이며 실제 활성 대상은 프로필 설정에 따라 달라진다. 종합 테스트는 여덟 시나리오를 모두 끄거나 Release로 실행한다. 종료된 몬스터 테스트의 안내를 현재 자동 생성 시나리오로 사용하지 않는다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
