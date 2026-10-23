@@ -7,9 +7,9 @@ using UnityEngine.AI;
 
 namespace HellParty.Debugging;
 
-internal static class DebugStalkingDollScenario
+internal static class DebugMentalistScenario
 {
-    internal const int ForcedDifficulty = 5;
+    internal const int ForcedDifficulty = 2;
 
     internal static IEnumerator SpawnTestSet()
     {
@@ -18,15 +18,13 @@ internal static class DebugStalkingDollScenario
         {
             if (Time.time >= deadline)
             {
-                Plugin.ModLogger.LogError("DEBUG Stalking Doll: truck/item catalog setup timed out.");
+                Plugin.ModLogger.LogError("DEBUG Mentalist: truck/item catalog setup timed out.");
                 yield break;
             }
             yield return null;
         }
         Transform anchor = TruckSafetySpawnPoint.instance.transform;
-        SpawnWeapon(anchor, false);
-        SpawnWeapon(anchor, true);
-        SpawnDrone(anchor);
+        for (int kind = 0; kind < 4; kind++) SpawnWeapon(anchor, kind);
         deadline = Time.time + 20;
         while (Time.time < deadline)
         {
@@ -34,23 +32,25 @@ internal static class DebugStalkingDollScenario
             {
                 try
                 {
-                    StalkingDoll doll = SpawnDoll(point);
-                    Plugin.ModLogger.LogInfo($"DEBUG Stalking Doll spawned at {point}; Loom speed={doll.MovementSpeed:0.##}m/s. Look away to let it approach.");
+                    EnemyParent parent = SpawnMentalist(point);
+                    Plugin.ModLogger.LogInfo($"DEBUG Mentalist spawn requested at {point}; reflection shield tier 2. F6 toggles targetless test mode (initially ON).");
                 }
-                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll spawn failed: {exception}"); }
+                catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Mentalist spawn failed: {exception}"); }
                 yield break;
             }
             yield return new WaitForSeconds(0.5f);
         }
-        Plugin.ModLogger.LogError($"DEBUG Stalking Doll: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
+        Plugin.ModLogger.LogError($"DEBUG Mentalist: no clear NavMesh position within 20m of start {anchor.position} after 20s. Weapon spawns ran independently.");
     }
 
-    private static StalkingDoll SpawnDoll(Vector3 point)
+    private static EnemyParent SpawnMentalist(Vector3 point)
     {
-        return StalkingDoll.Spawn(point, Quaternion.identity);
+        EnemyParent parent = SummonedEnemySpawnTicket.Create(VanillaCatalog.MentalistPrefab().ResourcePath, point);
+        parent.gameObject.AddComponent<DebugMentalistController>();
+        return parent;
     }
 
-    private static void SpawnWeapon(Transform anchor, bool tranquilizer)
+    private static void SpawnWeapon(Transform anchor, int kind)
     {
         try
         {
@@ -58,33 +58,23 @@ internal static class DebugStalkingDollScenario
             {
                 if (item == null || item.disabled || item.prefab == null || !item.prefab.IsValid()) continue;
                 GameObject prefab = item.prefab.Prefab;
-                bool matches = tranquilizer ? prefab.GetComponent<ItemGunTranq>() != null :
-                    prefab.GetComponent<ItemGun>() != null && prefab.name.IndexOf("Shotgun", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (prefab.GetComponent<ItemGun>() == null) continue;
+                bool matches = kind switch
+                {
+                    0 => prefab.name.IndexOf("Shotgun", StringComparison.OrdinalIgnoreCase) >= 0,
+                    1 => prefab.name.IndexOf("Handgun", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                         prefab.name.IndexOf("Pistol", StringComparison.OrdinalIgnoreCase) >= 0,
+                    2 => prefab.GetComponent<ItemGunTranq>() != null,
+                    _ => prefab.GetComponent<ItemGunLaser>() != null
+                };
                 if (!matches) continue;
-                Vector3 position = anchor.TransformPoint(new Vector3(tranquilizer ? 0.8f : -0.8f, 0.6f, 1.5f));
+                Vector3 position = anchor.TransformPoint(new Vector3((kind % 2 == 0 ? -0.8f : 0.8f), 0.6f, 1.5f + kind / 2 * 0.8f));
                 VanillaCatalog.Spawn(item.prefab, position, anchor.rotation * item.spawnRotationOffset);
                 return;
             }
-            throw new InvalidOperationException($"Native {(tranquilizer ? "tranquilizer gun" : "shotgun")} not found.");
+            throw new InvalidOperationException($"Native test gun kind {kind} not found (0=shotgun, 1=handgun, 2=tranquilizer, 3=laser).");
         }
-        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll weapon spawn failed: {exception}"); }
-    }
-
-    private static void SpawnDrone(Transform anchor)
-    {
-        try
-        {
-            foreach (Item item in StatsManager.instance.itemDictionary.Values)
-            {
-                if (item == null || item.disabled || item.prefab == null || !item.prefab.IsValid()) continue;
-                ItemDrone drone = item.prefab.Prefab.GetComponent<ItemDrone>();
-                if (drone == null || !drone.targetValuables) continue;
-                VanillaCatalog.Spawn(item.prefab, anchor.TransformPoint(new Vector3(0, 0.6f, 2.4f)), anchor.rotation * item.spawnRotationOffset);
-                return;
-            }
-            throw new InvalidOperationException("Native valuable-targeting drone not found.");
-        }
-        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Stalking Doll drone spawn failed: {exception}"); }
+        catch (Exception exception) { Plugin.ModLogger.LogError($"DEBUG Mentalist weapon spawn failed: {exception}"); }
     }
 
     private static bool TryFindPosition(Vector3 origin, out Vector3 result)
@@ -106,8 +96,8 @@ internal static class DebugStalkingDollScenario
     {
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) return;
         float squared = (hit.position - origin).sqrMagnitude;
-        if (squared < 1 || squared > 400 || squared >= best || Mathf.Abs(hit.position.y - origin.y) > 4) return;
-        if (Physics.CheckCapsule(hit.position + Vector3.up * 0.25f, hit.position + Vector3.up * 0.65f, 0.2f,
+        if (squared < 16 || squared > 400 || squared >= best || Mathf.Abs(hit.position.y - origin.y) > 4) return;
+        if (Physics.CheckCapsule(hit.position + Vector3.up * 0.65f, hit.position + Vector3.up * 1.8f, 0.5f,
             LayerMask.GetMask("Default", "PhysGrabObject"), QueryTriggerInteraction.Ignore)) return;
         best = squared;
         result = hit.position;

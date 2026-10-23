@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- Mentalist Reflection Shield now always retaliates with a native laser gun regardless of the incoming gun. Aim locks on creation, laser firing starts after two seconds, and native laser damage/duration are retained.
+
+- Mentalist gains Reflection Shield at difficulty 2 while it has no player target. Native gun hits have damage/stun blocked; one matching temporary gun per shot locks aim immediately, fires through native RPCs after two seconds, then disappears. Shotgun pellets share one retaliation. Reflected shots cannot chain reflections.
+
 - Reduced Stalking Doll health to 100 and kept displayed price proportional to remaining HP / 100.
 - Peeper summons a Gnome on each confirmed damaging hit from difficulty 1, with a 30% bonus Banger chance from difficulty 2. Both types share a cumulative ten-unit limit per Peeper. Summons inherit the snapshotted victim through native group AI; overlapping remote damage has attribution limitations.
 

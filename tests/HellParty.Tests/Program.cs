@@ -36,6 +36,17 @@ Check("Stalking Doll two simultaneous grabbers each take one hit", grabAttempts.
 Check("Stalking Doll retry after release lockout is a new attempt", grabAttempts.Accept(1, 0.5f));
 Check("Stalking Doll repeated new attempt is also deduplicated", !grabAttempts.Accept(1, 0.5f));
 var stalkingLife = new StalkingDollLife();
+Check("Mentalist reflection unlocks only at difficulty two", !DifficultyRules.MentalistReflectionUnlocked(0) && !DifficultyRules.MentalistReflectionUnlocked(1) && DifficultyRules.MentalistReflectionUnlocked(2));
+var reflection = new MentalistReflectionRules();
+Check("Mentalist without a player target reflects the first gun hit", reflection.Observe(1, false) == ReflectedShotDecision.Reflect);
+Check("Mentalist shotgun pellets share one reflection", reflection.Observe(1, false) == ReflectedShotDecision.AlreadyReflected && reflection.Observe(1, false) == ReflectedShotDecision.AlreadyReflected);
+Check("Mentalist gaining a target cannot cancel the original shot's shield", reflection.Observe(1, true) == ReflectedShotDecision.AlreadyReflected);
+Check("Mentalist with a target takes normal gunfire", reflection.Observe(2, true) == ReflectedShotDecision.Ignore);
+Check("Mentalist original ineligible shotgun cannot become eligible on later pellets", reflection.Observe(2, false) == ReflectedShotDecision.Ignore);
+Check("Mentalist another gunshot can trigger its own retaliation", reflection.Observe(3, false) == ReflectedShotDecision.Reflect);
+Check("Mentalist reflection counts independently for different Mentalists", new MentalistReflectionRules().Observe(1, false) == ReflectedShotDecision.Reflect);
+Check("Mentalist never fires its retaliation before two seconds", !MentalistReflectionRules.Due(101.999, 100));
+Check("Mentalist retaliation fires at or after the two-second deadline", MentalistReflectionRules.Due(102, 100) && MentalistReflectionRules.Due(102.1, 100));
 Check("Peeper summon tiers preserve difficulty zero", !DifficultyRules.PeeperGnomeUnlocked(0) && !DifficultyRules.PeeperBangerUnlocked(0));
 Check("Peeper Gnome unlock precedes Banger unlock", DifficultyRules.PeeperGnomeUnlocked(1) && !DifficultyRules.PeeperBangerUnlocked(1) && DifficultyRules.PeeperBangerUnlocked(2));
 Check("Peeper only real health loss is a valid hit", PeeperSummonRules.EffectiveHit(100, 98) && !PeeperSummonRules.EffectiveHit(100, 100) && !PeeperSummonRules.EffectiveHit(98, 100));
@@ -503,8 +514,10 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
-Check("Debug contains Stalking Doll test scenario", debug.GetType("HellParty.Debugging.DebugStalkingDollScenario") != null);
-Check("Debug Stalking Doll scenario forces difficulty five", (int)debug.GetType("HellParty.Debugging.DebugStalkingDollScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Debug contains Mentalist test scenario", debug.GetType("HellParty.Debugging.DebugMentalistScenario") != null);
+Check("Debug Mentalist scenario forces difficulty two", (int)debug.GetType("HellParty.Debugging.DebugMentalistScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 2);
+Check("Debug removes automatic Stalking Doll test spawning", debug.GetType("HellParty.Debugging.DebugStalkingDollScenario") == null);
+Check("Debug Mentalist has an isolated targetless test controller", debug.GetType("HellParty.Debugging.DebugMentalistController") != null);
 Check("Debug no longer spawns the Chef scenario", debug.GetType("HellParty.Debugging.DebugChefScenario") == null);
 Check("Release includes independently spawnable Stalking Doll AI", release.GetType("HellParty.StalkingDoll").Methods.Any(m => m.Name == "Spawn"));
 Check("Stalking Doll no longer hides price or discovery only on the host", release.GetType("HellParty.StalkingDollLocalPricePatch") == null && release.GetType("HellParty.StalkingDollLocalDiscoveryPatch") == null);
@@ -516,7 +529,7 @@ Check("Stalking Doll companion spawn hook authenticates native spawn messages", 
 Check("Stalking Doll terrain immunity is restored even after native exceptions", release.GetType("HellParty.StalkingDollTerrainCollisionPatch").Methods.Single(m => m.Name == "Finalizer").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyFinalizer"));
 Check("Stalking Doll wall collisions cannot become break or instant-kill damage", new[] { "HellParty.StalkingDollCollisionDamagePatch", "HellParty.StalkingDollEnvironmentDeathPatch" }.All(t => release.GetType(t).Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_TerrainCollision")));
 Check("Debug no longer contains Animal test scenario", debug.GetType("HellParty.Debugging.DebugAnimalScenario") == null);
-Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_5));
+Check("Debug difficulty getter uses the test override", debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldc_I4_2));
 Check("Release excludes debug scenarios and spawn tickets", !release.Types.Any(t => t.Namespace.StartsWith("HellParty.Debugging")));
 Check("Release computes difficulty from completed stages", release.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "FromCompletedStages"));
 Check("Release includes Animal ability", release.GetType("HellParty.AnimalPoison") != null);
@@ -528,12 +541,25 @@ Check("Release includes Bowtie Brothers and summoned Elsa lifecycle", release.Ge
 Check("Debug no longer contains Bella scenario", debug.GetType("HellParty.Debugging.DebugBellaScenario") == null);
 Check("Release includes Birthday Boy ability", release.GetType("HellParty.BirthdayBoyAbilities") != null);
 Check("Release includes Peeper hit-confirmed summon abilities", release.GetType("HellParty.PeeperAbilities") != null && release.GetType("HellParty.PeeperDamageRequestPatch") != null && release.GetType("HellParty.PeeperLethalHitConfirmationPatch") != null);
+Check("Release includes Mentalist reflection and native temporary guns", release.GetType("HellParty.MentalistReflection") != null && release.GetType("HellParty.MentalistReflectedGun") != null);
+Check("Mentalist always retaliates with the native laser regardless of incoming gun", release.GetType("HellParty.MentalistReflectedGun").Methods.Single(m => m.Name == "Create").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "LaserGunPrefab") && !release.GetType("HellParty.MentalistReflectedGun").Methods.Single(m => m.Name == "Create").Parameters.Any(p => p.ParameterType.Name == "PrefabRef"));
+Check("Mentalist reflection also tracks native continuous laser bursts", release.GetType("HellParty.Native.LaserGunSourcePatch") != null);
+Check("Mentalist reflected gun stores no moving player target", !release.GetType("HellParty.MentalistReflectedGun").Fields.Any(f => f.FieldType.Name == "PlayerAvatar"));
+Check("gun bullet source scope restores through native exceptions", release.GetType("HellParty.Native.GunBulletContextPatch").Methods.Single(m => m.Name == "Finalizer").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyFinalizer"));
+Check("temporary reflected gun grab requests authenticate their player", release.GetType("HellParty.MentalistReflectedGunGrabRpcPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "OwnerOnlyRPC"));
 Check("Release includes Animal division and native spawn support", release.GetType("HellParty.AnimalDivision") != null && release.GetType("HellParty.Native.AnimalSpawnTicket") != null);
 Check("no custom RPCs required on vanilla guests", !release.Types.SelectMany(t => t.Methods).Any(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "PunRPC")));
 
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    Check("native Mentalist test controls can intercept vision and grab targeting", game.GetType("EnemyFloater").Methods.Any(m => m.Name == "OnVision") && game.GetType("EnemyFloater").Methods.Any(m => m.Name == "OnGrabbed"));
+    Check("native laser exposes its continuous hit collider and shooting callback", game.GetType("SemiLaser").Fields.Any(f => f.Name == "hurtCollider") && game.GetType("ItemGunLaser").Methods.Any(m => m.Name == "OnStateShootStart"));
+    Check("native continuous weapon state RPC authenticates the host", game.GetType("ItemGun").Methods.Single(m => m.Name == "StateSetRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native Mentalist exposes its own player target", game.GetType("EnemyFloater").Fields.Any(f => f.Name == "targetPlayer" && f.FieldType.Name == "PlayerAvatar"));
+    Check("native gun firing RPC is host-authenticated", game.GetType("ItemGun").Methods.Single(m => m.Name == "ShootRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+    Check("native gun bullets retain host-authenticated weapon provenance", game.GetType("ItemGun").Methods.Single(m => m.Name == "ShootBulletRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC") && game.GetType("ItemGunBullet").Methods.Any(m => m.Name == "ActivateAll"));
+    Check("native gun aim follows its muzzle forward at fire time", game.GetType("ItemGun").Methods.Single(m => m.Name == "ShootRPC").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "gunMuzzle") && game.GetType("ItemGun").Methods.Single(m => m.Name == "ShootRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_forward"));
     var peeperAttack = game.GetType("EnemyCeilingEye").Methods.Single(m => m.Name == "StateHasTarget").Body.Instructions;
     Check("native Peeper damage uses HurtOther with an enemy attribution index", peeperAttack.Any(i => i.Operand is MethodReference m && m.Name == "HurtOther") && peeperAttack.Any(i => i.Operand is MethodReference m && m.Name == "EnemyGetIndex"));
     Check("native Peeper has a player target to snapshot for summons", game.GetType("EnemyCeilingEye").Fields.Any(f => f.Name == "targetPlayer" && f.FieldType.Name == "PlayerAvatar"));

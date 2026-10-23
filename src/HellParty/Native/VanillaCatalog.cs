@@ -14,6 +14,15 @@ internal static class VanillaCatalog
     internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
+    internal static PrefabRef MentalistPrefab() => EnemyPrefab<EnemyFloater>();
+    internal static PrefabRef LaserGunPrefab()
+    {
+        foreach (Item item in StatsManager.instance.itemDictionary.Values)
+            if (item != null && !item.disabled && item.prefab != null && item.prefab.IsValid() &&
+                item.prefab.Prefab.GetComponent<ItemGunLaser>() != null && item.prefab.Prefab.GetComponent<ItemGun>() != null)
+                return item.prefab;
+        throw new InvalidOperationException("Native laser gun prefab not found.");
+    }
     internal static PrefabRef ScreamDollPrefab() => Valuable(p => p.GetComponent<ScreamDollValuable>() != null);
 
     private static PrefabRef EnemyPrefab<T>() where T : Component

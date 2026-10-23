@@ -54,5 +54,5 @@ else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
 if ($Configuration -eq "Debug") {
-    Write-Host "Stalking Doll test: difficulty 5; autonomous Scream Doll + shotgun + tranquilizer + drone. Look away to let the doll approach; any observer stops it. Spawn position and Loom speed are logged once."
+    Write-Host "Mentalist test: difficulty 2; one Mentalist near start + shotgun + handgun + tranquilizer + laser. Targetless test mode starts ON; F6 toggles normal recognition/combat. Shoot, then move within two seconds to dodge the reflection."
 }

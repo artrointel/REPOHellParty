@@ -78,7 +78,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderst
 
 ## 검증과 다음 단계
 
-`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 200 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Mono.Cecil로 Debug 전용 자율 인형 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·최근 풍선 보상과 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 100 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Mono.Cecil로 Debug 전용 Mentalist 시나리오, Release 정상 난이도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
@@ -86,4 +86,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -
 
 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
 
-현재 Debug 실행 확인은 [자율 인형 플레이테스트](stalking-doll-playtest.md)를 따른다. Debug/Release 모두 난이도 1부터 Loom·Robe의 실제 등장 시 개체당 스토커 1마리를 동반 생성한다. Debug의 시작 위치 테스트 인형은 별도 생성이다. 난이도 3부터 폭주가 추가된다.
+현재 Debug는 난이도 2·시작 위치 근처 Mentalist·샷건·권총·수면총·레이저총을 제공하며 F6으로 타깃 없는 테스트 상태와 순정 인지를 전환한다. 실행 확인은 [Mentalist 플레이테스트](mentalist-playtest.md)를 따른다. Debug/Release 모두 난이도 1부터 Loom·Robe의 실제 등장 시 개체당 스토커 1마리를 동반 생성한다. Debug의 시작 위치 테스트 Mentalist는 별도 생성이다. 난이도 3부터 폭주가 추가된다.

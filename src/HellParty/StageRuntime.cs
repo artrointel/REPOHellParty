@@ -20,13 +20,16 @@ internal sealed class StageRuntime : MonoBehaviour
         Plugin.ModLogger.LogInfo($"Stage {DifficultyService.Stage}: HellParty difficulty {DifficultyService.Current}.");
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
-        yield return Debugging.DebugStalkingDollScenario.SpawnTestSet();
+        yield return Debugging.DebugMentalistScenario.SpawnTestSet();
 #endif
     }
 
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (Rules.DifficultyRules.MentalistReflectionUnlocked(DifficultyService.Current) &&
+            parent.GetComponentInChildren<EnemyFloater>(true) != null && parent.GetComponent<MentalistReflection>() == null)
+            parent.gameObject.AddComponent<MentalistReflection>();
         if (Rules.DifficultyRules.PeeperGnomeUnlocked(DifficultyService.Current) &&
             parent.GetComponentInChildren<EnemyCeilingEye>(true) != null && parent.GetComponent<PeeperAbilities>() == null)
             parent.gameObject.AddComponent<PeeperAbilities>();
