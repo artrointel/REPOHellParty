@@ -11,7 +11,7 @@ internal static class DebugReaperScenario
 {
     internal const int ForcedDifficulty = 2;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => !DebugClownScenario.Enabled && _enabled?.Value == true;
+    internal static bool Enabled => !DebugHeadmanScenario.Enabled && !DebugClownScenario.Enabled && _enabled?.Value == true;
 
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.Reaper", "Enabled", true,
         "Test Reaper Sprint at difficulty 2. Spawn one Reaper, shotgun and tranquilizer near the start. Restart after changing this setting.");

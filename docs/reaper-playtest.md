@@ -7,6 +7,9 @@ Reaper의 [전력질주](monsters/reaper.md)를 확인한다. 기존 Reaper 블�
 프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 다음과 같이 선택한 뒤 게임을 재시작한다.
 
 ```ini
+[Debug.Headman]
+Enabled = false
+
 [Debug.Clown]
 Enabled = false
 
@@ -40,4 +43,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 7. Headman이 추적하던 플레이어가 죽거나 퇴장하면 Reaper로 복귀하고 다른 플레이어에게 임의로 돌진하지 않아야 한다.
 8. 바닐라 참가자가 공격 대상인 경우에도 모델 교체·추격·3m 복귀·피격·기절·코어를 확인한다. 첫 전환의 순정 등록·등장 지연과 빠른 이동 중 위치 튐·NavMesh 오류도 확인한다.
 
-정상 진행으로 돌아가려면 Clown·Reaper·Upscream·CleanupCrew·Huntsman 다섯 시나리오를 모두 끄거나 Release를 사용한다. Release에는 전용 테스트 생성·강제 난이도 코드가 없다.
+정상 진행으로 돌아가려면 Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman 여섯 시나리오를 모두 끄거나 Release를 사용한다. Release에는 전용 테스트 생성·강제 난이도 코드가 없다.

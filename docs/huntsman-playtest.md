@@ -1,6 +1,9 @@
 # Huntsman 납치 플레이테스트
 
-아래 전용 Debug 테스트는 `[Debug.Clown]
+아래 전용 Debug 테스트는 `[Debug.Headman]
+Enabled = false
+
+[Debug.Clown]
 Enabled = false
 
 [Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`와 해당 시나리오의 `Enabled = true`를 설정한 뒤 재시작하여 선택한다. 실제 실행 대상은 프로필 설정을 따르며 [개발 환경](development.md#debug와-release)에서 우선순위를 확인한다.
@@ -9,7 +12,10 @@ Enabled = false
 
 ## Debug 테스트 준비
 
-`[Debug.Clown]
+`[Debug.Headman]
+Enabled = false
+
+[Debug.Clown]
 Enabled = false
 
 [Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`, `[Debug.Huntsman] Enabled = true`로 선택한다. Cleanup Crew도 true면 둘을 각각 1마리씩 생성하며, Huntsman만 테스트하려면 `[Debug.CleanupCrew] Enabled = false`로 설정한다. 아래 F6·F7·F8은 Huntsman용이고 Cleanup Crew는 F9·F10·F11을 사용한다. F9로 공용 난이도를 1로 내린 동안에는 Huntsman이 새 납치를 시작하지 않으므로 함께 확인하려면 5로 돌린다. 기존 프로필 값이 코드상 기본값보다 우선한다.
@@ -26,7 +32,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 - **F6:** 테스트로 생성한 Huntsman만 생존자 2명 조건을 우회한다. 기본 OFF다. 혼자 확인할 때만 켠다. 거리·공격 상태·쿨타임·동시 1명 제한은 그대로다.
 - **F7:** 순정 접촉 반응을 호출하여 테스트 Huntsman이 호스트를 조준하도록 요청한다. 스폰 연출·기절 등 순정 조건에서는 즉시 반응하지 않을 수 있다. 납치하려면 7m 안으로 접근해야 한다.
 - **F8:** 테스트 Huntsman의 납치를 강제로 해제한다.
-- 종합 테스트는 Clown·Reaper·Upscream·CleanupCrew·Huntsman 네 시나리오의 `Enabled`를 모두 false로 바꾸거나 Release를 사용한다. stage1부터 난이도 1인 실제 진행도를 사용하고 몬스터·무기를 자동 생성하지 않는다. Release에는 위 설정·키·난이도 강제·생존자 조건 우회 코드가 포함되지 않는다.
+- 종합 테스트는 Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman 네 시나리오의 `Enabled`를 모두 false로 바꾸거나 Release를 사용한다. stage1부터 난이도 1인 실제 진행도를 사용하고 몬스터·무기를 자동 생성하지 않는다. Release에는 위 설정·키·난이도 강제·생존자 조건 우회 코드가 포함되지 않는다.
 
 ## 확인 순서
 

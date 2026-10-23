@@ -55,23 +55,27 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 Release와 모든 시나리오를 끈 Debug는 [공용 난이도](metadata/difficulty.md)를 사용한다. `min(5, 1 + max(0, levelsCompleted) / 3)`으로 stage1/4/7/10/13에서 난이도 1/2/3/4/5가 된다. 난이도 0은 순정 기준이며 자연 진행에는 없다.
 
-실행 대상은 프로필의 `BepInEx/config/artrointel.HellParty.cfg`에 저장된 값이 결정한다. 코드상 초기 기본값은 다섯 시나리오 모두 true지만 우선순위에 따라 실행하며 기존 프로필 설정을 덮어쓰지 않는다. 이번 테스트 프로필은 Clown만 활성화했다. 설정 변경 후 게임을 재시작한다.
+실행 대상은 프로필의 `BepInEx/config/artrointel.HellParty.cfg`에 저장된 값이 결정한다. 코드상 초기 기본값은 여섯 시나리오 모두 true지만 우선순위에 따라 실행하며 기존 프로필 설정을 덮어쓰지 않는다. 이번 테스트 프로필은 Headman만 활성화했다. 설정 변경 후 게임을 재시작한다.
 
 | 설정 | 활성 시 동작 |
 | --- | --- |
-| `[Debug.Clown] Enabled` | 최우선이며 난이도 5다. Clown 1마리와 샷건·수면총을 준비하고 다른 시나리오·전용 키를 중단한다. 순정 AI는 유지한다. |
-| `[Debug.Reaper] Enabled` | Clown이 꺼졌을 때 난이도 2, Reaper 1마리와 샷건·수면총을 준비한다. 다른 세 시나리오와 전용 키를 실행하지 않는다. 순정 타깃 획득과 AI는 유지한다. |
-| `[Debug.Upscream] Enabled` | Clown·Reaper가 꺼져 있을 때 난이도 5, 변장 허용 Upscream 1마리와 샷건·수면총을 준비한다. 켜져 있으면 아래 두 시나리오와 전용 키는 실행하지 않는다. |
-| `[Debug.CleanupCrew] Enabled` | Clown·Reaper·Upscream이 꺼진 상태에서 Cleanup Crew를 준비한다. 난이도는 처음 5이며 F9로 1/5를 전환하고 F10은 인지 요청, F11은 활성 헤드의 폭발 예고다. |
-| `[Debug.Huntsman] Enabled` | Clown·Reaper·Upscream이 꺼진 상태에서 Huntsman을 준비한다. F6은 테스트 개체의 생존자 2명 조건 우회(기본 OFF), F7은 순정 조준 요청, F8은 납치 해제다. Cleanup Crew가 꺼져 있으면 난이도 5를 강제한다. |
+| `[Debug.Headman] Enabled` | 최우선이다. 난이도 5로 Headman·순정 Animal 동료 각 1마리와 샷건·수면총을 준비한다. |
+| `[Debug.Clown] Enabled` | Headman이 꺼졌을 때 난이도 5로 Clown 1마리와 샷건·수면총을 준비하고 다른 시나리오·전용 키를 중단한다. 순정 AI는 유지한다. |
+| `[Debug.Reaper] Enabled` | Headman·Clown이 꺼졌을 때 난이도 2, Reaper 1마리와 샷건·수면총을 준비한다. 다른 세 시나리오와 전용 키를 실행하지 않는다. 순정 타깃 획득과 AI는 유지한다. |
+| `[Debug.Upscream] Enabled` | Headman·Clown·Reaper가 꺼져 있을 때 난이도 5, 변장 허용 Upscream 1마리와 샷건·수면총을 준비한다. 켜져 있으면 아래 두 시나리오와 전용 키는 실행하지 않는다. |
+| `[Debug.CleanupCrew] Enabled` | Headman·Clown·Reaper·Upscream이 꺼진 상태에서 Cleanup Crew를 준비한다. 난이도는 처음 5이며 F9로 1/5를 전환하고 F10은 인지 요청, F11은 활성 헤드의 폭발 예고다. |
+| `[Debug.Huntsman] Enabled` | Headman·Clown·Reaper·Upscream이 꺼진 상태에서 Huntsman을 준비한다. F6은 테스트 개체의 생존자 2명 조건 우회(기본 OFF), F7은 순정 조준 요청, F8은 납치 해제다. Cleanup Crew가 꺼져 있으면 난이도 5를 강제한다. |
 
 Cleanup Crew와 Huntsman은 함께 실행할 수 있다. 두 몬스터를 시작 위치 20m 안의 유효 NavMesh에서 각각 준비하고 무기는 중복 생성하지 않는다. F9는 공용 난이도에 적용되므로 1단계에서 Huntsman은 새 납치를 시작하지 않는다. 실패한 몬스터 위치 탐색과 무기 생성은 분리한다. 상세 조작은 [Huntsman](huntsman-playtest.md), [Cleanup Crew](cleanup-crew-playtest.md), [Upscream](upscream-playtest.md)의 테스트 문서를 따른다.
 
-Clown 테스트는 [Clown 플레이테스트](clown-playtest.md)를 따른다. Reaper 자동 생성과 전력질주 확인 순서는 [Reaper 플레이테스트](reaper-playtest.md)를 따른다. 이 시나리오는 Shadow Child를 추가 생성하지 않으며 Reaper는 블라인드 대신 전력질주를 사용한다.
+Headman 테스트는 [Headman 플레이테스트](headman-playtest.md)를 따른다. Clown 테스트는 [Clown 플레이테스트](clown-playtest.md)를 따른다. Reaper 자동 생성과 전력질주 확인 순서는 [Reaper 플레이테스트](reaper-playtest.md)를 따른다. 이 시나리오는 Shadow Child를 추가 생성하지 않으며 Reaper는 블라인드 대신 전력질주를 사용한다.
 
-종합 테스트와 새 난이도 진행 확인에는 다음 다섯 설정을 모두 끈다. Release는 이 설정과 관계없이 실제 진행도를 사용한다.
+종합 테스트와 새 난이도 진행 확인에는 다음 여섯 설정을 모두 끈다. Release는 이 설정과 관계없이 실제 진행도를 사용한다.
 
 ```ini
+[Debug.Headman]
+Enabled = false
+
 [Debug.Clown]
 Enabled = false
 

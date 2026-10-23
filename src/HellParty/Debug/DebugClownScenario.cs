@@ -11,7 +11,7 @@ internal static class DebugClownScenario
 {
     internal const int ForcedDifficulty = 5;
     private static ConfigEntry<bool>? _enabled;
-    internal static bool Enabled => _enabled?.Value == true;
+    internal static bool Enabled => !DebugHeadmanScenario.Enabled && _enabled?.Value == true;
 
     internal static void Initialize(ConfigFile config) => _enabled = config.Bind("Debug.Clown", "Enabled", true,
         "Test Clown Staff and Laser Shield at difficulty 5. Spawn one Clown, shotgun and tranquilizer near the start. Restart after changing this setting.");

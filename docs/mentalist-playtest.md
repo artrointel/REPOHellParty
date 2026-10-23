@@ -1,6 +1,6 @@
 # Mentalist 반사쉴드 플레이테스트
 
-Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Mentalist 전용 임시 생성·인지 차단은 없다. 일반 진행에서 Mentalist와 총기를 확보해 검증한다. 반사쉴드는 난이도 2(stage4)부터 적용된다.
+Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Mentalist 전용 임시 생성·인지 차단은 없다. 일반 진행에서 Mentalist와 총기를 확보해 검증한다. 반사쉴드는 난이도 2(stage4)부터 적용된다.
 
 게임을 종료한 뒤 저장소 루트에서 실행한다.
 

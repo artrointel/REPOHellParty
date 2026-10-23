@@ -14,7 +14,7 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
     internal bool ShareAttackTarget;
     internal bool AllowUpscreamMimic;
 
-    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool allowUpscreamMimic = false)
+    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool allowUpscreamMimic = false, bool vanillaOnly = false)
     {
         Vector3 holding = AssetManager.instance.physDisabledPosition;
         if (prepareOnMesh)
@@ -28,6 +28,7 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
         }
         GameObject root = VanillaCatalog.Spawn(path, holding, Quaternion.identity);
         EnemyParent parent = root.GetComponent<EnemyParent>();
+        if (vanillaOnly) root.AddComponent<VanillaAbilityExcluded>();
         SummonedEnemySpawnTicket ticket = root.AddComponent<SummonedEnemySpawnTicket>();
         ticket.Position = position;
         ticket.InitialTarget = target;

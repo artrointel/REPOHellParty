@@ -9,6 +9,8 @@
 | 몬스터 | 현재 구현이 사용하는 정보 |
 | --- | --- |
 | Animal | `EnemyAnimal.playerTarget`; 독가스는 타깃과의 3m 조건을 추가한다. |
+| Headman | 자신의 `Enemy.TargetPlayerAvatar`와 실제 추적 상태를 확인하고, 타깃이 없으면 20m 내 동료의 타깃 또는 동료 피격의 플레이어 발생 문맥을 이어받는다. |
+| Trudge | `EnemySlowWalker.targetPlayer`의 마지막 유효 대상을 보관한다. 발동은 대상 보유나 피해 여부 대신 `SlowWalkerAttack`의 실제 내려찍기 첫 타격 이벤트다. |
 | Reaper | `EnemyRunner.targetPlayer`와 순정 추적 상태; 10m 이상에서 Headman으로 전환하고 3m 이내에 Reaper로 복귀한다. |
 | Shadow Child | `EnemyThinMan.playerTarget`; 블라인드의 공통 타이머 규칙을 사용한다. |
 | Mentalist | `EnemyFloater.targetPlayer == null`일 때 반사쉴드를 허용한다. 타깃 보유 조건의 반대다. |

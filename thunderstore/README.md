@@ -35,6 +35,9 @@ The event ends 20 seconds after Gramophone creation, including the warning. Dela
 
 ## Development status
 
-Automated checks validate deterministic rules and installed-game method/RPC contracts. Actual animation, positioning and vanilla multiplayer damage/synchronization require in-game regression testing. Release contains no temporary debug monsters, weapons, keys or difficulty overrides. Debug exposes selectable Clown (difficulty 5), Reaper Sprint (difficulty 2), Upscream, Cleanup Crew and Huntsman scenarios; stored profile configuration determines which is active.
+Automated checks validate deterministic rules and installed-game method/RPC contracts. Actual animation, positioning and vanilla multiplayer damage/synchronization require in-game regression testing. Release contains no temporary debug monsters, weapons, keys or difficulty overrides. Debug exposes selectable Headman with a vanilla Animal ally (difficulty 5), Clown (difficulty 5), Reaper Sprint (difficulty 2), Upscream, Cleanup Crew and Huntsman scenarios; stored profile configuration determines which is active.
 
 The package icon is a temporary development asset reused from REPOPocketCartTurret and must be replaced before publication.
+
+- **Headman:** Difficulty 4 Protection inherits an ally target or identified attacker within 20m while Headman has no active target. Reaper sprint proxies are excluded.
+- **Trudge:** Difficulty 2 ground slams always summon two random native Tick/Gnome/Banger after one second, with the last target and no HellParty abilities or summon timeout. Native deaths and Banger detonations remain; killed summons do not respawn.

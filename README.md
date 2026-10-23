@@ -42,6 +42,9 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 
 [Clown](docs/monsters/clown.md)은 난이도 3의 레이저스태프소환과 난이도 5의 레이저쉴드를 사용한다. 타깃이 없을 때 총격 피해·기절을 차단하고 2초 뒤 고정 조준한 Staff로 반격한다. [Loom](docs/monsters/loom.md)은 난이도 4부터 납치를 사용하며 Huntsman과 장애물 검사·전역 납치 슬롯을 공유한다. 능력 기획이 없는 몬스터는 순정 상태를 유지한다.
 
+- [Headman](docs/monsters/headman.md): 난이도 4의 보호본능은 타깃이 없을 때 20m 내 동료의 타깃 또는 동료를 공격한 플레이어를 공유받는다.
+- [Trudge](docs/monsters/trudge.md): 난이도 2부터 내려찍기마다 1초 후 순정 Tick·Gnome·Banger 중 무작위 2마리를 소환하고 마지막 추적 대상을 전달한다. 소환수에는 특수능력과 시간 제한을 부여하지 않는다.
+
 ## 글로벌 이벤트
 
 난이도 1부터 [몬스터 웨이브](docs/events/monster-wave.md)를 사용한다. 가치품 파괴 후 고정 Gramophone을 생성하고, 3초 뒤에도 반경 20m 안에 서 있는 플레이어가 있으면 사각지대 소환을 시작한다. 모두 웅크리거나 기어가면 취소한다.
@@ -50,7 +53,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 
 ## 개발과 테스트
 
-[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징과 Debug 설정을 확인한다. 전용 Debug 시나리오는 Clown·Reaper·Upscream·Huntsman·Cleanup Crew이며 실제 활성 대상은 프로필 설정에 따라 달라진다. 종합 테스트는 다섯 시나리오를 모두 끄거나 Release로 실행한다. 종료된 몬스터 테스트의 안내를 현재 자동 생성 시나리오로 사용하지 않는다.
+[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징과 Debug 설정을 확인한다. 전용 Debug 시나리오는 Headman·Clown·Reaper·Upscream·Huntsman·Cleanup Crew이며 실제 활성 대상은 프로필 설정에 따라 달라진다. 종합 테스트는 여섯 시나리오를 모두 끄거나 Release로 실행한다. 종료된 몬스터 테스트의 안내를 현재 자동 생성 시나리오로 사용하지 않는다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline

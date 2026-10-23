@@ -10,7 +10,7 @@
 
 ## 구현 상태
 
-- 구현됨: Clown의 레이저스태프소환·레이저쉴드, Loom의 납치, Animal, Apex Predator, Bella, Birthday Boy, Bowtie, Chef, Cleanup Crew, Huntsman, Loom·Robe의 스토커 동반, Mentalist, Peeper, Reaper의 전력질주와 Shadow Child의 블라인드, 자연 생성 Upscream의 변장, 독립 스토커.
+- 구현됨: Headman의 보호본능, Trudge의 소집, Clown의 레이저스태프소환·레이저쉴드, Loom의 납치, Animal, Apex Predator, Bella, Birthday Boy, Bowtie, Chef, Cleanup Crew, Huntsman, Loom·Robe의 스토커 동반, Mentalist, Peeper, Reaper의 전력질주와 Shadow Child의 블라인드, 자연 생성 Upscream의 변장, 독립 스토커.
 - 현재 기획표의 능력은 구현되었으며 실제 바닐라 동반 플레이 검증은 각 플레이테스트 문서를 따른다.
 - 그 밖의 순정 몬스터: 별도 능력 기획 미정이며 순정 동작 유지.
 

@@ -17,6 +17,14 @@ internal static class VanillaCatalog
     internal static PrefabRef HuntsmanPrefab() => EnemyPrefab<EnemyHunter>();
     internal static PrefabRef ReaperPrefab() => EnemyPrefab<EnemyRunner>();
     internal static PrefabRef HeadmanPrefab() => EnemyPrefab<EnemyHeadController>();
+    internal static PrefabRef TickPrefab() => EnemyPrefab<EnemyTick>();
+    internal static PrefabRef GnomePrefab()
+    {
+        var prefab = new PrefabRef();
+        prefab.SetPrefab(Resources.Load<GameObject>(BirthdayBalloonSpawn.GnomePath), BirthdayBalloonSpawn.GnomePath);
+        if (!prefab.IsValid()) throw new InvalidOperationException("Native Gnome prefab not found.");
+        return prefab;
+    }
     internal static PrefabRef ClownPrefab() => EnemyPrefab<EnemyBeamer>();
     internal static PrefabRef CleanupCrewPrefab() => EnemyPrefab<EnemyBombThrower>();
     internal static PrefabRef SpewerPrefab() => EnemyPrefab<EnemySlowMouth>();

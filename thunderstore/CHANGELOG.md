@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add tier-4 Headman Protection: idle Headmen inherit nearby allies' player targets or identified attackers within 20m; borrowed Reaper bodies are excluded. Switch the temporary test to maximum-tier Headman with a vanilla Animal ally and two guns.
+- Add tier-2 Trudge Muster (소집): every ground slam summons two random native Tick/Gnome/Banger after one second, sharing the last target. No HellParty abilities, timed retirement or post-death respawn; native Banger detonation remains.
+- Verify Huntsman and Loom share one global abduction reservation and reject new captures while anyone is already captive.
+
 - Implement Clown tier-3 Laser Staff Summon and tier-5 Laser Shield. Shield blocks gun damage/stun while targetless and fires a fixed-aim Staff after two seconds. Surviving staves become collectible loot on owner death. Prepare exclusive difficulty-5 Debug.Clown with shotgun and tranquilizer.
 - Add Loom tier-4 Abduction using the Huntsman shared rules and global captive slot. Both check a clear native vision ray immediately before capture.
 - Remove Birthday Boy Eyeball generation entirely; death balloon pops have no extra loot or Gnomes.

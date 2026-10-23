@@ -3,6 +3,9 @@
 Debug 빌드에서 프로필의 `BepInEx/config/artrointel.HellParty.cfg`를 다음과 같이 설정하고 게임을 재시작한다.
 
 ```ini
+[Debug.Headman]
+Enabled = false
+
 [Debug.Clown]
 Enabled = true
 
@@ -19,7 +22,7 @@ Enabled = false
 Enabled = false
 ```
 
-Clown 시나리오는 최우선이며 스테이지와 무관하게 난이도 **5**를 유지한다. 시작 위치 4~20m 내 연결된 NavMesh에 Clown 1마리, 시작 지점 근처에 샷건·수면총 각 1개를 준비한다. 몬스터 위치 탐색에 실패해도 무기는 독립적으로 생성한다. 순정 타깃 획득·AI는 유지한다.
+Headman 테스트를 끄면 Clown 시나리오가 우선하며 스테이지와 무관하게 난이도 **5**를 유지한다. 시작 위치 4~20m 내 연결된 NavMesh에 Clown 1마리, 시작 지점 근처에 샷건·수면총 각 1개를 준비한다. 몬스터 위치 탐색에 실패해도 무기는 독립적으로 생성한다. 순정 타깃 획득·AI는 유지한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
@@ -33,4 +36,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 6. 대기 중·발사 중 Staff가 있는 상태에서 본체를 죽인다. 발사를 멈추고 떨어진 Staff가 수집·추출 가능해야 한다. 원래 발사 종료 시간이 지나도 남아 있어야 한다. 이미 사라진 Staff는 다시 생성되면 안 된다.
 7. 모드 없는 참가자가 공격자·Grab 시도자인 경우에도 조준·발사·피해·기절 차단·보상 결과를 확인한다. 실제 Unity 플레이는 자동 검증과 별도로 수행한다.
 
-정상 진행으로 돌아가려면 다섯 Debug 시나리오를 모두 끄거나 Release를 사용한다. Release에는 테스트 생성·난이도 강제 코드가 없다.
+정상 진행으로 돌아가려면 여섯 Debug 시나리오를 모두 끄거나 Release를 사용한다. Release에는 테스트 생성·난이도 강제 코드가 없다.

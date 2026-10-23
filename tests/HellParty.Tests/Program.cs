@@ -12,6 +12,17 @@ void Check(string name, bool condition)
     passed++;
 }
 
+Check("Headman Protection unlocks at four", !ProtectionRules.Eligible(3, false, 1) && ProtectionRules.Eligible(4, false, 1));
+Check("Protection includes exactly twenty metres", ProtectionRules.Eligible(5, false, 400) && !ProtectionRules.Eligible(5, false, 400.001));
+Check("Protection never replaces an existing target", !ProtectionRules.Eligible(5, true, 1));
+Check("Protection rejects invalid distance", !ProtectionRules.Eligible(5, false, double.NaN) && !ProtectionRules.Eligible(5, false, -1));
+var trudgeCall = new TrudgeCallCycle();
+Check("Trudge Call unlocks at two", !TrudgeCallCycle.Unlocked(1) && TrudgeCallCycle.Unlocked(2));
+Check("Trudge Call cannot queue below unlock", !trudgeCall.Strike(1));
+Check("Every floor strike queues one pair regardless of damage", trudgeCall.Strike(2) && TrudgeCallCycle.Count == 2 && TrudgeCallCycle.Delay == 1);
+Check("Repeated floor callbacks cannot queue a duplicate pair", !trudgeCall.Strike(5));
+trudgeCall.Begin();
+Check("The next swing can summon again", trudgeCall.Strike(5));
 Check("Blind preserves vanilla difficulty zero", !BlindTargetClock.Unlocked(0));
 Check("Clown Staff unlocks at three and Shield at five", !DifficultyRules.ClownStaffUnlocked(2) && DifficultyRules.ClownStaffUnlocked(3) && !DifficultyRules.ClownShieldUnlocked(4) && DifficultyRules.ClownShieldUnlocked(5));
 var clownReward = new ClownStaffLife();
@@ -757,14 +768,24 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+Check("Headman debug is maximum tier", (int)debug.GetType("HellParty.Debugging.DebugHeadmanScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
+Check("Headman debug disables all previous scenarios", new[] { "DebugClownScenario", "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugHeadmanScenario" && m.Name == "get_Enabled")));
+Check("Native-only summons are excluded before ability attachment", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "VanillaAbilityExcluded")));
+Check("Protection excludes Reaper's borrowed Headman body", release.GetType("HellParty.HeadmanProtection").Methods.Single(m => m.Name == "get_Available").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "ReaperHeadman")));
+Check("Trudge hooks the native first floor impact", release.GetType("HellParty.TrudgeCallStrikePatch").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyPatch" && a.ConstructorArguments.Any(v => v.Value is string s && s == "ActiveHurtColliderFirstHit")));
+Check("Trudge summons cannot respawn after death", release.GetType("HellParty.TrudgeReinforcementNoRespawnPatch") != null);
+Check("Both carrier species attach the same globally gated abduction component", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Count(i => i.Operand is GenericInstanceMethod m && m.Name == "AddComponent" && m.GenericArguments.Any(a => a.Name == "HuntsmanAbduction")) == 2);
+Check("A reserved abduction blocks capture before victim conversion", release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions.TakeWhile(i => !(i.Operand is MethodReference m && m.Name == "TumbleSet")).Any(i => i.Operand is MethodReference m && m.Name == "get_Current"));
+Check("Trudge blocks passive retirement for all three summoned species", new[] { "TrudgeGnomeStayPatch", "TrudgeBangerStayPatch", "TrudgeTickStayPatch" }.All(t => release.GetType("HellParty." + t).Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "PreventRetirement")));
+Check("Banger consumption accepts only the native master explosion", release.GetType("HellParty.TrudgeBangerConsumedPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 Check("Clown debug forces maximum difficulty", (int)debug.GetType("HellParty.Debugging.DebugClownScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Clown debug suppresses all other specimens", new[] { "DebugReaperScenario", "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugClownScenario" && m.Name == "get_Enabled")));
 Check("Reaper debug uses the first unlocked difficulty", (int)debug.GetType("HellParty.Debugging.DebugReaperScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 2);
 Check("Reaper debug suppresses every older specimen", new[] { "DebugUpscreamScenario", "DebugCleanupScenario", "DebugHuntsmanScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugReaperScenario" && m.Name == "get_Enabled")));
 var blindDebugDifficulty = debug.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions;
-Check("Clown debug takes priority over all older scenarios", blindDebugDifficulty.First(i => i.Operand is MethodReference m && m.Name == "get_Enabled").Operand is MethodReference firstScenario && firstScenario.DeclaringType.Name == "DebugClownScenario");
+Check("Headman debug takes priority over all older scenarios", blindDebugDifficulty.First(i => i.Operand is MethodReference m && m.Name == "get_Enabled").Operand is MethodReference firstScenario && firstScenario.DeclaringType.Name == "DebugHeadmanScenario");
 var blindDebugBirth = debug.GetType("HellParty.Debugging.DebugReaperScenario").NestedTypes.Single(t => t.Name.Contains("SpawnTestSet")).Methods.Single(m => m.Name == "MoveNext").Body.Instructions;
-Check("Reaper debug creates its Reaper on a validated NavMesh", blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugSpawnSupport" && m.Name == "TryFindPosition") && blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
+Check("Reaper debug creates its Reaper on a validated NavMesh", blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugSpawnSupport" && m.Name == "TryFindPosition") && blindDebugBirth.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
 Check("Debug removes the previous Mentalist scenario", debug.GetType("HellParty.Debugging.DebugMentalistScenario") == null);
 Check("Debug removes automatic Stalking Doll test spawning", debug.GetType("HellParty.Debugging.DebugStalkingDollScenario") == null);
 Check("Debug removes Mentalist target and F6 overrides", debug.GetType("HellParty.Debugging.DebugMentalistController") == null && debug.GetType("HellParty.Debugging.DebugMentalistVisionPatch") == null && debug.GetType("HellParty.Debugging.DebugMentalistGrabPatch") == null);
@@ -813,7 +834,7 @@ Check("Upscream and Chef share Frog vitality and visibility state", release.GetT
 Check("Shared mimic selects random Big disguises for the Upscream adapter", release.GetType("HellParty.ChefMimic").Methods.Single(m => m.Name == "Disguise").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "RandomUpscreamDisguisePath"));
 Check("Release cannot enable the debug summon mimic exception", !release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "AllowUpscreamMimic"));
 Check("Summoned monsters default to no Upscream mimic", (bool)release.GetType("HellParty.Native.SummonedEnemySpawnTicket").Methods.Single(m => m.Name == "Create").Parameters.Single(p => p.Name == "allowUpscreamMimic").Constant == false);
-Check("All production summons keep Upscream mimic disabled", release.Types.SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Where(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create").All(i => i.Previous.OpCode.Code == Code.Ldc_I4_0));
+Check("All production summons keep Upscream mimic disabled", release.Types.SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Where(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create").All(i => i.Previous.Previous.OpCode.Code == Code.Ldc_I4_0));
 Check("Upscream debug becomes the maximum-tier specimen", (int)debug.GetType("HellParty.Debugging.DebugUpscreamScenario").Fields.Single(f => f.Name == "ForcedDifficulty").Constant == 5);
 Check("Old debug specimens are suppressed by the Upscream test", new[] { "DebugHuntsmanScenario", "DebugCleanupScenario" }.All(t => debug.GetType("HellParty.Debugging." + t).Methods.Single(m => m.Name == "get_Enabled").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugUpscreamScenario" && m.Name == "get_Enabled")));
 Check("Chef pursuit release never uses disguise distance or ray predicates", release.GetType("HellParty.ChefMimic").Methods.Single(m => m.Name == "AfterNativeTick").Body.Instructions.All(i => i.Operand is not MethodReference m || (m.Name != "InRange" && m.Name != "Unobstructed" && m.Name != "HasVisiblePlayer")));
@@ -849,7 +870,7 @@ Check("Wave clearance uses the actual enemy agent dimensions", waveSpawnSearch.A
 var waveVisibility = release.GetType("HellParty.Events.WaveSpawnPoints").Methods.Single(m => m.Name == "Visible").Body.Instructions;
 Check("Wave remote visibility considers camera direction rather than a full circle", waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InverseTransformPoint") && waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InView"));
 var wavePump = release.GetType("HellParty.Events.MonsterWave").Methods.Single(m => m.Name == "Pump").Body.Instructions;
-Check("Wave birth uses validated on-mesh initialization without mimic", wavePump.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
+Check("Wave birth uses validated on-mesh initialization without mimic", wavePump.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
 var summonedReady = release.GetType("HellParty.Native.SummonedEnemyReadyPatch").Methods.Single(m => m.Name == "Postfix").Body.Instructions.ToList();
 int explicitEnable = summonedReady.FindIndex(i => i.Operand is MethodReference m && m.Name == "set_enabled");
 int forcedWarp = summonedReady.FindIndex(i => i.Operand is MethodReference m && m.Name == "Warp");

@@ -12,7 +12,7 @@
 
 ## 실행 후 확인
 
-오리·스토커 전용 임시 생성과 상태 추적 코드는 종료했다. 현재 Debug의 자동 생성과 강제 난이도는 [개발 환경](development.md#debug와-release)의 프로필 설정을 따른다. 아래의 실제 진행도 검증은 Release 또는 다섯 시나리오를 모두 끈 Debug의 자연 생성 오리로 확인한다.
+오리·스토커 전용 임시 생성과 상태 추적 코드는 종료했다. 현재 Debug의 자동 생성과 강제 난이도는 [개발 환경](development.md#debug와-release)의 프로필 설정을 따른다. 아래의 실제 진행도 검증은 Release 또는 여섯 시나리오를 모두 끈 Debug의 자연 생성 오리로 확인한다.
 
 게임을 종료한 뒤 저장소 루트에서 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1`을 실행한다. Debug 빌드·배포 후 게임 창이 표시된다. 일반 플레이 테스트에는 F5나 디버거 연결이 필요 없다.
 

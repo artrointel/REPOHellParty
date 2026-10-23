@@ -57,3 +57,6 @@ authority: host
 
 - [Clown](../monsters/clown.md): 레이저스태프소환은 순정 공격 진입 시 타깃을 사용한다. 레이저쉴드는 예외로 `EnemyBeamer.playerTarget == null`일 때 총격 피해·기절을 막고 2초 후 반격한다.
 - [Loom 납치](../monsters/loom.md): `EnemyShadow.playerTarget`이 있고 Follow·Slap 상태일 때 사용한다. Huntsman과 [공용 납치 규칙](abduction.md)의 납치 직전 ray 차폐 검사를 공유한다.
+
+- [Headman 보호본능](../monsters/headman.md): 자신에게 현재 추적 대상이 없을 때 20m 내 동료의 타깃·피격 공격자를 공유받는다. 단순 배회 후 남은 과거 타깃 참조는 현재 추적으로 간주하지 않는다.
+- [Trudge 소집](../monsters/trudge.md): 인지·피해 조건의 예외로 실제 내려찍기마다 발동한다. 마지막 유효 타깃은 소환수에게 전달할 값으로만 사용한다.

@@ -22,6 +22,7 @@ internal sealed class StageRuntime : MonoBehaviour
             gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
 #if DEBUG
+        if (Debugging.DebugHeadmanScenario.Enabled) StartCoroutine(Debugging.DebugHeadmanScenario.SpawnTestSet());
         if (Debugging.DebugClownScenario.Enabled) StartCoroutine(Debugging.DebugClownScenario.SpawnTestSet());
         if (Debugging.DebugReaperScenario.Enabled) StartCoroutine(Debugging.DebugReaperScenario.SpawnTestSet());
         if (Debugging.DebugUpscreamScenario.Enabled) StartCoroutine(Debugging.DebugUpscreamScenario.SpawnTestSet());
@@ -34,6 +35,12 @@ internal sealed class StageRuntime : MonoBehaviour
     internal static void TryAttach(EnemyParent parent)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
+        if (parent.GetComponent<VanillaAbilityExcluded>() != null) return;
+        if (Rules.TrudgeCallCycle.Unlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemySlowWalker>(true) != null &&
+            parent.GetComponent<TrudgeCall>() == null) parent.gameObject.AddComponent<TrudgeCall>();
+        if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyHeadController>(true) != null &&
+            parent.GetComponent<ReaperHeadman>() == null && parent.GetComponent<HeadmanProtection>() == null)
+            parent.gameObject.AddComponent<HeadmanProtection>();
         if (Rules.BlindTargetClock.Unlocked(DifficultyService.Current) &&
             parent.GetComponentInChildren<EnemyThinMan>(true) != null &&
             parent.GetComponent<BlindAbility>() == null) parent.gameObject.AddComponent<BlindAbility>();

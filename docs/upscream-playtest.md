@@ -10,14 +10,17 @@ Debug/Release 빌드와 자동 검사 후 실제 게임에서 확인할 항목�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
 ```
 
-Upscream 테스트는 `[Debug.Clown]
+Upscream 테스트는 `[Debug.Headman]
+Enabled = false
+
+[Debug.Clown]
 Enabled = false
 
 [Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = true`로 선택한다. 난이도를 5로 유지하고 시작 위치 20m 이내의 연결된 NavMesh 지점에 변장 능력을 가진 Upscream 1마리, 시작 지점에 샷건·수면총 각 1개를 생성한다. 몬스터 위치 탐색이 실패해도 무기는 별도로 생성한다.
 
 이 시나리오가 켜져 있으면 이전 Huntsman·Cleanup Crew의 테스트 생성과 전용 키 제어는 실행하지 않는다. Upscream은 별도 키 조작 없이 순정 배회 중 플레이어를 발견하면 변장한다. 본체와 시야가 통하는 20m 안으로 접근해 변장 수집품을 찾는다.
 
-프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `Debug.Upscream`을 false로 바꾸면 이전 시나리오를 선택할 수 있다. 종합 테스트는 Reaper·Upscream·Huntsman·CleanupCrew 다섯 시나리오를 모두 false로 바꾸고 재시작하거나 Release를 사용한다. Release에는 테스트 생성·강제 난이도·테스트 개체의 소환 예외 코드가 없다.
+프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `Debug.Upscream`을 false로 바꾸면 이전 시나리오를 선택할 수 있다. 종합 테스트는 Reaper·Upscream·Huntsman·CleanupCrew 여섯 시나리오를 모두 false로 바꾸고 재시작하거나 Release를 사용한다. Release에는 테스트 생성·강제 난이도·테스트 개체의 소환 예외 코드가 없다.
 
 ## 확인 순서
 
