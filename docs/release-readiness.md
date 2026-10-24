@@ -24,7 +24,7 @@
 - [x] 문서의 로컬 링크와 변경 파일 형식을 확인한다.
 - [x] 최종 ZIP과 SHA-256 검증 보고서를 `artifacts/`에 생성한다.
 
-이번 자동 검증 결과는 규칙·게임 호출 계약 **816개**, 정상·변조 패키지 **10개**, 로컬 문서 링크 **252개** 통과다. Debug와 Release 모두 경고·오류가 없었다. 호환되지 않는 게임 어셈블리 입력 시 테스트 러너가 오류 코드 1로 종료하고, 필수 게임 DLL 누락 시 빌드 전에 거부하는 동작도 확인했다. 실행 로그는 `artifacts/release-readiness-verified.log`와 `artifacts/release-package-negative.log`에 남겼다.
+이번 자동 검증 결과는 규칙·게임 호출 계약 **816개**, 정상·변조 패키지 **10개**, 로컬 문서 링크 **255개** 통과다. Debug와 Release 모두 경고·오류가 없었다. 호환되지 않는 게임 어셈블리 입력 시 테스트 러너가 오류 코드 1로 종료하고, 필수 게임 DLL 누락 시 빌드 전에 거부하는 동작도 확인했다. 실행 로그는 `artifacts/release-readiness-verified.log`와 `artifacts/release-package-negative.log`에 남겼다.
 
 ## 공개 전 실제 플레이 확인
 
@@ -49,6 +49,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verify-Release
 
 - ZIP: `artifacts/HellParty-0.1.0.zip`.
 - 보고서: `artifacts/HellParty-0.1.0.release.json`.
+- 공개용 소개문: [0.1.0 릴리즈 노트](releases/0.1.0.md). 검증 성공 시 `artifacts/HellParty-0.1.0.release-notes.md`에도 복사한다.
+- ZIP 체크섬: `artifacts/HellParty-0.1.0.zip.sha256`.
 - 보고서는 ZIP·플러그인·검사한 게임 어셈블리의 SHA-256과 자동 검증 범위를 기록한다. 실제 멀티플레이는 별도 미완료 상태다.
 - `scripts/Test-Package.ps1`로 기존 ZIP을 재검사할 수 있다. 최종 산출물을 만들거나 검사할 때 프로필에 DLL을 배포하거나 게임을 실행하지 않는다.
 

@@ -1,10 +1,12 @@
 # HELL PARTY
 
+**Only the host installs. Play HellParty with friends on unmodded R.E.P.O.**
+
+> Your friends need no mods, no BepInEx and no extra setup. They join your lobby with vanilla R.E.P.O. and share the new monster abilities and Monster Waves.
+
 **The duck brought friends. The balloons brought Gnomes. Your team brought a cart.**
 
 HellParty turns a familiar R.E.P.O. loot run into a monster party. Valuables hide ambushes, enemies call for backup, and a clean kill can leave one last surprise. Bring your friends, watch each other's backs, and try to get the loot home between the screams.
-
-**Only the host installs HellParty. Friends can join with vanilla R.E.P.O.**
 
 ## A few reasons to watch your back
 

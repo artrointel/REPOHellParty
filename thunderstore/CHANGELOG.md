@@ -2,6 +2,8 @@
 
 ## 0.1.0 — Release candidate
 
+- **Only the host installs. Friends can join with unmodded R.E.P.O. and experience HellParty's monster abilities and Monster Waves without installing HellParty or BepInEx.**
+
 - Replace the text icon with cartoon fan art of crowned Apex Predator, Clown and Reaper, based on reviewed visual references. Keep the master artwork and prompt in the repository and export a 256x256 package icon.
 - Move actual-play test guides into docs/playtests and update links. Rewrite both READMEs for players, describing each monster's final abilities without tier-by-tier balance tables; retain development notes at the end.
 
