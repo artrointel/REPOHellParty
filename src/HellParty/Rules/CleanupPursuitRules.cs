@@ -4,7 +4,7 @@ internal static class CleanupPursuitRules
 {
     internal const float Delay = 2;
     internal const double Lifetime = 10;
-    internal static bool Unlocked(int difficulty) => difficulty >= 1;
+    internal static bool Unlocked(int difficulty) => difficulty >= 2;
     internal static bool Upscream(int difficulty) => difficulty >= 5;
 }
 

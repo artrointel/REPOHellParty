@@ -16,7 +16,7 @@ internal static class DifficultyRules
     internal static int BirthdayBalloonTier(int difficulty) => Math.Min(3, Math.Max(0, difficulty));
     internal static bool BirthdayBalloonInRange(float squaredDistance) => squaredDistance <= 100f;
     internal static bool BirthdayDamageTriggers(int before, int after, int tier) => tier >= 3 && after > 0 && after < before;
-    internal static bool BellaSuicideUnlocked(int difficulty) => difficulty >= 1;
+    internal static bool BellaSuicideUnlocked(int difficulty) => difficulty >= 2;
     internal static bool BellaBaitUnlocked(int difficulty) => difficulty >= 3;
     internal static bool BellaBaitOutOfRange(float squaredDistance) => squaredDistance >= 225f;
     internal static bool BowtieBrothersUnlocked(int difficulty) => difficulty >= 2;
@@ -28,7 +28,7 @@ internal static class DifficultyRules
     internal static bool StalkingDollRampageUnlocked(int difficulty) => difficulty >= 3;
     internal static bool PeeperGnomeUnlocked(int difficulty) => difficulty >= 1;
     internal static bool PeeperBangerUnlocked(int difficulty) => difficulty >= 2;
-    internal static bool MentalistReflectionUnlocked(int difficulty) => difficulty >= 2;
+    internal static bool MentalistReflectionUnlocked(int difficulty) => difficulty >= 3;
     internal static bool ClownStaffUnlocked(int difficulty) => difficulty >= 3;
     internal static bool ClownShieldUnlocked(int difficulty) => difficulty >= 5;
 }

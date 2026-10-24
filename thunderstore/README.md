@@ -1,43 +1,63 @@
-# HellParty
+# HELL PARTY
 
-A host-only R.E.P.O. mod with stage-based difficulty, native monster abilities and a global Monster Wave event. Only the host installs HellParty; guests use vanilla network prefabs and RPCs.
+**The duck brought friends. The balloons brought Gnomes. Your team brought a cart.**
 
-## Difficulty
+HellParty turns a familiar R.E.P.O. loot run into a monster party. Valuables hide ambushes, enemies call for backup, and a clean kill can leave one last surprise. Bring your friends, watch each other's backs, and try to get the loot home between the screams.
 
-Normal progression starts at **difficulty 1 on stage 1**. Stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ use difficulty 1 / 2 / 3 / 4 / 5. Difficulty 0 remains the unmodified baseline but is not assigned during normal progression. Resumed runs use the same formula based on the game's completed-stage count. Both Debug and Release use normal progression; temporary spawns, forced difficulty and test controls have been removed.
+**Only the host installs HellParty. Friends can join with vanilla R.E.P.O.**
 
-## Implemented abilities
+## A few reasons to watch your back
 
-- **Apex Predator:** Clone1/2/3 at difficulties 1/3/5 maintain up to 1/2/3 clones. The original wears a Crown, released as loot on death. Clone deaths leave native radiation gas instead of cores. A shared 30-second cooldown replaces one lost clone at a time. A clone at least 15m away returns through native despawn/respawn animations while retaining health. Crown placement uses 70% of the original height offset and a 0.25m backward correction.
-- **Animal:** Difficulty 2 emits player-only native Cleanup Crew-equivalent gas at the current target's position when within 3m, on a 10-second cooldown. Difficulty 3 replaces the original death core with two half-health Animals after 0.5 seconds. Each drops one normal core if killed within 20 seconds of actual spawn, then despawns without a reward on expiry. Children do not divide again.
-- **Birthday Boy:** Difficulty 1 balloons automatically pop after a player remains within 3m for three seconds; automatic and ordinary pops spawn a Gnome if a living player is within 10m. Automatic pops do not add aggro at this tier. Difficulty 2 adds automatic-pop aggro. Death pops award no extra loot or Gnomes. Difficulty 3 nonlethal hits burst all nearby balloons within 10m, summoning Gnomes that prioritize the body's existing attack target.
-- **Bella:** Difficulty 1 mounts a Clown Doll on the seat and links its warnings/detonation to native bells. Its direct explosion excludes the owning Bella. Difficulty 3 replaces one Tiny bait item per bell pulse; every new grab targets that grabber for an immediate attack. Bait at least 15m away is removed while Bella lives. Surviving dolls and nearby bait become collectible loot after death. Destroyed dolls are not replaced.
-- **Bowtie:** Difficulty 2 wind attacks summon one no-core Elsa with the wind target. It plays the native growth animation before attacking, ignores its summoner's wind and starts animated despawn ten seconds after actual spawn, including transformation time. Difficulty 4 death summons a replacement Elsa after 0.5 seconds, prioritizing the identified killer, then the nearest living player. Without a valid target it despawns. Both abilities share one active summon per Bowtie.
-- **Chef / Upscream:** Difficulty 1 roaming Chef disguises as a native Frog; naturally spawned Upscream disguises as one of 24 allowed Big valuables, excluding cores, Surplus, Telescope and Unicorn Horn. Disguises share body-health/durability percentages, exclude drones and Gnome valuable targeting, award a core on actual destruction including environmental damage, and release all grabs before restoring the native attack sequence. Five continuous seconds without a visible player within 20m reveal the monster back into roaming. A revealed pursuer cannot redisguise until its target dies or native pursuit ends. Upscreams summoned by other abilities or the wave do not gain disguise.
-- **Loom / Robe:** From difficulty 1, each native instance brings one independent Stalking Doll per stage. Native respawns do not create duplicate companions.
-- **Stalking Doll:** Uses the native Scream Doll, follows the nearest living player at Loom speed while unseen and stops when any player observes it. It has 100 HP, health-proportional native price, native impact feedback without red monster flashes, disabled extraction and one Bella-equivalent core on death. Attacks and grab retaliation deal 10 player damage; grab attempts are released. Terrain collisions do not reduce its health. Three accepted grab attempts across players trigger triple-speed rage that ignores observation and keeps attacks active while moving. Any player death or 30 seconds without a confirmed hit ends rage. Difficulty 3 Rampage also triggers rage on a confirmed normal attack, with no rear-angle requirement.
-- **Peeper:** Difficulty 1 confirmed damaging hits summon a Gnome; difficulty 2 adds a 30% bonus Banger chance. Both share a cumulative ten-summon cap per Peeper and inherit the hit-time target through native group AI.
-- **Mentalist:** Difficulty 2 blocks native gun damage/stun while targetless and always retaliates with a temporary laser gun. Aim locks on creation; the native laser burst starts two seconds later and retains native damage. Shotgun pellets share one retaliation.
-- **Huntsman:** Difficulty 2 abducts the closest living player within 4m while attacking or tracking a player. Requires two living players and no existing captive anywhere in the stage. The victim's ragdoll is fixed to its back facing away; the camera remains free. Damage starts after three seconds, then deals 2 every second. While carrying, Huntsman cannot shoot, ignores its captive's sounds, and rejects the captive's attempts to grab the carrier. Hits, stuns, death and invalid transport conditions release the captive; cooldown is five seconds after release. Difficulty 4 death throws one pin-pulled Human Grenade while preserving the normal core. Players may grab it and equip it before its native 1.5–3 second fuse expires; grabbing alone does not stop the fuse.
-- **Cleanup Crew:** Difficulty 1 Hatching creates one no-core Spewer two seconds after a head explodes with a valid target. Difficulty 5 substitutes Upscream. Summons inherit the head's target and live ten seconds from actual spawn; an Upscream also retires as soon as its native throw is applied.
-- **Reaper:** Difficulty 2 Sprint transforms a pursuing Reaper into native Headman form at 10m or farther from its current target. It uses native Headman chase speed and returns to Reaper within 3m, retaining the target and health. Cooldown is ten seconds from use; Headman form cannot cast again. Its body is reused and killed Headman forms award through the original Reaper core rule, without a separate Headman core.
-- **Shadow Child:** Difficulty 1 Blind emits player-only native gas at the target's eye position every three seconds of uninterrupted targeting. Target loss/change and respawn restart the timer. Clouds remain at their cast position and do not follow players.
+- A doll waits perfectly still while you look at it, then silently follows when everyone looks away. Make it angry and eye contact stops helping.
+- A fight can bring reinforcements, and a defeated monster can leave a dangerous encore.
+- Some risks pay off: a duck's crown, Bella's leftovers and a Clown's surviving staff can become loot.
 
-**Clown:** Difficulty 3 summons fixed-aim native laser staves on attacks. Difficulty 5 blocks gun damage and stun while targetless and counters with a Staff after two seconds. Grab attempts deal ten damage; surviving staves become loot when Clown dies. **Loom:** Difficulty 4 adds shared abduction with Huntsman; both require a clear ray to the victim before capture. Monsters without an assigned ability retain native behavior.
+## Meet the party
 
-## Monster Wave
+These are the monsters' **fully upgraded abilities**. Exact values and unlock conditions may change with balance updates.
 
-Unlocked at difficulty 1, therefore stage 1. Eligible valuable destruction creates a fixed, indestructible Gramophone. At three seconds, spawning proceeds only if a living player within 20m remains upright; crouching, crawling and tumbling do not qualify. All players hiding or leaving the area cancels the warning. A failed replacement preserves an existing wave.
+| Monster | What changes for you |
+| --- | --- |
+| **Apex Predator** | The duck arrives with up to three doubles. Fake deaths leave radiation gas. Find the crowned original, defeat it to end the family reunion, and collect the crown. |
+| **Animal** | Get close and gas appears at its target's feet. Kill it and two half-health Animals take its place. Hunt them before they disappear to claim their cores. |
+| **Bella** | Her passenger is a bell-linked explosive Clown Doll. The tiny valuables she drops are bait: grabbing one earns an immediate attack. Surviving items become loot when she dies. |
+| **Birthday Boy** | Linger beside a balloon or pop one and a Gnome can burst out. Hurt the boy and nearby balloons pop together, bringing reinforcements that share his target. |
+| **Bowtie** | Wind attacks bring an Elsa beside the target, complete with her muscle transformation. Defeating Bowtie can summon a revenge Elsa at its death spot. |
+| **Chef** | That Frog collectible might be the monster. Grab it and Chef breaks free to attack; recognize the disguise and you can destroy it for the kill reward. |
+| **Upscream** | A large valuable can hide an Upscream. Pick it up and your next trip across the room may not be voluntary. |
+| **Cleanup Crew** | The exploding head is only the opening act. An Upscream hatches at the blast site, inherits the victim and retires after landing its throw. |
+| **Clown** | Laser staves join its attacks. Shoot it before it has a target and it blocks the hit and retaliates with a staff. Move before the fixed aim fires; surviving staves become loot on its death. |
+| **Mentalist** | Shooting a Mentalist with no target triggers a laser-gun counter instead of damage or stun. Aim locks immediately, leaving a short window to move out of the shot. |
+| **Huntsman** | Get too close during pursuit and it can carry you away. A teammate can free you by hitting or stunning it. Even its death can leave a live Human Grenade. |
+| **Loom** | It arrives with a Stalking Doll and can abduct a nearby player. Carriers share one captive limit, giving the rest of the team a chance to organize a rescue. |
+| **Robe** | It brings a Stalking Doll of its own. The doll acts independently and follows the nearest living player. |
+| **Stalking Doll** | It stalks while unseen. Repeated grab attempts or allowing it to land a hit can trigger rage: faster movement, constant attacks and no respect for eye contact. A player death or a long dry spell without hits calms it down. |
+| **Peeper** | Every damaging hit can bring another Gnome, sometimes with a bonus Banger. Rescue your teammate before a nuisance becomes a crowd. |
+| **Headman** | A nearby ally's target can become its target too. Attack another monster near an idle Headman and you may find yourself fighting both. |
+| **Trudge** | Each ground slam calls two random Tick/Gnome/Banger reinforcements after a short delay. Dodging the hammer is only the first thing to worry about. |
+| **Reaper** | Pull far enough ahead and it becomes a Headman to close the gap, then returns to Reaper form for the attack. Keep checking behind you. |
+| **Shadow Child** | Keep its attention and gas repeatedly forms at eye level. Move away from each cloud before your escape route disappears behind it. |
 
-Rugrat, Upscream and Headgrab are requested at three seconds. Two Gnomes per second are requested at seconds 4–19, up to 32. All spawns must be unseen by every living player and farther than 3m from all players, with valid clearance and a complete navigation path. Validated positions are cached and rechecked first; otherwise up to 240 sampled candidates are checked in nearest-player distance order. Retries run every second. Navigation triangulation is cached per stage.
+**The supporting cast:** Elsa joins Bowtie's attacks; Gnome, Banger and Tick reinforce several encounters; Spewer can hatch from Cleanup Crew's head; Rugrat and Headgrab join the wave. Their lifetime and core rewards depend on what summoned them. Gambit, Heart Hugger, Hidden and Oogly receive no separate new ability and retain their native behavior.
 
-The event ends 20 seconds after Gramophone creation, including the warning. Delayed spawns share that deadline. Event monsters use native animated despawn; the Gramophone breaks with native sound/particles on normal end or replacement. Cancelled warnings are removed silently. Grab attempts are released and deal 10 damage. Cores, internal carriers and destruction inside an active/warning radius cannot trigger another wave. Admission attempts are rate-limited to one per three seconds, including failed attempts.
+## You broke it. Now the music starts.
 
-## Development status
+Breaking an eligible valuable can summon a Gramophone. **Your nearby team has three seconds to crouch or crawl into hiding and avoid the wave.** If someone stays upright, enemies start appearing in blind spots.
 
-Automated checks validate deterministic rules and installed-game method/RPC contracts. Actual animation, positioning and vanilla multiplayer damage/synchronization require in-game regression testing. Both build configurations use actual progression without temporary test monsters, weapons, keys, solo abduction exceptions or difficulty overrides. Legacy debug profile settings are no longer read. Use Release for normal multiplayer play.
+Rugrat, Upscream and Headgrab join the party, followed by a stream of Gnomes. Survive twenty seconds from the music object's arrival. Grabbing the Gramophone hurts, so call out the warning and choose between hiding together or holding your ground.
 
-The package icon is a temporary development asset reused from REPOPocketCartTurret and must be replaced before publication.
+## Installation
 
-- **Headman:** Difficulty 4 Protection inherits an ally target or identified attacker within 20m while Headman has no active target. Reaper sprint proxies are excluded.
-- **Trudge:** Difficulty 2 ground slams always summon two random native Tick/Gnome/Banger after three seconds, with the last target and no HellParty abilities or summon timeout. Native deaths and Banger detonations remain; killed summons do not respawn.
+Install HellParty in the **host's** BepInEx profile. A mod manager installs the declared BepInExPack dependency automatically. Guests do not need HellParty or BepInEx, and no configuration is required.
+
+For a local release candidate, import the ZIP as a local mod. For manual installation, install BepInEx first and place the single `HellParty.dll` in `BepInEx/plugins/HellParty/`. Keep only one copy of the DLL. Close the game before installation, updates or removal, then restart. To uninstall, remove HellParty through your manager or delete its manually installed folder.
+
+## Reports and development
+
+Report problems through the repository Issues page with the game and HellParty versions, host/guest roles, other installed mods, reproduction steps and relevant `BepInEx/LogOutput.log` lines. Mention whether a problem appears only for vanilla guests.
+
+HellParty uses native prefabs, animations and network messages. The build uses R.E.P.O. 0.4.4 compile-time references; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. Old development spawns, forced difficulty and test keys are removed.
+
+Build instructions, design notes, grouped playtest documents and release verification tools are in the repository. The package contains HellParty's DLL, documentation, metadata and its cartoon icon; game, Unity and BepInEx assemblies are not bundled.
+
+R.E.P.O. and its original monster designs belong to semiwork. HellParty is an unofficial fan mod.

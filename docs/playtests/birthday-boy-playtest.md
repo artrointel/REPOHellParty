@@ -2,7 +2,7 @@
 
 ## 실행
 
-Debug와 Release 모두 실제 진행도를 사용하며, 임시 자동 생성·강제 난이도·단축키는 제거했다. 빌드·실행은 [개발 환경](development.md#debug와-release)을 따른다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
+Debug와 Release 모두 실제 진행도를 사용하며, 임시 자동 생성·강제 난이도·단축키는 제거했다. 빌드·실행은 [개발 환경](../development.md#debug와-release)을 따른다. Birthday Boy의 진행도 검증은 게임 종료 후 저장소 루트에서 Release를 실행해 자연 생성 개체로 수행한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

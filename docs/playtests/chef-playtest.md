@@ -1,6 +1,6 @@
 # Chef 플레이테스트
 
-Debug와 Release 모두 실제 진행도를 사용하며, 임시 자동 생성·강제 난이도·단축키는 제거했다. 빌드·실행은 [개발 환경](development.md#debug와-release)을 따른다. Chef는 게임을 종료한 뒤 Release로 자연 생성 개체를 검증한다.
+Debug와 Release 모두 실제 진행도를 사용하며, 임시 자동 생성·강제 난이도·단축키는 제거했다. 빌드·실행은 [개발 환경](../development.md#debug와-release)을 따른다. Chef는 게임을 종료한 뒤 Release로 자연 생성 개체를 검증한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release

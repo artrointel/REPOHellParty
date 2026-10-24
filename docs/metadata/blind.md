@@ -25,7 +25,7 @@ Shadow Child에게 난이도 1부터 부여하며 이후 단계에서도 유지�
 
 ## 실제 테스트 확인 사항
 
-Shadow Child 확인은 [블라인드 플레이테스트](../blind-playtest.md)를 따른다. Reaper는 블라인드를 사용하지 않으며 [전력질주](../monsters/reaper.md)로 대체했다.
+Shadow Child 확인은 [블라인드 플레이테스트](../playtests/blind-playtest.md)를 따른다. Reaper는 블라인드를 사용하지 않으며 [전력질주](../monsters/reaper.md)로 대체했다.
 
 1. 난이도 0에서 추가 가스가 없는지 확인한다.
 2. 난이도 1 이상에서 각 몬스터가 타깃을 얻은 뒤 3초 간격으로 대상 시야 높이에 가스가 생기고 피해를 받는지 확인한다.

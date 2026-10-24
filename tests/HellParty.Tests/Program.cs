@@ -4,6 +4,8 @@ using Mono.Cecil.Cil;
 
 // Standalone deterministic unit/assembly-contract runner. Does not load Unity
 // or run the game, and fails the process when any assertion fails.
+try
+{
 int passed = 0;
 void Check(string name, bool condition)
 {
@@ -41,9 +43,9 @@ Check("Protection includes exactly twenty metres", ProtectionRules.Eligible(5, f
 Check("Protection never replaces an existing target", !ProtectionRules.Eligible(5, true, 1));
 Check("Protection rejects invalid distance", !ProtectionRules.Eligible(5, false, double.NaN) && !ProtectionRules.Eligible(5, false, -1));
 var trudgeCall = new TrudgeCallCycle();
-Check("Trudge Call unlocks at two", !TrudgeCallCycle.Unlocked(1) && TrudgeCallCycle.Unlocked(2));
-Check("Trudge Call cannot queue below unlock", !trudgeCall.Strike(1));
-Check("Every floor strike queues one pair regardless of damage", trudgeCall.Strike(2) && TrudgeCallCycle.Count == 2 && TrudgeCallCycle.Delay == 3);
+Check("Trudge Call unlocks at one", !TrudgeCallCycle.Unlocked(0) && TrudgeCallCycle.Unlocked(1));
+Check("Trudge Call cannot queue below unlock", !trudgeCall.Strike(0));
+Check("Every floor strike queues one pair regardless of damage", trudgeCall.Strike(1) && TrudgeCallCycle.Count == 2 && TrudgeCallCycle.Delay == 3);
 Check("Repeated floor callbacks cannot queue a duplicate pair", !trudgeCall.Strike(5));
 trudgeCall.Begin();
 Check("The next swing can summon again", trudgeCall.Strike(5));
@@ -232,7 +234,7 @@ Check("Stalking Doll two simultaneous grabbers each take one hit", grabAttempts.
 Check("Stalking Doll retry after release lockout is a new attempt", grabAttempts.Accept(1, 0.5f));
 Check("Stalking Doll repeated new attempt is also deduplicated", !grabAttempts.Accept(1, 0.5f));
 var stalkingLife = new StalkingDollLife();
-Check("Mentalist reflection unlocks only at difficulty two", !DifficultyRules.MentalistReflectionUnlocked(0) && !DifficultyRules.MentalistReflectionUnlocked(1) && DifficultyRules.MentalistReflectionUnlocked(2));
+Check("Mentalist reflection unlocks at difficulty three", Enumerable.Range(0, 3).All(tier => !DifficultyRules.MentalistReflectionUnlocked(tier)) && DifficultyRules.MentalistReflectionUnlocked(3));
 var reflection = new MentalistReflectionRules();
 Check("Mentalist without a player target reflects the first gun hit", reflection.Observe(1, false) == ReflectedShotDecision.Reflect);
 Check("Mentalist shotgun pellets share one reflection", reflection.Observe(1, false) == ReflectedShotDecision.AlreadyReflected && reflection.Observe(1, false) == ReflectedShotDecision.AlreadyReflected);
@@ -574,7 +576,7 @@ wind.Observe(false);
 Check("Bowtie new wind attack can replace the previous brother", wind.TrySummon(true));
 foreach (int level in new[] { 0, 1, 2, 3, 4, 5 })
 {
-    Check($"Bella suicide unlock at difficulty {level}", DifficultyRules.BellaSuicideUnlocked(level) == (level >= 1));
+    Check($"Bella suicide unlock at difficulty {level}", DifficultyRules.BellaSuicideUnlocked(level) == (level >= 2));
     Check($"Bella bait unlock at difficulty {level}", DifficultyRules.BellaBaitUnlocked(level) == (level >= 3));
 }
 var dollSequence = new BellaDollSequence();
@@ -716,7 +718,7 @@ Check("failed safe spawn retries without consuming a 30-second cycle", !clock.Is
 clock.Reset();
 Check("original death or new life clears pending respawns", !clock.IsReady(10000));
 
-Check("Abduction unlocks only from tier two", !AbductionClock.Eligible(0, 2, true, 0) && !AbductionClock.Eligible(1, 2, true, 0) && AbductionClock.Eligible(2, 2, true, 0));
+Check("Huntsman abduction unlocks at tier one", !AbductionClock.Eligible(0, 2, true, 0) && AbductionClock.Eligible(1, 2, true, 0));
 Check("Abduction normally requires at least two living players", !AbductionClock.Eligible(5, 0, true, 1) && !AbductionClock.Eligible(5, 1, true, 1) && AbductionClock.Eligible(5, 3, true, 1));
 Check("Abduction requires combat or player tracking", !AbductionClock.Eligible(5, 2, false, 1));
 Check("Abduction includes four metres and excludes any further distance", AbductionClock.Eligible(2, 2, true, 16) && !AbductionClock.Eligible(2, 2, true, 16.0001));
@@ -754,22 +756,22 @@ deathTactics.NewLife();
 Check("A new native life can drop another death grenade", deathTactics.TryUse(5));
 
 Check("Cleanup pursuit leaves difficulty zero unchanged", !CleanupPursuitRules.Unlocked(0));
-Check("Cleanup pursuit unlocks at one and persists through five", CleanupPursuitRules.Unlocked(1) && CleanupPursuitRules.Unlocked(4) && CleanupPursuitRules.Unlocked(5));
+Check("Cleanup hatching unlocks at two and persists through five", !CleanupPursuitRules.Unlocked(1) && CleanupPursuitRules.Unlocked(2) && CleanupPursuitRules.Unlocked(4) && CleanupPursuitRules.Unlocked(5));
 Check("Cleanup pursuit substitutes Upscream only at five", !CleanupPursuitRules.Upscream(1) && !CleanupPursuitRules.Upscream(4) && CleanupPursuitRules.Upscream(5));
 Check("Cleanup pursuit waits two seconds and lives ten after native spawn", CleanupPursuitRules.Delay == 2 && CleanupPursuitRules.Lifetime == 10);
 var cleanupHead = new CleanupHeadCycle();
-Check("Cleanup head explosion with a target queues one summon", cleanupHead.Exploded(1, true));
-Check("Duplicate explosion messages cannot queue another summon", !cleanupHead.Exploded(1, true) && !cleanupHead.Exploded(5, true));
+Check("Cleanup head explosion with a target queues one summon", cleanupHead.Exploded(2, true));
+Check("Duplicate explosion messages cannot queue another summon", !cleanupHead.Exploded(2, true) && !cleanupHead.Exploded(5, true));
 cleanupHead.Spawned();
 Check("A pooled head's next spawn re-arms its ability", cleanupHead.Exploded(5, true));
 var targetlessHead = new CleanupHeadCycle();
 Check("A targetless explosion never queues a summon", !targetlessHead.Exploded(5, false));
 Check("Late target changes cannot retroactively enable the same explosion", !targetlessHead.Exploded(5, true));
 targetlessHead.Spawned();
-Check("Targetless explosion does not block the next attack cycle", targetlessHead.Exploded(1, true));
+Check("Targetless explosion does not block the next attack cycle", targetlessHead.Exploded(2, true));
 var vanillaCleanupHead = new CleanupHeadCycle();
-Check("Difficulty zero explosion cannot be replayed after a tier change", !vanillaCleanupHead.Exploded(0, true) && !vanillaCleanupHead.Exploded(1, true));
-Check("Independent heads each get their own summon", new CleanupHeadCycle().Exploded(1, true) && new CleanupHeadCycle().Exploded(1, true));
+Check("Difficulty zero explosion cannot be replayed after a tier change", !vanillaCleanupHead.Exploded(0, true) && !vanillaCleanupHead.Exploded(2, true));
+Check("Independent heads each get their own summon", new CleanupHeadCycle().Exploded(2, true) && new CleanupHeadCycle().Exploded(2, true));
 var cleanupLife = new CleanupSummonLife();
 Check("Cleanup summon lifetime cannot elapse before the native spawn", !cleanupLife.Started && !cleanupLife.Tick(100));
 cleanupLife.Born(100);
@@ -1038,3 +1040,10 @@ if (args.Length > 0)
 }
 
 Console.WriteLine($"All {passed} checks passed.");
+}
+catch (Exception exception)
+{
+    Console.Error.WriteLine(exception);
+    return 1;
+}
+return 0;

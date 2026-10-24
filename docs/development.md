@@ -63,7 +63,7 @@ Debug와 Release 모두 [공용 난이도](metadata/difficulty.md)를 사용한�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
-자동 검사는 `tests/HellParty.Tests`에 유지한다. 몬스터별 플레이테스트 문서는 자연 생성 개체와 실제 진행도를 기준으로 작성하며, 바닐라 참가자에게 테스트 플러그인을 요구하지 않는다.
+자동 검사는 `tests/HellParty.Tests`에 유지한다. 몬스터별 실제 확인 문서는 [플레이테스트 폴더](playtests/README.md)에 모아 자연 생성 개체와 실제 진행도를 기준으로 작성하며, 바닐라 참가자에게 테스트 플러그인을 요구하지 않는다.
 
 ## 패키징
 
@@ -71,7 +71,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderstore.ps1 -NoRestore
 ```
 
-`artifacts/HellParty-0.1.0.zip`을 생성하며 프로필에 배포하지 않는다. 패키징은 Release 구성만 허용한다. `thunderstore/icon.png`는 이전 프로젝트에서 재사용한 임시 개발용 아이콘이다. 공개 배포 전 교체한다. DLL 외 게임·Unity·BepInEx 어셈블리는 패키지에 포함하지 않는다.
+`artifacts/HellParty-0.1.0.zip`을 생성하며 프로필에 배포하지 않는다. 패키징은 Release 구성만 허용하며 Release의 컴파일 경고도 오류로 처리한다. `assets/branding/hellparty-icon-source.png`가 검토한 카툰 아이콘 원본이며, `scripts/New-PackageIcon.ps1`은 이를 256×256 패키지 아이콘으로 축소 출력한다. 외형 참고 출처와 생성 프롬프트는 [아이콘 제작 자료](../assets/branding/README.md)에 보관한다. 참고 스크린샷·모델 파일이나 폰트 파일은 배포하지 않는다.
+
+`scripts/Test-Package.ps1`은 ZIP 경로를 추출하지 않고 파일 목록·중복·UTF-8·manifest·PNG 크기와 서명·Release DLL 버전·원본 해시를 확인한다. 루트의 manifest·README·CHANGELOG·icon과 `BepInEx/plugins/HellParty/HellParty.dll`만 허용한다. 임시 ZIP 검증에 성공한 경우에만 최종 ZIP을 교체한다. DLL 외 게임·Unity·BepInEx 어셈블리, 개인 설정·로그·PDB는 포함하지 않는다. 패키지 구조는 [Thunderstore 공식 가이드](https://wiki.thunderstore.io/mods/creating-a-package)를 따른다.
+
+배포 후보를 한 번에 검증하려면 아래 명령을 사용한다. 설치된 게임 DLL이 없으면 계약 검사를 건너뛰지 않고 실패한다. 다른 게임 경로는 `-GameAssembly`로 지정한다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verify-Release.ps1 -Offline
+```
+
+Debug·Release 빌드, 규칙·게임 계약, 패키지 생성·검사, 잘못된 패키지의 거부 검사를 순서대로 실행한다. 성공하면 ZIP과 `artifacts/HellParty-0.1.0.release.json`에 ZIP·DLL·게임 어셈블리의 SHA-256을 기록한다. 보고서는 실제 멀티플레이를 미검증으로 표시한다. 공개 전 실제 확인 항목은 [배포 준비 문서](release-readiness.md)를 따른다.
 
 ## 검증과 다음 단계
 
@@ -95,7 +105,7 @@ Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline
 ```
 
-추가로 공용 난이도의 stage1/4/7/10/13 경계와 음수·최대 정수 입력, 블라인드의 3초 반복·타깃 상실/교체·재스폰 초기화, 웨이브의 20m 영역·3초 예고·자세 회피·초당 노움 2마리·20초 종료·3m 최소 거리·순정 자세 동기화 계약을 검사한다. 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](bowtie-playtest.md), [Bella](bella-playtest.md), [Birthday Boy](birthday-boy-playtest.md), [Animal](animal-playtest.md), [Apex Predator](apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
+추가로 공용 난이도의 stage1/4/7/10/13 경계와 음수·최대 정수 입력, 블라인드의 3초 반복·타깃 상실/교체·재스폰 초기화, 웨이브의 20m 영역·3초 예고·자세 회피·초당 노움 2마리·20초 종료·3m 최소 거리·순정 자세 동기화 계약을 검사한다. 게임 객체 생성, 원격 클라이언트 동기화·피해·가스와 시각적 위치는 이 테스트로 증명하지 않는다. 실제 플레이 확인 항목은 [Bowtie](playtests/bowtie-playtest.md), [Bella](playtests/bella-playtest.md), [Birthday Boy](playtests/birthday-boy-playtest.md), [Animal](playtests/animal-playtest.md), [Apex Predator](playtests/apex-playtest.md) 플레이테스트를 따른다. 기획 문서는 `docs/`에서 계속 관리한다.
 
 
-Trudge 확인은 [소집 플레이테스트](trudge-playtest.md), Loom·Robe 확인은 [Loom·Robe 플레이테스트](loom-robe-playtest.md)를 따른다.
+Trudge 확인은 [소집 플레이테스트](playtests/trudge-playtest.md), Loom·Robe 확인은 [Loom·Robe 플레이테스트](playtests/loom-robe-playtest.md)를 따른다.

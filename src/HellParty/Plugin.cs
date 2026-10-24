@@ -1,3 +1,4 @@
+using System;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -19,9 +20,17 @@ public sealed class Plugin : BaseUnityPlugin
     {
         ModLogger = Logger;
         _harmony = new Harmony(PluginGuid);
-        _harmony.PatchAll();
-
-        ModLogger.LogInfo($"{PluginName} v{PluginVersion} loaded.");
+        try
+        {
+            _harmony.PatchAll();
+            ModLogger.LogInfo($"{PluginName} v{PluginVersion} loaded.");
+        }
+        catch (Exception exception)
+        {
+            ModLogger.LogError($"{PluginName} initialization failed; removing its patches. Check the game version and installed mods.\n{exception}");
+            try { _harmony.UnpatchSelf(); }
+            finally { _harmony = null; enabled = false; }
+        }
     }
 
     private void OnDestroy()

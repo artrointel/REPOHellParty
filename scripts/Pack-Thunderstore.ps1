@@ -88,10 +88,11 @@ if (-not (Test-Path -LiteralPath $dllPath -PathType Leaf)) {
 $artifactsDirectory = Join-Path $projectRoot "artifacts"
 $stagingDirectory = Join-Path $artifactsDirectory "thunderstore-staging"
 $packagePath = Join-Path $artifactsDirectory "HellParty-$version.zip"
+$candidatePath = Join-Path $artifactsDirectory "HellParty-$version.candidate.zip"
 
 # Check absolute targets before removing a previous staging directory or package.
 $artifactRoot = [IO.Path]::GetFullPath($artifactsDirectory).TrimEnd('\') + '\'
-foreach ($cleanupPath in @($stagingDirectory, $packagePath)) {
+foreach ($cleanupPath in @($stagingDirectory, $candidatePath)) {
     $resolvedPath = [IO.Path]::GetFullPath($cleanupPath)
     if (-not $resolvedPath.StartsWith($artifactRoot, [StringComparison]::OrdinalIgnoreCase)) {
         throw "Cleanup target is outside the artifacts directory: $resolvedPath"
@@ -101,8 +102,8 @@ foreach ($cleanupPath in @($stagingDirectory, $packagePath)) {
 if (Test-Path -LiteralPath $stagingDirectory) {
     Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
 }
-if (Test-Path -LiteralPath $packagePath) {
-    Remove-Item -LiteralPath $packagePath -Force
+if (Test-Path -LiteralPath $candidatePath) {
+    Remove-Item -LiteralPath $candidatePath -Force
 }
 
 $pluginDirectory = Join-Path $stagingDirectory "BepInEx\plugins\HellParty"
@@ -113,5 +114,19 @@ Copy-Item -LiteralPath (Join-Path $metadataDirectory "README.md") -Destination $
 Copy-Item -LiteralPath (Join-Path $metadataDirectory "CHANGELOG.md") -Destination $stagingDirectory
 Copy-Item -LiteralPath $iconPath -Destination $stagingDirectory
 
-Compress-Archive -Path (Join-Path $stagingDirectory "*") -DestinationPath $packagePath
+try {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    Add-Type -AssemblyName System.IO.Compression
+    $zip = [IO.Compression.ZipFile]::Open($candidatePath, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in Get-ChildItem -LiteralPath $stagingDirectory -Recurse -File | Sort-Object FullName) {
+            $relative = $file.FullName.Substring($stagingDirectory.Length).TrimStart('\').Replace('\', '/')
+            [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.FullName, $relative, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+        }
+    } finally { $zip.Dispose() }
+    & (Join-Path $PSScriptRoot "Test-Package.ps1") -PackagePath $candidatePath -ExpectedDllPath $dllPath
+    Move-Item -LiteralPath $candidatePath -Destination $packagePath -Force
+} finally {
+    if (Test-Path -LiteralPath $candidatePath) { Remove-Item -LiteralPath $candidatePath -Force }
+}
 Write-Host "Thunderstore package created: $packagePath"

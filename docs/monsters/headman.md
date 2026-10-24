@@ -13,6 +13,6 @@
 - 동료의 순정 `playerTarget`·`targetPlayer` 참조와 공용 추적 상태를 읽는다. Huntsman은 플레이어를 향한 조사 Transform, Gnome·Banger는 순정 Director의 공유 타깃도 확인한다. Headman은 순정 `Enemy.TargetPlayerAvatar`·추적 상태와 기존 네트워크 직렬화를 사용한다.
 - 스폰 애니메이션·기절·사망·디스폰 중에는 발동하지 않는다. 무조건적인 타깃 고정이나 이동속도 변경은 하지 않으며, 공유 후 추적 종료·공격은 순정 AI가 결정한다.
 
-실제 확인은 [Headman 플레이테스트](../headman-playtest.md)를 따른다. 단계별 요약은 [기획표](../monster-abilities.md)에서 관리한다.
+실제 확인은 [Headman 플레이테스트](../playtests/headman-playtest.md)를 따른다. 단계별 요약은 [기획표](../monster-abilities.md)에서 관리한다.
 
 [Reaper 전력질주](reaper.md)는 Headman의 순정 모습과 추격 이동을 빌리는 별도 스킬이다. 이 형태는 원본 Reaper의 체력·대상을 공유하고 독립 Headman 코어를 드랍하지 않는다. 일반 자연 생성 Headman에 전력질주를 부여하지 않는다.

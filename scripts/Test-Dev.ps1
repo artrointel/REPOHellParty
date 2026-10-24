@@ -1,10 +1,14 @@
 [CmdletBinding()]
 param(
     [switch]$Offline,
+    [switch]$RequireGameAssembly,
     [string]$GameAssembly = "C:\Program Files (x86)\Steam\steamapps\common\REPO\REPO_Data\Managed\Assembly-CSharp.dll"
 )
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
+if ($RequireGameAssembly -and -not (Test-Path -LiteralPath $GameAssembly -PathType Leaf)) {
+    throw "Release verification requires the installed game's Assembly-CSharp.dll: $GameAssembly"
+}
 $buildArgs = @{}
 if ($Offline) { $buildArgs.Offline = $true }
 & (Join-Path $PSScriptRoot "Build-Dev.ps1") @buildArgs -Configuration Debug
@@ -18,5 +22,6 @@ if ($Offline) { $restoreArgs += @("--source", (Join-Path $projectRoot ".nuget\pa
 if ($LASTEXITCODE -ne 0) { throw "Test restore failed." }
 $runArgs = @("run", "--project", $testProject, "--no-restore", "--")
 if (Test-Path -LiteralPath $GameAssembly -PathType Leaf) { $runArgs += $GameAssembly }
+else { Write-Warning "Game assembly not found; installed-game contract checks are skipped. Use -RequireGameAssembly for release verification." }
 & $dotnetCommand @runArgs
 if ($LASTEXITCODE -ne 0) { throw "Tests failed." }

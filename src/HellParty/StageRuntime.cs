@@ -37,7 +37,7 @@ internal sealed class StageRuntime : MonoBehaviour
             parent.GetComponent<BlindAbility>() == null) parent.gameObject.AddComponent<BlindAbility>();
         if (Rules.ReaperSprintClock.Unlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyRunner>(true) != null &&
             parent.GetComponent<ReaperSprint>() == null) parent.gameObject.AddComponent<ReaperSprint>();
-        if (DifficultyService.Current >= 2 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
+        if (DifficultyService.Current >= 1 && parent.GetComponentInChildren<EnemyHunter>(true) != null &&
             parent.GetComponent<HuntsmanAbduction>() == null) parent.gameObject.AddComponent<HuntsmanAbduction>();
         if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyShadow>(true) != null &&
             parent.GetComponent<HuntsmanAbduction>() == null) parent.gameObject.AddComponent<HuntsmanAbduction>();

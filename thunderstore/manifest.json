@@ -2,7 +2,7 @@
   "name": "HellParty",
   "version_number": "0.1.0",
   "website_url": "https://github.com/artrointel/REPOHellParty",
-  "description": "HellParty mod development scaffold for R.E.P.O.",
+  "description": "Host-only escalating difficulty, monster abilities and Monster Waves. Only the host installs HellParty; vanilla guests can join.",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2305"
   ]

@@ -11,6 +11,7 @@
     <Description>Host-only stage difficulty and monster abilities for R.E.P.O.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
