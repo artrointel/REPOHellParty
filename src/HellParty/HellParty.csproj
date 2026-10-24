@@ -7,7 +7,7 @@
     <AssemblyName>HellParty</AssemblyName>
     <RootNamespace>HellParty</RootNamespace>
     <Authors>artrointel</Authors>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Description>Host-only stage difficulty and monster abilities for R.E.P.O.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
@@ -35,4 +35,3 @@
     <PackageReference Include="R.E.P.O.GameLibs.Steam" Version="0.4.4-ngd.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
-

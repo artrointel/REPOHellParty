@@ -10,7 +10,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "artrointel.HellParty";
     public const string PluginName = "HellParty";
-    public const string PluginVersion = "0.1.0";
+    public const string PluginVersion = "0.2.0";
 
     internal static ManualLogSource ModLogger { get; private set; } = null!;
 
@@ -38,4 +38,3 @@ public sealed class Plugin : BaseUnityPlugin
         _harmony?.UnpatchSelf();
     }
 }
-

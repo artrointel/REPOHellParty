@@ -60,3 +60,5 @@ authority: host
 
 - [Headman 보호본능](../monsters/headman.md): 자신에게 현재 추적 대상이 없을 때 20m 내 동료의 타깃·피격 공격자를 공유받는다. 단순 배회 후 남은 과거 타깃 참조는 현재 추적으로 간주하지 않는다.
 - [Trudge 소집](../monsters/trudge.md): 인지·피해 조건의 예외로 실제 내려찍기마다 발동한다. 마지막 유효 타깃은 소환수에게 전달할 값으로만 사용한다.
+
+- [Elsa 암살](../monsters/elsa.md): 순정 EnemyElsa.playerTarget을 보유하고 작은 모습으로 따라다니는 상태에서만 진입한다. 대상 본인을 제외한 생존 동료 20m·본체와 대상 5m 조건을 사용하며 소환 Elsa는 제외한다.

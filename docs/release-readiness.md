@@ -1,6 +1,6 @@
 # 배포 준비 계획과 검증
 
-이 문서는 로컬 배포 후보를 만드는 순서와 공개 전 실제 플레이 확인을 관리한다. 공개 업로드·커밋·태그 생성은 별도 작업이다. 버전은 기존 `0.1.0`을 유지한다.
+이 문서는 로컬 배포 후보를 만드는 순서와 공개 전 실제 플레이 확인을 관리한다. 공개 업로드·커밋·태그 생성은 별도 작업이다. 현재 배포 후보는 Elsa 암살 기능을 추가한 `0.2.0`이다.
 
 ## 1. 런타임과 개발 환경
 
@@ -24,7 +24,7 @@
 - [x] 문서의 로컬 링크와 변경 파일 형식을 확인한다.
 - [x] 최종 ZIP과 SHA-256 검증 보고서를 `artifacts/`에 생성한다.
 
-이번 자동 검증 결과는 규칙·게임 호출 계약 **816개**, 정상·변조 패키지 **10개**, 로컬 문서 링크 **255개** 통과다. Debug와 Release 모두 경고·오류가 없었다. 호환되지 않는 게임 어셈블리 입력 시 테스트 러너가 오류 코드 1로 종료하고, 필수 게임 DLL 누락 시 빌드 전에 거부하는 동작도 확인했다. 실행 로그는 `artifacts/release-readiness-verified.log`와 `artifacts/release-package-negative.log`에 남겼다.
+이번 자동 검증 결과는 규칙·게임 호출 계약 **848개**, 정상·변조 패키지 **10개**, 로컬 문서 링크 **262개** 통과다. Debug와 Release 모두 경고·오류가 없었다. 호환되지 않는 게임 어셈블리 입력 시 테스트 러너가 오류 코드 1로 종료하고, 필수 게임 DLL 누락 시 빌드 전에 거부하는 동작도 확인했다. 최신 실행 로그는 `artifacts/elsa-0.2.0-release.log`에 남긴다. 실제 게임의 Elsa 암살 동작은 별도 플레이테스트 대상이다.
 
 ## 공개 전 실제 플레이 확인
 
@@ -47,10 +47,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verify-Release
 
 게임 경로가 다르면 `-GameAssembly`에 설치된 `Assembly-CSharp.dll`을 지정한다. 게임 DLL을 찾지 못하면 배포 검증은 실패하며 검사 생략을 성공으로 기록하지 않는다. 일반 개발용 `Test-Dev.ps1`만 게임 계약 검사를 생략할 수 있고 그 경우 경고를 출력한다.
 
-- ZIP: `artifacts/HellParty-0.1.0.zip`.
-- 보고서: `artifacts/HellParty-0.1.0.release.json`.
-- 공개용 소개문: [0.1.0 릴리즈 노트](releases/0.1.0.md). 검증 성공 시 `artifacts/HellParty-0.1.0.release-notes.md`에도 복사한다.
-- ZIP 체크섬: `artifacts/HellParty-0.1.0.zip.sha256`.
+- ZIP: `artifacts/HellParty-0.2.0.zip`.
+- 보고서: `artifacts/HellParty-0.2.0.release.json`.
+- 공개용 소개문: [0.2.0 릴리즈 노트](releases/0.2.0.md). 검증 성공 시 `artifacts/HellParty-0.2.0.release-notes.md`에도 복사한다.
+- ZIP 체크섬: `artifacts/HellParty-0.2.0.zip.sha256`.
 - 보고서는 ZIP·플러그인·검사한 게임 어셈블리의 SHA-256과 자동 검증 범위를 기록한다. 실제 멀티플레이는 별도 미완료 상태다.
 - `scripts/Test-Package.ps1`로 기존 ZIP을 재검사할 수 있다. 최종 산출물을 만들거나 검사할 때 프로필에 DLL을 배포하거나 게임을 실행하지 않는다.
 

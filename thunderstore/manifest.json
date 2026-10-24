@@ -1,10 +1,9 @@
 {
   "name": "HellParty",
-  "version_number": "0.1.0",
+  "version_number": "0.2.0",
   "website_url": "https://github.com/artrointel/REPOHellParty",
   "description": "Only the host installs. Play with unmodded friends! HellParty adds escalating monster abilities, creepy ambushes and Monster Waves to your R.E.P.O. loot runs.",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2305"
   ]
 }
-

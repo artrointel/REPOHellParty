@@ -15,6 +15,7 @@
 | Chef | [Frog 변장](chef-playtest.md) |
 | Cleanup Crew | [부화](cleanup-crew-playtest.md) |
 | Clown | [레이저 Staff와 쉴드](clown-playtest.md) |
+| Elsa | [고립 대상 암살과 즉시 해제](elsa-playtest.md) |
 | Headman | [보호본능](headman-playtest.md) |
 | Huntsman | [납치와 죽음의전술](huntsman-playtest.md) |
 | Loom·Robe | [스토커 동반과 Loom 납치](loom-robe-playtest.md) |

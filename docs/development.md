@@ -47,7 +47,7 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 실행 스크립트와 로그 작업은 기본 Steam 경로와 Thunderstore `REPO` 프로필을 사용한다. 다른 프로필로 바꾸면 `Directory.Repo.props`뿐 아니라 `scripts/Start-RepoDev.ps1`과 `.vscode/tasks.json`의 실행·로그 경로도 맞춘다.
 
-로딩 시 `HellParty v0.1.0 loaded.`가 기록된다. 스테이지 준비 후 현재 스테이지와 모드 난이도가 로그에 기록된다.
+로딩 시 `HellParty v0.2.0 loaded.`가 기록된다. 스테이지 준비 후 현재 스테이지와 모드 난이도가 로그에 기록된다.
 
 ## Debug와 Release
 
@@ -71,7 +71,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderstore.ps1 -NoRestore
 ```
 
-`artifacts/HellParty-0.1.0.zip`을 생성하며 프로필에 배포하지 않는다. 패키징은 Release 구성만 허용하며 Release의 컴파일 경고도 오류로 처리한다. `assets/branding/hellparty-icon-source.png`가 검토한 카툰 아이콘 원본이며, `scripts/New-PackageIcon.ps1`은 이를 256×256 패키지 아이콘으로 축소 출력한다. 외형 참고 출처와 생성 프롬프트는 [아이콘 제작 자료](../assets/branding/README.md)에 보관한다. 참고 스크린샷·모델 파일이나 폰트 파일은 배포하지 않는다.
+`artifacts/HellParty-0.2.0.zip`을 생성하며 프로필에 배포하지 않는다. 패키징은 Release 구성만 허용하며 Release의 컴파일 경고도 오류로 처리한다. `assets/branding/hellparty-icon-source.png`가 검토한 카툰 아이콘 원본이며, `scripts/New-PackageIcon.ps1`은 이를 256×256 패키지 아이콘으로 축소 출력한다. 외형 참고 출처와 생성 프롬프트는 [아이콘 제작 자료](../assets/branding/README.md)에 보관한다. 참고 스크린샷·모델 파일이나 폰트 파일은 배포하지 않는다.
 
 `scripts/Test-Package.ps1`은 ZIP 경로를 추출하지 않고 파일 목록·중복·UTF-8·manifest·PNG 크기와 서명·Release DLL 버전·원본 해시를 확인한다. 루트의 manifest·README·CHANGELOG·icon과 `BepInEx/plugins/HellParty/HellParty.dll`만 허용한다. 임시 ZIP 검증에 성공한 경우에만 최종 ZIP을 교체한다. DLL 외 게임·Unity·BepInEx 어셈블리, 개인 설정·로그·PDB는 포함하지 않는다. 패키지 구조는 [Thunderstore 공식 가이드](https://wiki.thunderstore.io/mods/creating-a-package)를 따른다.
 
@@ -81,7 +81,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Pack-Thunderst
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verify-Release.ps1 -Offline
 ```
 
-Debug·Release 빌드, 규칙·게임 계약, 패키지 생성·검사, 잘못된 패키지의 거부 검사를 순서대로 실행한다. 성공하면 ZIP과 `artifacts/HellParty-0.1.0.release.json`에 ZIP·DLL·게임 어셈블리의 SHA-256을 기록한다. 보고서는 실제 멀티플레이를 미검증으로 표시한다. 공개 전 실제 확인 항목은 [배포 준비 문서](release-readiness.md)를 따른다.
+Debug·Release 빌드, 규칙·게임 계약, 패키지 생성·검사, 잘못된 패키지의 거부 검사를 순서대로 실행한다. 성공하면 ZIP과 `artifacts/HellParty-0.2.0.release.json`에 ZIP·DLL·게임 어셈블리의 SHA-256을 기록한다. 보고서는 실제 멀티플레이를 미검증으로 표시한다. 공개 전 실제 확인 항목은 [배포 준비 문서](release-readiness.md)를 따른다.
 
 ## 검증과 다음 단계
 

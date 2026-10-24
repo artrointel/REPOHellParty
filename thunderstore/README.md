@@ -35,12 +35,13 @@ These are the monsters' **fully upgraded abilities**. Exact values and unlock co
 | **Robe** | It brings a Stalking Doll of its own. The doll acts independently and follows the nearest living player. |
 | **Stalking Doll** | It stalks while unseen. Repeated grab attempts or allowing it to land a hit can trigger rage: faster movement, constant attacks and no respect for eye contact. A player death or a long dry spell without hits calms it down. |
 | **Peeper** | Every damaging hit can bring another Gnome, sometimes with a bonus Banger. Rescue your teammate before a nuisance becomes a crowd. |
+| **Elsa** | Wander away from your teammates and the friendly follower can transform into an attacker when it closes in. A nearby living teammate immediately ends this assassination mode. Bowtie summons keep their own behavior. |
 | **Headman** | A nearby ally's target can become its target too. Attack another monster near an idle Headman and you may find yourself fighting both. |
 | **Trudge** | Each ground slam calls two random Tick/Gnome/Banger reinforcements after a short delay. Dodging the hammer is only the first thing to worry about. |
 | **Reaper** | Pull far enough ahead and it becomes a Headman to close the gap, then returns to Reaper form for the attack. Keep checking behind you. |
 | **Shadow Child** | Keep its attention and gas repeatedly forms at eye level. Move away from each cloud before your escape route disappears behind it. |
 
-**The supporting cast:** Elsa joins Bowtie's attacks; Gnome, Banger and Tick reinforce several encounters; Spewer can hatch from Cleanup Crew's head; Rugrat and Headgrab join the wave. Their lifetime and core rewards depend on what summoned them. Gambit, Heart Hugger, Hidden and Oogly receive no separate new ability and retain their native behavior.
+**The supporting cast:** Summoned Elsa joins Bowtie's attacks; Gnome, Banger and Tick reinforce several encounters; Spewer can hatch from Cleanup Crew's head; Rugrat and Headgrab join the wave. Their lifetime and core rewards depend on what summoned them. Gambit, Heart Hugger, Hidden and Oogly receive no separate new ability and retain their native behavior.
 
 ## You broke it. Now the music starts.
 

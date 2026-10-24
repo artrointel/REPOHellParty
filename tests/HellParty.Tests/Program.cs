@@ -14,6 +14,32 @@ void Check(string name, bool condition)
     passed++;
 }
 
+Check("Elsa assassination is unavailable below five", Enumerable.Range(0, 5).All(tier => !ElsaAssassinationClock.Eligible(tier, false)));
+Check("Natural Elsa gains assassination at five", ElsaAssassinationClock.Eligible(5, false));
+Check("All summoned Elsa origins are excluded", !ElsaAssassinationClock.Eligible(5, true));
+Check("Elsa's target cannot count as its own companion", !ElsaAssassinationClock.CompanionNearby(true, true, 0));
+Check("Dead or disabled players cannot protect a target", !ElsaAssassinationClock.CompanionNearby(false, false, 1));
+Check("Another player at exactly twenty metres protects the target", ElsaAssassinationClock.CompanionNearby(true, false, 400));
+Check("Companions outside twenty metres do not protect the target", !ElsaAssassinationClock.CompanionNearby(true, false, 400.001));
+Check("Invalid companion distances do not count", !ElsaAssassinationClock.CompanionNearby(true, false, double.NaN) && !ElsaAssassinationClock.CompanionNearby(true, false, -1));
+var assassination = new ElsaAssassinationClock();
+Check("Elsa cannot assassinate from idle or targetless roaming", !assassination.Begin(0, false, false, 0));
+Check("Elsa cannot assassinate a player with a nearby companion", !assassination.Begin(0, true, true, 1));
+Check("Elsa waits until within five metres", !assassination.Begin(0, true, false, 25.001));
+Check("Elsa rejects invalid assassination distances", !assassination.Begin(0, true, false, double.NaN) && !assassination.Begin(0, true, false, -1));
+Check("An isolated player at exactly five metres permits the first immediate entry", assassination.Begin(100, true, false, 25) && assassination.Active);
+Check("An active assassination cannot start twice", !assassination.Begin(101, true, false, 0));
+Check("Companion arrival can immediately cancel during growth", assassination.End(101) && !assassination.Active);
+Check("Repeated cancellation cannot modify the cooldown", !assassination.End(105));
+Check("Reentry waits ten seconds from exit", !assassination.Begin(110.999, true, false, 1) && assassination.Begin(111, true, false, 1));
+Check("Assassination has no ten-second lifetime", assassination.Active && !assassination.Begin(1000, true, false, 1));
+assassination.End(1000);
+Check("A long-lived mode also waits ten seconds after exit", !assassination.Begin(1000, true, false, 1) && !assassination.Begin(1009.999, true, false, 1) && assassination.Begin(1010, true, false, 1));
+assassination.End(1011);
+assassination.NewLife();
+Check("A new native life clears mode and previous cooldown", !assassination.Active && assassination.Begin(0, true, false, 1));
+Check("Separate Elsa instances do not share cooldowns", new ElsaAssassinationClock().Begin(0, true, false, 1));
+
 StalkingDollContactRules.Slide(1, 0, 1, 0, out double slideX, out double slideZ);
 Check("Wall contact permits the stalker to move away", slideX == 1 && slideZ == 0);
 StalkingDollContactRules.Slide(0, 1, 1, 0, out slideX, out slideZ);
@@ -812,6 +838,10 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+Check("Elsa assassination attaches through the common tier/origin predicate", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "ElsaAssassinationClock" && m.Name == "Eligible"));
+Check("Assassination continuously guards against summoned and vanilla-only origins", new[] { "SummonedEnemySpawnTicket", "VanillaAbilityExcluded", "BowtieBrother" }.All(type => release.GetType("HellParty.ElsaAssassination").Methods.Single(m => m.Name == "BeforeNativeUpdate").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(t => t.Name == type))));
+Check("Gentle restoration uses a native all-client shrink RPC", release.GetType("HellParty.ElsaAssassination").Methods.Single(m => m.Name == "RestoreGentle").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "TransformBigToSmallRPC"));
+Check("Native timed chase retirement is gated only by the assassination component", release.GetType("HellParty.ElsaAssassinationChaseStopPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "ElsaAssassination" && m.Name == "get_Active"));
 Check("Release abduction never consults the temporary solo Loom override", !release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "DebugLoomRobeScenario"));
 Check("Native-only summons are excluded before ability attachment", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "VanillaAbilityExcluded")));
 Check("Protection excludes Reaper's borrowed Headman body", release.GetType("HellParty.HeadmanProtection").Methods.Single(m => m.Name == "get_Available").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(a => a.Name == "ReaperHeadman")));
@@ -911,6 +941,10 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    foreach (string method in new[] { "ChaseStop", "Update", "OnSpawn", "UpdateState", "TransformBigToSmallRPC" })
+        Check($"Elsa assassination native hook exists: {method}", game.GetType("EnemyElsa").Methods.Any(m => m.Name == method && !m.IsStatic));
+    Check("Elsa native anger timer can be cleared on assassination exit", game.GetType("EnemyElsa").Fields.Any(f => f.Name == "angryTimer" && f.FieldType.FullName == "System.Single"));
+    Check("Elsa under-table recovery exposes the native timed chase counter", game.GetType("EnemyElsa").Fields.Any(f => f.Name == "chaseTimer" && f.FieldType.FullName == "System.Single"));
     Check("Native Staff beam RPC authorizes only the host", game.GetType("ValuableWizardStaff").Methods.Single(m => m.Name == "StaffLaserRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
     Check("Native Clown target and attack hooks exist", game.GetType("EnemyBeamer").Fields.Any(f => f.Name == "playerTarget" && f.FieldType.Name == "PlayerAvatar") && game.GetType("EnemyBeamer").Methods.Any(m => m.Name == "UpdateState"));
     Check("Native Loom target-switch method and hurt hook exist", game.GetType("EnemyShadow").Methods.Any(m => m.Name == "UpdatePlayerTarget") && game.GetType("EnemyShadow").Methods.Any(m => m.Name == "OnHurt"));

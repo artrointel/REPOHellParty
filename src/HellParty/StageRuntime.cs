@@ -27,6 +27,9 @@ internal sealed class StageRuntime : MonoBehaviour
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) return;
         if (parent.GetComponent<VanillaAbilityExcluded>() != null) return;
+        if (Rules.ElsaAssassinationClock.Eligible(DifficultyService.Current, parent.GetComponent<SummonedEnemySpawnTicket>() != null) &&
+            parent.GetComponent<BowtieBrother>() == null && parent.GetComponentInChildren<EnemyElsa>(true) != null &&
+            parent.GetComponent<ElsaAssassination>() == null) parent.gameObject.AddComponent<ElsaAssassination>();
         if (Rules.TrudgeCallCycle.Unlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemySlowWalker>(true) != null &&
             parent.GetComponent<TrudgeCall>() == null) parent.gameObject.AddComponent<TrudgeCall>();
         if (DifficultyService.Current >= 4 && parent.GetComponentInChildren<EnemyHeadController>(true) != null &&

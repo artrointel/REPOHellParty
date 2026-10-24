@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 — Release candidate
+
+- **Only the host installs; friends join with vanilla R.E.P.O.**
+- Add natural Elsa's Assassination at difficulty 5. While following a player with no other living player within 20m of the target, Elsa starts its native growth at 5m and attacks. A living teammate entering the target's 20m radius cancels the mode immediately, even during growth.
+- Reentry cooldown lasts ten seconds from the end of assassination. First use is immediate and cancellation never waits for a cooldown. There is no separate assassination lifetime; native stun, target loss, death and despawn still apply. Ordinary native aggression is preserved. Summoned Elsas, including Bowtie Brothers/Revenge, are excluded.
+- Add boundary/cooldown/origin tests and an Elsa multiplayer playtest guide. No temporary debug spawns or forced difficulty are included.
+
 ## 0.1.0 — Release candidate
 
 - **Only the host installs. Friends can join with unmodded R.E.P.O. and experience HellParty's monster abilities and Monster Waves without installing HellParty or BepInEx.**
