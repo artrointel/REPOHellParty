@@ -93,10 +93,6 @@ internal sealed class HuntsmanAbduction : MonoBehaviour
             double squared = (player.transform.position - origin).sqrMagnitude;
             if (squared < best) { best = squared; nearest = player; }
         }
-#if DEBUG
-        if (alive == 1 && (Debugging.DebugHuntsmanScenario.SoloEnabledFor(_parent) ||
-                          Debugging.DebugLoomRobeScenario.SoloEnabledFor(_parent))) alive = 2;
-#endif
         if (nearest == null || !AbductionClock.Eligible(DifficultyService.Current, alive, true, best, _loom != null ? 4 : 2) ||
             !AbductionSight.Clear(_enemy, _parent, nearest) || !BackClear() || !Slot.Acquire(this)) return;
         if (!_clock.Start(Time.timeAsDouble)) { Slot.Release(this); return; }

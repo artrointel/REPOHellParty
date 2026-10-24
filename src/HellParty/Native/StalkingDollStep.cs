@@ -15,22 +15,20 @@ internal static class StalkingDollStep
         return true;
     }
 
-    internal static bool TryClimb(Rigidbody body, Collider[] colliders, Vector3 movement, out string? blocked)
+    internal static bool TryClimb(Rigidbody body, Collider[] colliders, Vector3 movement)
     {
-        blocked = null;
         if (body.isKinematic || body.velocity.y > .5f || movement.sqrMagnitude < .000001f) return false;
-        if (!BodyBounds(body, colliders, out Bounds bounds)) { blocked = "no solid body collider"; return false; }
+        if (!BodyBounds(body, colliders, out Bounds bounds)) return false;
         Vector3 foot = new(bounds.center.x, bounds.min.y, bounds.center.z);
-        if (!Support(body, bounds, out RaycastHit support)) { blocked = "no supporting floor below feet"; return false; }
+        if (!Support(body, bounds, out RaycastHit support)) return false;
         Vector3 forward = movement.normalized;
         float reach = Mathf.Abs(forward.x) * bounds.extents.x + Mathf.Abs(forward.z) * bounds.extents.z +
             Mathf.Clamp(movement.magnitude, .04f, .08f);
         if (!Nearest(foot + Vector3.up * .005f, forward, reach, body, out RaycastHit obstacle) || obstacle.normal.y > .7f)
             return false;
-        if (!Terrain(obstacle, body)) { blocked = "front obstruction is not terrain"; return false; }
+        if (!Terrain(obstacle, body)) return false;
         // Move the body's centre beyond the riser, not merely its toes up to
         // the lip. Validate each candidate's real support and swept body path.
-        string failure = $"no safe landing within 50cm of support y={support.point.y:F2}; obstacle={obstacle.collider.name}";
         Vector3 extents = new(Mathf.Max(.01f, bounds.extents.x - .01f), Mathf.Max(.01f, bounds.extents.y - .01f),
             Mathf.Max(.01f, bounds.extents.z - .01f));
         int obstacles = LayerMask.GetMask("Default", "PhysGrabObject", "Enemy", "Player");
@@ -48,26 +46,25 @@ internal static class StalkingDollStep
             bool walkable = NavMesh.SamplePosition(top.point, out NavMeshHit mesh,
                     StalkingDollStepRules.MaximumHeight + .1f, NavMesh.AllAreas) &&
                 Mathf.Abs(mesh.position.y - top.point.y) <= StalkingDollStepRules.MaximumHeight + StalkingDollStepRules.Skin;
-            if (!walkable) { failure = "landing has no nearby walkable NavMesh"; continue; }
+            if (!walkable) continue;
             float liftHeight = top.point.y + StalkingDollStepRules.Skin - bounds.min.y;
             if (liftHeight <= .001f) continue;
             Vector3 lift = Vector3.up * liftHeight;
             Collider? upward = Sweep(bounds.center, extents, Vector3.up, liftHeight, obstacles, body, ignoreInitial: true);
-            if (upward != null) { failure = $"upward clearance blocked by {upward.name}; rise={rise:F2}"; continue; }
+            if (upward != null) continue;
             Collider? front = Sweep(bounds.center + lift, extents, forward, advance, obstacles, body, ignoreInitial: false);
-            if (front != null) { failure = $"step-in clearance blocked by {front.name}; advance={advance:F2}"; continue; }
+            if (front != null) continue;
             bool clear = true;
             foreach (Collider collider in Physics.OverlapBox(bounds.center + lift + horizontal, extents, Quaternion.identity,
                          obstacles, QueryTriggerInteraction.Ignore))
                 if (collider.attachedRigidbody != body)
-                { failure = $"landing body blocked by {collider.name}; rise={rise:F2}"; clear = false; break; }
+                { clear = false; break; }
             if (!clear) continue;
             body.position += lift + horizontal;
             // Settle on the verified tread before resuming the refreshed path.
             body.velocity = Vector3.zero;
             return true;
         }
-        blocked = failure;
         return false;
     }
 

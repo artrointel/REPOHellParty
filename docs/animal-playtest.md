@@ -2,14 +2,14 @@
 
 ## 실행
 
-Debug의 시나리오 선택·강제 난이도는 [개발 환경](development.md#debug와-release)의 설정을 따른다. 실제 진행도 검증에는 Release를 사용하거나 Trudge·Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman의 `Enabled`를 모두 false로 설정한다. Animal의 실제 진행도 검증은 게임 종료 후 다음 명령으로 Release를 실행하고 자연 생성 개체로 수행한다. 디버거 연결은 필요 없다.
+Debug와 Release 모두 실제 진행도를 사용하며, 임시 자동 생성·강제 난이도·단축키는 제거했다. 빌드·실행은 [개발 환경](development.md#debug와-release)을 따른다. Animal의 실제 진행도 검증은 게임 종료 후 다음 명령으로 Release를 실행하고 자연 생성 개체로 수행한다. 디버거 연결은 필요 없다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
 
 - Release는 실제 스테이지 진행도를 사용한다. 필요한 샷건·수면총은 순정 플레이로 준비한다.
-- Animal 테스트용 추가 생성은 종료했다. 다른 Debug 시나리오의 생성 여부는 프로필 설정을 따르며 Release에서는 테스트용 몬스터·아이템을 추가하지 않는다.
+- 두 빌드 모두 테스트용 몬스터·아이템을 추가하지 않는다. 실제 진행도와 자연 생성 Animal로 확인한다.
 - 능력 발동·분화·체력·시간 만료 및 테스트 세트 생성의 임시 디버그 로그는 제거했다. 실패 시 오류 로그는 남긴다. Animal 전용 테스트 생성은 없으며, 타깃·가스 발동은 순정 상태와 거리 조건을 따른다.
 
 ## 확인 항목

@@ -1,8 +1,8 @@
 # Shadow Child 블라인드 플레이테스트
 
-블라인드는 이제 **Shadow Child에만** 적용한다. Reaper는 [전력질주](monsters/reaper.md)로 대체했으며, 이전 리퍼 블라인드 자동 생성은 [Reaper 테스트](reaper-playtest.md)로 전환했다. `Debug.Blind`는 더 이상 사용하지 않는다.
+블라인드는 **Shadow Child에만** 적용한다. Reaper는 [전력질주](monsters/reaper.md)를 사용한다. 테스트용 자동 생성과 전용 설정은 제거했다.
 
-Shadow Child의 자연 생성 개체를 Release 또는 전용 Debug 시나리오를 모두 끈 환경에서 확인한다. 자세한 설정은 [개발 환경](development.md#debug와-release)을 따른다.
+난이도 1 이상에서 자연 생성 Shadow Child로 확인한다. Debug와 Release 모두 실제 진행도를 사용하며 실행은 [개발 환경](development.md#debug와-release)을 따른다.
 
 1. 난이도 1 이상에서 Shadow Child가 같은 살아 있는 타깃을 3초 유지하면 당시 시야 높이에 가스가 생성되고, 같은 대상이면 3초마다 반복하는지 확인한다.
 2. 타깃 교체·상실·사망·재스폰 시 다시 3초를 세는지 확인한다. 시야에서 놓쳤더라도 순정 타깃 참조가 유지되면 타이머는 계속 흐른다.

@@ -1,38 +1,13 @@
 # Cleanup Crew 부화 플레이테스트
 
-아래 전용 Debug 테스트는 `[Debug.Trudge]
-Enabled = false
+난이도 1~4에서는 Spewer, 난이도 5(stage13)에서는 Upscream이 태어나는지 자연 생성 Cleanup Crew로 비교한다.
 
-[Debug.Headman]
-Enabled = false
-
-[Debug.Clown]
-Enabled = false
-
-[Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = false`와 해당 시나리오의 `Enabled = true`를 설정한 뒤 재시작하여 선택한다. 실제 실행 대상은 프로필 설정을 따르며 [개발 환경](development.md#debug와-release)에서 우선순위를 확인한다.
-
-구현과 Debug/Release 빌드·자동 검사를 완료했다. 아래 항목은 실제 게임에서 확인할 회귀 검사 목록이다. 호스트만 HellParty를 설치하고 바닐라 참가자로도 확인한다.
-
-## 실행과 Debug 키
-
-게임을 종료한 뒤 저장소 루트에서 실행한다.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
-```
-
-Reaper·Upscream을 끄고 Cleanup Crew와 Huntsman을 켠 Debug는 난이도 5와 시작 위치 20m 이내의 각 1마리, 샷건·수면총 각 1개를 준비한다. Huntsman을 false로 두면 Cleanup Crew만 생성한다. 두 몬스터의 생성 지점은 최소 3m 떨어뜨리고 각각 독립적으로 탐색한다. 유효한 NavMesh가 없는 트럭 내부는 피하며, 몬스터 위치 탐색이 실패해도 무기는 따로 생성한다.
-
-- **F9:** 난이도 5(부화2·Upscream)와 1(부화·Spewer)을 전환한다. 다음 폭발부터 적용하며 이미 예약된 소환은 폭발 시점의 종류를 유지한다.
-- **F10:** 테스트 Cleanup Crew가 호스트를 순정 인지 경로로 발견하도록 요청한다. 순정 스폰·기절·이미 진행 중인 공격 조건은 유지하므로 반응하지 않으면 연출이 끝난 뒤 다시 누른다.
-- **F11:** 이미 분리되어 활성화된 헤드의 폭발 예고를 시작한다. 즉시 소환하는 키가 아니며 순정 폭발 연출 후 2초를 기다린다. 활성 헤드가 없으면 로그로 안내한다.
-
-프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `[Debug.CleanupCrew]`와 `[Debug.Huntsman]`의 `Enabled = true`가 기본값이다. 둘 다 켜면 두 몬스터가 함께 생성된다. 하나만 테스트하려면 다른 몬스터의 설정을 false로 바꾸고 재시작한다. Huntsman 키는 F6(1인 조건 우회)·F7(조준 요청)·F8(납치 해제)이다. F9는 공용 난이도를 바꾸므로 1단계에서는 Huntsman이 새 납치를 시작하지 않는다. 함께 테스트하려면 다시 5단계로 돌린다. 종합 테스트에서는 Trudge·Headman·Clown·Reaper·Upscream·CleanupCrew·Huntsman 네 설정을 모두 false로 바꾸거나 Release를 사용한다. Release에는 자동 생성·키·강제 난이도 코드가 포함되지 않는다.
+호스트만 HellParty를 설치하고 바닐라 참가자와 함께 확인한다. Debug와 Release 모두 실제 진행도를 사용하며 자동 테스트 스폰·강제 난이도·전용 단축키·솔로 납치 우회는 없다. 실행·배포는 [개발 환경](development.md#debug와-release)을 따른다. 아래 항목은 실제 게임의 회귀 확인 목록이며 자동 검사가 원격 동기화·연출 확인을 대신하지 않는다.
 
 ## 확인 항목
 
-1. 기본 5단계에서 자연 공격 또는 F10 후 헤드를 기다린다. 실제 폭발 2초 뒤 폭발 위치 또는 가까운 유효 바닥에 Upscream 1마리만 나타나야 한다.
-2. F9으로 1단계로 전환하고 다음 공격에서는 Spewer 1마리만 나타나는지 확인한다. 2~4단계는 Spewer 유지, 0단계는 추가 소환 없음도 Release의 정상 진행에서 확인한다.
+1. 5단계에서 순정 공격으로 생성된 헤드를 기다린다. 실제 폭발 2초 뒤 폭발 위치 또는 가까운 유효 바닥에 Upscream 1마리만 나타나야 한다.
+2. 1단계의 별도 런에서는 Spewer 1마리만 나타나는지 확인한다. 2~4단계는 Spewer 유지, 0단계는 추가 소환 없음도 Release의 정상 진행에서 확인한다.
 3. 두 플레이어가 있는 상황에서 헤드가 A를 추적할 때 본체의 타깃을 B로 바꾼다. 소환수의 최초 대상은 폭발 당시 헤드의 대상 A여야 한다. 이후 순정 AI의 자연스러운 대상 변경은 허용한다.
 4. 헤드 하나의 폭발은 소환 한 번만 발생해야 한다. 같은 본체가 다음 헤드를 생성한 경우에는 다시 소환되어야 한다. 여러 본체의 서로 다른 헤드는 각각 판정한다.
 5. 공격 후 조기 디스폰하지 않은 소환수는 실제 스폰부터 10초가 되면 공격·추적·기절 중에도 순정 사라짐 연출로 디스폰되어야 한다. Spewer가 얼굴에 부착된 경우에는 부착 연출도 종료되고 다시 활성화되면 안 된다. 소환 전에 기다린 2초는 수명에 포함하지 않는다.

@@ -54,7 +54,6 @@ internal sealed class StalkingDollCompanion : MonoBehaviour
                         {
                             StalkingDoll.Spawn(point, parent.Enemy.Rigidbody.transform.rotation);
                             created = true;
-                            Plugin.ModLogger.LogInfo($"Stalking Doll companion created for {parent.enemyName} at {point}.");
                         }
                     }
                     catch (Exception exception) { Plugin.ModLogger.LogError($"Stalking Doll companion spawn failed: {exception}"); }

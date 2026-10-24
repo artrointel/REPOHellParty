@@ -5,16 +5,15 @@ using UnityEngine;
 namespace HellParty.Native;
 
 // Native room prefabs, native setup/registration and native spawn RPCs only.
-// Used by balloon Gnomes, Bowtie brothers and development scenarios.
+// Used by monster abilities and global waves.
 internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
 {
     internal Vector3 Position;
     internal bool Pending = true;
     internal PlayerAvatar? InitialTarget;
     internal bool ShareAttackTarget;
-    internal bool AllowUpscreamMimic;
 
-    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool allowUpscreamMimic = false, bool vanillaOnly = false)
+    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool vanillaOnly = false)
     {
         Vector3 holding = AssetManager.instance.physDisabledPosition;
         if (prepareOnMesh)
@@ -33,7 +32,6 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
         ticket.Position = position;
         ticket.InitialTarget = target;
         ticket.ShareAttackTarget = shareAttackTarget;
-        ticket.AllowUpscreamMimic = allowUpscreamMimic;
         root.GetComponentInChildren<Enemy>(true).EnemyTeleported(prepareOnMesh ? position : holding);
         NativeEnemy.SetupDone(parent) = true;
         return parent;

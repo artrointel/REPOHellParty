@@ -59,7 +59,6 @@ internal sealed class DuckFamily : MonoBehaviour
             _deathHandled = false;
             _initialFill = true;
             _clock.Reset();
-            Plugin.ModLogger.LogInfo($"Apex Predator spawned: clone limit {limit} (no recognition gate).");
         }
         if (_crown == null) _crown = CrownCarrier.Create(_duck);
 
@@ -95,7 +94,6 @@ internal sealed class DuckFamily : MonoBehaviour
             if (SpawnSlot(i))
             {
                 _clock.Spawned(Time.time, LivingCount() < limit);
-                Plugin.ModLogger.LogInfo("Apex Predator: respawned one clone (shared 30-second cooldown).");
             }
             else _clock.RetryLater(Time.time);
             break;
@@ -182,6 +180,5 @@ internal sealed class DuckFamily : MonoBehaviour
             EnemyDuck duck = NativeEnemy.Duck(clone.GetComponent<EnemyParent>())!;
             if (!clone.Killed && NativeEnemy.IsAlive(duck)) duck.GetComponent<EnemyHealth>().Hurt(1000000, Vector3.zero);
         }
-        Plugin.ModLogger.LogInfo("Apex Predator died: Crown released; clones killed; respawns stopped.");
     }
 }

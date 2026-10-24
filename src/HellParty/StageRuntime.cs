@@ -21,17 +21,6 @@ internal sealed class StageRuntime : MonoBehaviour
         if (DifficultyService.Current >= 1 && GetComponent<Events.MonsterWave>() == null)
             gameObject.AddComponent<Events.MonsterWave>();
         foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
-#if DEBUG
-        if (Debugging.DebugLoomRobeScenario.Enabled) StartCoroutine(Debugging.DebugLoomRobeScenario.SpawnTestSet());
-        if (Debugging.DebugTrudgeScenario.Enabled) StartCoroutine(Debugging.DebugTrudgeScenario.SpawnTestSet());
-        if (Debugging.DebugHeadmanScenario.Enabled) StartCoroutine(Debugging.DebugHeadmanScenario.SpawnTestSet());
-        if (Debugging.DebugClownScenario.Enabled) StartCoroutine(Debugging.DebugClownScenario.SpawnTestSet());
-        if (Debugging.DebugReaperScenario.Enabled) StartCoroutine(Debugging.DebugReaperScenario.SpawnTestSet());
-        if (Debugging.DebugUpscreamScenario.Enabled) StartCoroutine(Debugging.DebugUpscreamScenario.SpawnTestSet());
-        if (Debugging.DebugCleanupScenario.Enabled) StartCoroutine(Debugging.DebugCleanupScenario.SpawnTestSet());
-        if (Debugging.DebugHuntsmanScenario.Enabled)
-            StartCoroutine(Debugging.DebugHuntsmanScenario.SpawnTestSet(spawnWeapons: !Debugging.DebugCleanupScenario.Enabled));
-#endif
     }
 
     internal static void TryAttach(EnemyParent parent)
@@ -72,11 +61,7 @@ internal sealed class StageRuntime : MonoBehaviour
         if (parent.GetComponentInChildren<EnemyUpscream>(true) != null && parent.GetComponent<ChefMimic>() == null)
         {
             SummonedEnemySpawnTicket ticket = parent.GetComponent<SummonedEnemySpawnTicket>();
-            bool testMimic = false;
-#if DEBUG
-            testMimic = ticket != null && ticket.AllowUpscreamMimic;
-#endif
-            if (Rules.DifficultyRules.UpscreamMimicUnlocked(DifficultyService.Current, ticket != null, testMimic))
+            if (Rules.DifficultyRules.UpscreamMimicUnlocked(DifficultyService.Current, ticket != null))
                 parent.gameObject.AddComponent<ChefMimic>();
         }
         if (Rules.DifficultyRules.BowtieBrothersUnlocked(DifficultyService.Current) && parent.GetComponentInChildren<EnemyBowtie>(true) != null &&

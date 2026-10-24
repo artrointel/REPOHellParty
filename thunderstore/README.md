@@ -4,7 +4,7 @@ A host-only R.E.P.O. mod with stage-based difficulty, native monster abilities a
 
 ## Difficulty
 
-Normal progression starts at **difficulty 1 on stage 1**. Stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ use difficulty 1 / 2 / 3 / 4 / 5. Difficulty 0 remains the unmodified baseline but is not assigned during normal progression. Resumed runs use the same formula based on the game's completed-stage count. Debug test scenarios can override this; Release follows normal progression.
+Normal progression starts at **difficulty 1 on stage 1**. Stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ use difficulty 1 / 2 / 3 / 4 / 5. Difficulty 0 remains the unmodified baseline but is not assigned during normal progression. Resumed runs use the same formula based on the game's completed-stage count. Both Debug and Release use normal progression; temporary spawns, forced difficulty and test controls have been removed.
 
 ## Implemented abilities
 
@@ -35,7 +35,7 @@ The event ends 20 seconds after Gramophone creation, including the warning. Dela
 
 ## Development status
 
-Automated checks validate deterministic rules and installed-game method/RPC contracts. Actual animation, positioning and vanilla multiplayer damage/synchronization require in-game regression testing. Release contains no temporary debug monsters, weapons, keys or difficulty overrides. Debug exposes selectable Headman with a vanilla Animal ally (difficulty 5), Clown (difficulty 5), Reaper Sprint (difficulty 2), Upscream, Cleanup Crew and Huntsman scenarios; stored profile configuration determines which is active.
+Automated checks validate deterministic rules and installed-game method/RPC contracts. Actual animation, positioning and vanilla multiplayer damage/synchronization require in-game regression testing. Both build configurations use actual progression without temporary test monsters, weapons, keys, solo abduction exceptions or difficulty overrides. Legacy debug profile settings are no longer read. Use Release for normal multiplayer play.
 
 The package icon is a temporary development asset reused from REPOPocketCartTurret and must be replaced before publication.
 

@@ -20,7 +20,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 | 10~12 | 4 |
 | 13 이상 | 5 — 최대 |
 
-계산식은 `min(5, 1 + max(0, levelsCompleted) / 3)`이며 순정 완료 스테이지 수를 사용한다. 실패·재시도만으로 추가 상승시키지 않고, 이어 하는 런에도 같은 계산을 적용한다. 0단계는 순정 동작 기준으로 남기며 일반 진행에서는 사용하지 않는다. Debug 전용 시나리오가 켜져 있으면 그 시나리오의 강제 난이도가 우선한다. 자세한 기준은 [공용 난이도](docs/metadata/difficulty.md)를 따른다.
+계산식은 `min(5, 1 + max(0, levelsCompleted) / 3)`이며 순정 완료 스테이지 수를 사용한다. 실패·재시도만으로 추가 상승시키지 않고, 이어 하는 런에도 같은 계산을 적용한다. 0단계는 순정 동작 기준으로 남기며 일반 진행에서는 사용하지 않는다. Debug와 Release 모두 같은 실제 진행도를 사용한다. 자세한 기준은 [공용 난이도](docs/metadata/difficulty.md)를 따른다.
 
 ## 구현된 몬스터 능력
 
@@ -32,7 +32,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 - [Bella](docs/monsters/bella.md): 난이도 1의 자폭은 탑승 Clown Doll을 벨에 연동한다. 난이도 3의 Tiny 미끼는 새 Grab마다 공격을 유도하고 15m 이상 이탈하면 제거한다. 본체 사망 시 남은 물품은 수집 보상으로 전환하며 탑승 인형 폭발은 Bella에게 피해를 주지 않는다.
 - [Bowtie](docs/monsters/bowtie.md): 난이도 2의 형제와 4의 복수로 무코어 Elsa를 소환한다. 순정 변신 후 공격하고 10초 후 애니메이션으로 디스폰하며, 자신을 소환한 Bowtie의 바람 공격을 무시한다.
 - [Chef](docs/monsters/chef.md)·[Upscream](docs/monsters/upscream.md): 난이도 1부터 공유 체력·내구도의 수집품 변장을 사용한다. Chef는 Frog, 자연 생성 Upscream은 제외 목록을 적용한 Big 수집품 24종 중 하나를 사용한다. 시야 상실 5초 후 배회 복귀, Grab 해제 후 순정 공격, 환경 파괴 시 코어 보상, 드론·노움 제외를 적용한다. 다른 능력과 웨이브가 소환한 Upscream은 변장하지 않는다.
-- [Loom](docs/monsters/loom.md)·[Robe](docs/monsters/robe.md): 난이도 1부터 각 개체가 [스토커](docs/monsters/stalking-doll.md) 1마리를 동반한다. 스토커 체력은 100이며 기본 분노와 난이도 3의 폭주를 보유한다.
+- [Loom](docs/monsters/loom.md)·[Robe](docs/monsters/robe.md): 난이도 1부터 각 개체가 [스토커](docs/monsters/stalking-doll.md) 1마리를 동반한다. 스토커 체력은 100이며 기본 분노와 난이도 3의 폭주를 보유한다. 중력·직립 자세를 유지하고 50cm 이하 턱을 넘으며 벽·다른 스토커 접촉 시 옆으로 비켜 추적한다.
 - [Peeper](docs/monsters/peeper.md): 난이도 1의 유효 타격마다 Gnome, 난이도 2부터 30% 확률의 추가 Banger를 소환한다. 둘을 합쳐 본체별 누적 10마리로 제한한다.
 - [Mentalist](docs/monsters/mentalist.md): 난이도 2부터 타깃이 없을 때 총격 피해·기절을 막고 레이저총으로 공격자의 당시 위치를 향해 2초 뒤 반격한다.
 - [Huntsman](docs/monsters/huntsman.md): 난이도 2부터 공격·추적 중 4m 내 최근접 플레이어를 납치한다. 3초 후부터 1초마다 피해 2를 주며, 운반 중 사격·피해자 소음 반응·피해자의 본체 Grab을 차단한다. 피격·넘어짐 등에 해제되고 5초 쿨타임을 적용한다. 난이도 4의 죽음의전술은 사망 시 확보 가능한 Human Grenade를 핀을 뽑아 던진다.
@@ -53,7 +53,7 @@ R.E.P.O.에 스테이지별 누적 난이도, 몬스터 특수 능력과 글로�
 
 ## 개발과 테스트
 
-[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징과 Debug 설정을 확인한다. 전용 Debug 시나리오는 LoomRobe·Trudge·Headman·Clown·Reaper·Upscream·Huntsman·Cleanup Crew이며 실제 활성 대상은 프로필 설정에 따라 달라진다. 종합 테스트는 여덟 시나리오를 모두 끄거나 Release로 실행한다. 종료된 몬스터 테스트의 안내를 현재 자동 생성 시나리오로 사용하지 않는다.
+[개발 환경](docs/development.md)에서 SDK·빌드·배포·실행·패키징을 확인한다. 테스트용 몬스터·무기 자동 생성, 강제 난이도, 전용 단축키와 솔로 납치 우회는 제거했다. 기존 Debug 설정도 사용하지 않으며, 다른 플레이어와 함께하는 일반 플레이에는 Release를 권장한다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline

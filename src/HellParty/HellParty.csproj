@@ -13,10 +13,6 @@
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
-    <Compile Remove="Debug/**/*.cs" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>portable</DebugType>
   </PropertyGroup>

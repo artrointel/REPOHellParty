@@ -9,17 +9,12 @@ namespace HellParty.Native;
 
 internal static class VanillaCatalog
 {
-    internal static PrefabRef BowtiePrefab() => EnemyPrefab<EnemyBowtie>();
     internal static PrefabRef ElsaPrefab() => EnemyPrefab<EnemyElsa>();
-    internal static PrefabRef ChefPrefab() => EnemyPrefab<EnemyTumbler>();
     internal static PrefabRef LoomPrefab() => EnemyPrefab<EnemyShadow>();
-    internal static PrefabRef RobePrefab() => EnemyPrefab<EnemyRobe>();
     internal static PrefabRef BangerPrefab() => EnemyPrefab<EnemyBang>();
-    internal static PrefabRef HuntsmanPrefab() => EnemyPrefab<EnemyHunter>();
     internal static PrefabRef ReaperPrefab() => EnemyPrefab<EnemyRunner>();
     internal static PrefabRef HeadmanPrefab() => EnemyPrefab<EnemyHeadController>();
     internal static PrefabRef TickPrefab() => EnemyPrefab<EnemyTick>();
-    internal static PrefabRef TrudgePrefab() => EnemyPrefab<EnemySlowWalker>();
     internal static PrefabRef GnomePrefab()
     {
         var prefab = new PrefabRef();
@@ -27,8 +22,6 @@ internal static class VanillaCatalog
         if (!prefab.IsValid()) throw new InvalidOperationException("Native Gnome prefab not found.");
         return prefab;
     }
-    internal static PrefabRef ClownPrefab() => EnemyPrefab<EnemyBeamer>();
-    internal static PrefabRef CleanupCrewPrefab() => EnemyPrefab<EnemyBombThrower>();
     internal static PrefabRef SpewerPrefab() => EnemyPrefab<EnemySlowMouth>();
     internal static PrefabRef RugratPrefab() => EnemyPrefab<EnemyValuableThrower>();
     internal static PrefabRef UpscreamPrefab() => EnemyPrefab<EnemyUpscream>();

@@ -2,68 +2,30 @@
 
 ## Unreleased
 
-- Add tier-4 Headman Protection: idle Headmen inherit nearby allies' player targets or identified attackers within 20m; borrowed Reaper bodies are excluded. Switch the temporary test to maximum-tier Headman with a vanilla Animal ally and two guns.
-- Add tier-2 Trudge Muster (소집): every ground slam summons two random native Tick/Gnome/Banger after three seconds, sharing the last target. No HellParty abilities, timed retirement or post-death respawn; native Banger detonation remains.
-- Verify Huntsman and Loom share one global abduction reservation and reject new captures while anyone is already captive.
-
-- Implement Clown tier-3 Laser Staff Summon and tier-5 Laser Shield. Shield blocks gun damage/stun while targetless and fires a fixed-aim Staff after two seconds. Surviving staves become collectible loot on owner death. Prepare exclusive difficulty-5 Debug.Clown with shotgun and tranquilizer.
-- Add Loom tier-4 Abduction using the Huntsman shared rules and global captive slot. Both check a clear native vision ray immediately before capture.
-- Remove Birthday Boy Eyeball generation entirely; death balloon pops have no extra loot or Gnomes.
-- Replace Reaper Blind with tier-2 Sprint: transform into native Headman at 10m target distance, return to Reaper within 3m, ten-second use cooldown, shared health and original Reaper core rules. Retain Blind on Shadow Child only. The selectable Reaper debug scenario uses difficulty 2.
-
-- Advance normal difficulty by one tier: stages 1–3 / 4–6 / 7–9 / 10–12 / 13+ now use tiers 1 / 2 / 3 / 4 / 5. Preserve difficulty 0 as a vanilla baseline and existing Debug scenario overrides.
-- Refresh repository and package documentation, stage unlock labels, implementation status and profile-driven Debug instructions.
-- Document current Huntsman Abduction: 4m range, 2 damage every second after a three-second delay, no shooting while carrying, captive sound filtering, carrier-grab rejection, and a five-second release cooldown. Add tier-4 Death Tactics with a native recoverable Human Grenade.
-- Add Cleanup Crew Hatching/Hatching2 and natural Upscream Big-valuable disguises; ability/wave-summoned Upscreams are excluded from disguise.
-- Add Reaper/Shadow Child Blind: native gas at the target's eye position every three seconds of continuous targeting; target changes/loss reset the timer.
-- Update Monster Wave: 20m radius, three-second posture-based evasion warning, two Gnomes per second, twenty-second total lifetime, one-second retries, revalidated spawn-position caches, nearest-player candidate ordering, and a strict greater-than-three-metre player clearance. Break the Gramophone through native effects on combat end; cancel warnings silently.
+- Remove temporary monster/weapon spawns, forced difficulty, test keys, solo abduction and summoned Upscream disguise overrides, and lifecycle/navigation diagnostics. Both Debug and Release use actual stage progression. Refresh normal multiplayer documentation and regression checklists.
+- Fix Stalking Doll movement using gravity and upright physics, supported steps up to 50cm with verified forward landing, and collision-contact sliding past walls and other dolls. Prevent self-inflicted terrain/passive-contact damage while retaining incoming physical attacks.
+- Start difficulty 1 at stage 1, increasing every three completed stages to a maximum of 5 at stage 13. Keep difficulty 0 as the vanilla baseline.
+- Add tier-4 Headman Protection: while idle, inherit nearby allies' targets or identified attackers within 20m. Exclude borrowed Reaper bodies.
+- Add tier-2 Trudge Muster (소집): every ground slam summons two random native Tick/Gnome/Banger after three seconds, sharing the last target. Summons have no HellParty abilities, timed retirement or post-death respawn; native Banger detonation remains.
+- Add Clown tier-3 Laser Staff Summon and tier-5 Laser Shield. Targetless gun hits have damage/stun blocked and trigger a fixed-aim Staff shot after two seconds. Surviving staves become collectible loot on owner death.
+- Add tier-4 Loom Abduction using Huntsman's shared rules. Both use 4m range, clear vision rays, at least two living players, one global captive slot, 2 damage per second after three seconds, and a five-second release cooldown. Captives cannot grab their carrier; Huntsman does not shoot or investigate captive sounds while carrying.
+- Add Huntsman tier-4 Death Tactics with a pinned, thrown native Human Grenade that players can recover before detonation.
+- Add Cleanup Crew Hatching/Hatching2: a targeted head explosion summons a coreless Spewer after two seconds, replaced by Upscream at tier 5. Summons retire after ten seconds; Hatching2 Upscream also retires immediately after its applied throw.
+- Add natural Upscream Big-valuable disguises using 24 verified native resource paths, excluding cores, Surplus, Telescope and Unicorn Horn. Ability/wave-summoned Upscream cannot disguise.
+- Replace Reaper Blind with tier-2 Sprint: transform into native Headman at 10m target distance and return within 3m, with a ten-second use cooldown, shared health and original Reaper core rewards. Shadow Child retains Blind, creating native player-only gas at its target's saved eye position every three seconds of continuous targeting.
+- Update Monster Wave: 20m radius, a three-second posture-based evasion warning, initial Rugrat/Upscream/Headgrab requests at three seconds, and two Gnomes per second from seconds 4–19. Twenty-second total lifetime includes the warning. Use one-second retries, revalidated spawn caches, nearest-player candidate ordering and greater-than-three-metre player clearance. Ignore cores, internal props and in-area destruction; throttle admission checks to one per three seconds. Failed replacements keep the old wave. Break the Gramophone through native effects on combat end and cancel warnings silently.
+- Remove Birthday Boy Eyeball generation. Death balloon pops create no extra loot or Gnomes.
 
 ## 0.1.0
 
-- Mentalist Reflection Shield now always retaliates with a native laser gun regardless of the incoming gun. Aim locks on creation, laser firing starts after two seconds, and native laser damage/duration are retained.
-
-- Mentalist gains Reflection Shield at difficulty 2 while it has no player target. Native gun hits have damage/stun blocked; one matching temporary gun per shot locks aim immediately, fires through native RPCs after two seconds, then disappears. Shotgun pellets share one retaliation. Reflected shots cannot chain reflections.
-
-- Reduced Stalking Doll health to 100 and kept displayed price proportional to remaining HP / 100.
-- Peeper summons a Gnome on each confirmed damaging hit from difficulty 1, with a 30% bonus Banger chance from difficulty 2. Both types share a cumulative ten-unit limit per Peeper. Summons inherit the snapshotted victim through native group AI; overlapping remote damage has attribution limitations.
-
-- From difficulty 1, native Loom and Robe spawns each bring one Stalking Doll companion per instance per stage. Rage is innate; difficulty 3 adds Rampage, triggering that same rage on a confirmed normal attack regardless of direction. Grab retaliation does not trigger Rampage. Player-death and 30-second inactivity exits remain.
-
-- Added Stalking Doll rage: three accepted grab attempts shared across players trigger triple-speed pursuit that ignores observation and keeps native attacks active while moving. Any confirmed player death or 30 seconds without a valid hit ends rage and resets its counter. With no hits, the timer starts at rage entry. Remote hit confirmation correlates pending attacks with native health decreases; overlapping damage cannot be attributed exactly by vanilla messages. Repeated death messages do not reset a later activation.
-
-- Stalking Doll attacks now total 10 player damage using the native hit plus a host-sent native health supplement. Grab attempts deal 10 damage to the grabber and cancel the grab, with duplicate request suppression. Wall/floor collisions no longer damage its health or value; weapon and thrown-object damage remain. Multiplayer hit alignment still requires playtesting.
-
-- Stalking Doll price now follows original native value multiplied by remaining HP / 200. Removed host-only price/discovery hiding; host and vanilla guests use the same native price UI and impact feedback without monster red flashes. Extraction remains disabled, and native 15% value thresholds do not kill a living doll.
-
-- Added 200 HP to Stalking Dolls, routed native enemy weapon damage and environmental impacts to health, excluded dolls from extraction value/registration, and added a single Bella-equivalent core on death. Uses native doll impact feedback. Host price UI is hidden; native guest $0 UI and missing monster red-flash support remain documented limitations.
-
-- Added a separately spawned Stalking Doll prototype using native Scream Doll visuals, attacks and synchronization: nearest-living-player targeting, Loom prefab movement speed, silent NavMesh hover pursuit, observation-based freeze and held-object pause. Switched the Debug scenario to the doll. Remote viewport estimation and multiplayer attack interruption still require in-game validation; release spawn progression is unspecified.
-
-- Share Chef body health and usable Frog durability by percentage, preserving fractional damage across transformations through native value RPCs. Environmental destruction also awards the native orb. Removed the disguise-specific 20m/raycast override from pursuit expiry; native pursuit now controls target release.
-
-- Chef's disguise now ends only after five continuous seconds without a visible player. Reacquiring any player resets the timer; the one-second visibility scan interval is unchanged.
-
-- Excluded Chef disguise Frogs from Gnome valuable selection and guarded drone attachment before native RPC emission. Chef now keeps its grabber target through attack recovery instead of redisguising on a temporary vision gap; target death or native pursuit expiry releases it.
-
-- Chef now monitors player visibility every second while its native body is hidden. Losing all unobstructed living players within 20m removes the disguise and restores roaming without aggro or an orb, preserving health and grab/destruction precedence.
-
-- Added difficulty-one Chef Mimic: 20m unobstructed roaming scans at one-second intervals, a destructible native Frog disguise that rejects drones, native orb rewards for breaking the disguise, grab release before revealing, complete native attack preparation with preserved health, and return to roaming after target loss. Switched the Debug scenario to Chef, weapons and a valuable-targeting drone.
-
-- Bowtie-summoned Elsas now ignore their own summoner's native wind hit, including knockback/stun, while retaining the ten-second lifetime. Other Bowties, normal Elsas and players keep their native wind interactions.
-- Added difficulty-four Bowtie Revenge: an Elsa is summoned at the saved death position after 0.5 seconds, targets the killing player when identified or the nearest living player, and uses the existing no-orb, ten-second animated summon lifecycle. No target means immediate animated retirement.
-- Added difficulty-two Bowtie Brothers: native Elsa target inheritance and transformation, no orbs, a ten-second lifetime and animated retirement on timeout/replacement, with no automatic respawn. Excluded the proposed three-hit condition and switched the Debug scenario to Bowtie.
-
-- Mounted Clown Doll explosions now use native enemyHost self-hit exclusion for their owning Bella only, preserving damage to other enemies and players.
-- Bella bait now disappears silently at 15m from its living owner, becomes permanent loot if the owner dies while it remains inside that radius, and triggers immediate native attacks on every new grab, including repeated grabs of the same bait.
-- Added Bella's native Clown Doll bell-linked suicide and difficulty-three Tiny bait, with silent per-Bella replacement, grabber-targeted native attacks, and collectible leftovers after death. Switched the Debug playtest scenario to Bella.
-
-- Rebind summoned enemy navigation to the NavMesh after initial spawn activation, bypassing the native near-distance Warp shortcut that could leave balloon Gnomes stationary.
-- Tier-three damage-burst Gnomes now prioritize the damaged Birthday Boy's existing player target after native spawn initialization, including when the native Gnome group was attacking another target.
-- Initial development scaffold: BepInEx entry point, Harmony initialization, build, debug, and packaging configuration.
-- Added stage-based HellParty difficulty and Apex Predator clones/Crown.
-- Added deterministic rule/assembly-contract tests. Removed the temporary duck playtest scenario and diagnostics.
-- Added Animal target-gated poison gas, player-only host filtering, and a Debug-only Animal/weapon playtest scenario.
-- Animal gas now requires its current target within 3m and has a 10-second cooldown. Difficulty 3 (stage 10) adds division into two half-health, 20-second-lived Animals with individual orb rewards.
-- Delayed Animal division by 0.5 seconds so the killing shot does not immediately hit the newly spawned children; their lifetime still starts at actual spawn.
-- Added Birthday Boy balloon proximity pops (3m/3s), Gnomes, tier-two aggro and newest-three death Eyeballs. Switched the Debug test scenario to Birthday Boy.
-- Expanded tier-one Gnomes to player/physical pops with a living player within 10m. Moved balloon tier two to difficulty 2 and added tier three at difficulty 3: nonlethal body damage bursts nearby balloons into Gnomes; death loot takes priority on lethal hits.
+- Add the host-only BepInEx/Harmony scaffold, separate build configurations, deployment/launch/package scripts, deterministic rule tests and installed-game method/RPC contract checks.
+- Add Apex Predator Clone1/2/3 at tiers 1/3/5 with limits 1/2/3, a shared thirty-second single-clone respawn, coreless radiation-gas clone deaths and a collectible Crown on original death. Clones return at 15m through native despawn/respawn while retaining health. Crown placement uses 70% of its original height offset and a 0.25m backward correction.
+- Add Animal tier-2 gas at the current target's position within 3m, on a ten-second cooldown, using native Cleanup Crew-equivalent player-only gas. Tier-3 division creates two half-health children after 0.5 seconds; each awards one core if killed within twenty seconds of actual spawn.
+- Add Birthday Boy balloon tiers 1/2/3: proximity pops after three seconds within 3m; Gnomes on auto/physical pops with a living player within 10m; tier-2 auto-pop aggro; and tier-3 nonlethal damage bursts within 10m that share the original's player target.
+- Add Bella's bell-linked mounted Clown Doll suicide and tier-3 Tiny bait. Bait triggers an attack on every new grab, is replaced on later bells and disappears at 15m from a living owner. Surviving items become collectible loot on death. Mounted doll explosions exclude their own Bella.
+- Add Bowtie tier-2 Brothers and tier-4 Revenge. Coreless Elsa inherits a target, plays native transformation and retires with animation after ten seconds or replacement. Revenge spawns after 0.5 seconds at the death position. Own-summoner wind is ignored; no three-hit retirement rule is used.
+- Add Chef tier-1 Frog Mimic with 20m unobstructed detection and one-second retry, shared health/durability, five-second visibility-loss reveal, full native attack preparation after grab release, no redisguise during pursuit, and native core rewards for weapon/environmental destruction. Reject drones and Gnome valuable targeting.
+- Add Stalking Doll companions, one per Loom/Robe instance from tier 1. Health is 100 and native displayed value follows the health percentage without extraction credit. Unobserved dolls silently stalk the nearest living player at Loom speed. Grab attempts cancel and hurt the grabber for 10; three cumulative attempts trigger rage at triple speed, ignoring observation and maintaining attacks while moving. Tier-3 Rampage also triggers on a valid normal hit. Rage ends on a player death or thirty seconds without a valid hit. Death awards Bella-type cores.
+- Add Peeper Gnomes on valid hits from tier 1 and a 30% extra Banger chance from tier 2. Both share the original target and count toward a per-Peeper lifetime total of ten summons.
+- Add Mentalist tier-2 Reflection Shield while targetless: block native gun damage/stun, create a native laser gun regardless of the incoming weapon, lock aim immediately and fire after two seconds at native damage.
+- Rebind summoned native navigation after spawn to prevent stationary Gnomes. Preserve vanilla network prefabs/RPCs for guests and guard object retirement, late grab requests and invalid healing recipients without hiding RPC warnings.

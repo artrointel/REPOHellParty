@@ -33,9 +33,6 @@ internal sealed class StalkingDoll : MonoBehaviour
     private bool _ready;
     private bool _driving;
     private readonly StalkingDollContacts _contacts = new();
-#if DEBUG
-    private float _navigationLogAt;
-#endif
     private readonly StalkingDollRage _rage = new();
     private ScreamDollValuable.States? _sentState;
     internal StalkingDollMode Mode { get; private set; } = StalkingDollMode.Waiting;
@@ -242,9 +239,6 @@ internal sealed class StalkingDoll : MonoBehaviour
                 NavMesh.SamplePosition(_target.transform.position, out NavMeshHit end, 3f, NavMesh.AllAreas) &&
                 NavMesh.CalculatePath(start.position, end.position, NavMesh.AllAreas, _path) && _path.status == NavMeshPathStatus.PathComplete)
             { _corners = _path.corners; _corner = 0; }
-#if DEBUG
-            else DebugNavigation("no complete NavMesh path");
-#endif
         }
         while (_corner < _corners.Length)
         {
@@ -259,7 +253,7 @@ internal sealed class StalkingDoll : MonoBehaviour
         direction.y = 0;
         Vector3 delta = Vector3.ClampMagnitude(direction, MovementSpeed * Time.fixedDeltaTime);
         if (delta.sqrMagnitude < .000001f) return false;
-        if (StalkingDollStep.TryClimb(_body, _solidColliders, delta, out string? blocked))
+        if (StalkingDollStep.TryClimb(_body, _solidColliders, delta))
         {
             // The step already swept and placed the body beyond the ledge.
             // Do not reuse the old pre-step direction/corner this physics tick.
@@ -270,9 +264,6 @@ internal sealed class StalkingDoll : MonoBehaviour
             Face(_body.position + delta);
             return true;
         }
-#if DEBUG
-        if (blocked != null) DebugNavigation(blocked);
-#endif
         // Let native collisions stop the actual body, then slide along their
         // contact normals. An overlapping speculative sphere must not cancel
         // movement out of a wall or keep two neighbouring dolls locked forever.
@@ -281,15 +272,6 @@ internal sealed class StalkingDoll : MonoBehaviour
         Face(_body.position + delta);
         return true;
     }
-
-#if DEBUG
-    private void DebugNavigation(string reason)
-    {
-        if (!Debugging.DebugLoomRobeScenario.Enabled || Time.time < _navigationLogAt) return;
-        _navigationLogAt = Time.time + 3;
-        Plugin.ModLogger.LogInfo($"DEBUG Stalker navigation at {_body.position}: {reason}.");
-    }
-#endif
 
     private void Face(Vector3 point)
     {

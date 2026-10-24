@@ -1,31 +1,10 @@
 # Upscream 변장 플레이테스트
 
-Debug/Release 빌드와 자동 검사 후 실제 게임에서 확인할 항목이다. 호스트만 HellParty를 설치하고 바닐라 참가자와 함께 확인한다.
+난이도 1 이상에서 자연 생성 Upscream을 사용한다. 다른 능력·웨이브 소환 개체는 변장 대상에서 제외한다.
 
-## 테스트 준비
+호스트만 HellParty를 설치하고 바닐라 참가자와 함께 확인한다. Debug와 Release 모두 실제 진행도를 사용하며 자동 테스트 스폰·강제 난이도·전용 단축키·솔로 납치 우회는 없다. 실행·배포는 [개발 환경](development.md#debug와-release)을 따른다. 아래 항목은 실제 게임의 회귀 확인 목록이며 자동 검사가 원격 동기화·연출 확인을 대신하지 않는다.
 
-게임을 종료한 뒤 저장소 루트에서 실행한다.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
-```
-
-Upscream 테스트는 `[Debug.Trudge]
-Enabled = false
-
-[Debug.Headman]
-Enabled = false
-
-[Debug.Clown]
-Enabled = false
-
-[Debug.Reaper] Enabled = false`, `[Debug.Upscream] Enabled = true`로 선택한다. 난이도를 5로 유지하고 시작 위치 20m 이내의 연결된 NavMesh 지점에 변장 능력을 가진 Upscream 1마리, 시작 지점에 샷건·수면총 각 1개를 생성한다. 몬스터 위치 탐색이 실패해도 무기는 별도로 생성한다.
-
-이 시나리오가 켜져 있으면 이전 Huntsman·Cleanup Crew의 테스트 생성과 전용 키 제어는 실행하지 않는다. Upscream은 별도 키 조작 없이 순정 배회 중 플레이어를 발견하면 변장한다. 본체와 시야가 통하는 20m 안으로 접근해 변장 수집품을 찾는다.
-
-프로필의 `BepInEx/config/artrointel.HellParty.cfg`에서 `Debug.Upscream`을 false로 바꾸면 이전 시나리오를 선택할 수 있다. 종합 테스트는 Reaper·Upscream·Huntsman·CleanupCrew 일곱 시나리오를 모두 false로 바꾸고 재시작하거나 Release를 사용한다. Release에는 테스트 생성·강제 난이도·테스트 개체의 소환 예외 코드가 없다.
-
-## 확인 순서
+## 확인 항목
 
 1. 20m 안에서 장애물 없이 플레이어가 보이면 수집품으로 변장해야 한다. 벽 뒤에서는 변장하지 않아야 한다. Release에서 난이도 0은 순정이며 1부터 변장이 적용되어야 한다.
 2. 변장 수집품을 잡으면 Grab이 해제되고 기존 Upscream이 복귀해 잡은 플레이어에게 순정 인지 예고·접근·던지기 공격을 해야 한다. 공격 대상을 유지하는 동안 바로 다시 수집품으로 변장하면 안 된다.

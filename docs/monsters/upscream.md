@@ -22,12 +22,12 @@
 
 **다른 몬스터의 능력이나 몬스터 웨이브로 소환된 Upscream에는 변장 능력을 부여하지 않는다.** 청소부 부화2의 대상 계승·10초 수명·던지기 직후 디스폰·코어 미드랍 규칙은 그대로 유지한다. 웨이브 Upscream도 기존 타깃·웨이브 종료 처리를 유지한다.
 
-공용 소환 기록(`SummonedEnemySpawnTicket`)은 실제 스폰이 끝나도 보관하여 소환 출신 여부를 계속 구분한다. Release는 이 기록이 있는 Upscream을 모두 제외한다. Debug 테스트 개체만 명시적인 예외로 변장을 허용하며, 그 예외 판정 코드는 Release에서 제외한다.
+공용 소환 기록(`SummonedEnemySpawnTicket`)은 실제 스폰이 끝나도 보관하여 소환 출신 여부를 계속 구분한다. Debug와 Release 모두 이 기록이 있는 Upscream을 제외한다. 테스트용 변장 허용 예외와 소환 매개변수는 제거했다.
 
 ## 구현과 검증
 
 순정 코드명은 `EnemyUpscream`이다. Chef와 `ChefMimic`·`ChefMimicFrog`·내구도·시야 상태 로직을 공유하고, Upscream용 AI 어댑터에서 `PlayerNotice → GoToPlayer → Attack`을 사용한다. 참가자 전용 코드나 사용자 정의 RPC는 추가하지 않는다.
 
-자동 검사는 단계·소환 출신 제외·Debug 예외의 Release 제외, 기존 공용 변장 상태·체력 규칙을 검사한다. 실제 변장·코어·드론·노움·원격 참가자 동기화는 [Upscream 플레이테스트](../upscream-playtest.md)로 확인한다. 실제 게임의 회귀 확인은 플레이테스트 항목을 따른다.
+자동 검사는 단계·소환 출신 제외·테스트 예외 제거, 기존 공용 변장 상태·체력 규칙을 검사한다. 실제 변장·코어·드론·노움·원격 참가자 동기화는 [Upscream 플레이테스트](../upscream-playtest.md)로 확인한다. 실제 게임의 회귀 확인은 플레이테스트 항목을 따른다.
 
 단계별 요약은 [난이도별 기획표](../monster-abilities.md)에서 관리한다.

@@ -23,4 +23,4 @@
 
 임시 총기 자리나 프리팹을 사용할 수 없어 반격 생성이 실패하면 오류를 기록한다. 이미 보호가 결정된 총격의 피해·기절 차단은 유지한다. 배회 판정은 공통 인지 메타데이터의 반대 조건이므로 타깃 보유 상태 발동 규칙의 예외다.
 
-이 몬스터의 전용 임시 생성·F6 제어는 종료했다. Release와 테스트 시나리오를 모두 끈 Debug는 [실제 진행도](../metadata/difficulty.md)를 따른다. 실제 검증 항목은 [Mentalist 플레이테스트](../mentalist-playtest.md), 단계별 요약은 [난이도별 기획표](../monster-abilities.md)를 따른다. 자동 검사와 Debug/Release 빌드는 Unity·바닐라 참가자와의 실제 위치·발사 동기화 테스트를 대체하지 않는다.
+테스트용 자동 생성과 전용 제어는 제거했다. Debug와 Release 모두 [실제 진행도](../metadata/difficulty.md)를 따른다. 실제 검증 항목은 [Mentalist 플레이테스트](../mentalist-playtest.md), 단계별 요약은 [난이도별 기획표](../monster-abilities.md)를 따른다. 자동 검사와 Debug/Release 빌드는 Unity·바닐라 참가자와의 실제 위치·발사 동기화 테스트를 대체하지 않는다.

@@ -18,16 +18,6 @@ public sealed class Plugin : BaseUnityPlugin
     private void Awake()
     {
         ModLogger = Logger;
-#if DEBUG
-        Debugging.DebugLoomRobeScenario.Initialize(Config);
-        Debugging.DebugTrudgeScenario.Initialize(Config);
-        Debugging.DebugHeadmanScenario.Initialize(Config);
-        Debugging.DebugClownScenario.Initialize(Config);
-        Debugging.DebugReaperScenario.Initialize(Config);
-        Debugging.DebugUpscreamScenario.Initialize(Config);
-        Debugging.DebugCleanupScenario.Initialize(Config);
-        Debugging.DebugHuntsmanScenario.Initialize(Config);
-#endif
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();
 
