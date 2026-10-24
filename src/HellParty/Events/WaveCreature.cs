@@ -13,9 +13,18 @@ internal sealed class WaveCreature : MonoBehaviour
     private bool _targetSet;
     private EnemyParent Parent => GetComponent<EnemyParent>();
 
+    internal void Prepare(MonsterWave owner)
+    {
+        Owner = owner;
+        Target = null;
+        Retired = false;
+        _targetSet = false;
+    }
+
     internal void Retire()
     {
         Retired = true;
+        GetComponent<SummonedEnemySpawnTicket>().Pending = false;
         Enemy enemy = GetComponentInChildren<Enemy>(true);
         if (NativeEnemy.Spawned(Parent) && enemy != null && !NativeEnemy.Dead(enemy.Health))
             enemy.CurrentState = EnemyState.Despawn;

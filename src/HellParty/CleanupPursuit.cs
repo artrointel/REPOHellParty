@@ -33,12 +33,12 @@ internal sealed class CleanupHeadPursuit : MonoBehaviour
                 Plugin.ModLogger.LogWarning($"Cleanup Crew pursuit skipped: no connected clear spawn near {position}.");
                 yield break;
             }
-            EnemyParent parent = SummonedEnemySpawnTicket.Create(prefab.ResourcePath, point, prepareOnMesh: true);
-            CleanupPursuer pursuer = parent.gameObject.AddComponent<CleanupPursuer>();
-            pursuer.Target = target;
-            pursuer.Stage = stage;
+            EnemyParent parent = SummonedEnemySpawnTicket.Create(prefab.ResourcePath, point, prepareOnMesh: true, pool: SummonPool.Cleanup);
+            CleanupPursuer pursuer = parent.GetComponent<CleanupPursuer>() ?? parent.gameObject.AddComponent<CleanupPursuer>();
+            pursuer.Prepare(stage, target);
             parent.GetComponentInChildren<EnemyHealth>(true).spawnValuable = false;
         }
+        catch (RoomViewCapacityException) { RoomViewBudget.Warn(); }
         catch (Exception e) { Plugin.ModLogger.LogError($"Cleanup Crew pursuit summon failed: {e}"); }
     }
 
@@ -75,7 +75,7 @@ internal sealed class CleanupHeadPursuit : MonoBehaviour
 
 internal sealed class CleanupPursuer : MonoBehaviour
 {
-    private readonly CleanupSummonLife _life = new();
+    private CleanupSummonLife _life = new();
     internal PlayerAvatar Target = null!;
     internal StageRuntime Stage = null!;
     private EnemyParent _parent = null!;
@@ -84,6 +84,14 @@ internal sealed class CleanupPursuer : MonoBehaviour
     private EnemyUpscream? _upscream;
     private bool _targetSet;
     internal bool Retired => _life.Retired;
+
+    internal void Prepare(StageRuntime stage, PlayerAvatar target)
+    {
+        _life = new CleanupSummonLife();
+        _targetSet = false;
+        Target = target;
+        Stage = stage;
+    }
 
     private void Awake()
     {

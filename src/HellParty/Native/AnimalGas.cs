@@ -20,9 +20,7 @@ internal sealed class AnimalGas : MonoBehaviour
         if (prefab == null || prefab.GetComponent<UraniumScript>() == null)
             throw new InvalidOperationException("Native Cleanup Crew-equivalent gas carrier was not found.");
         Vector3 hidden = AssetManager.instance.physDisabledPosition;
-        GameObject root = SemiFunc.IsMultiplayer()
-            ? PhotonNetwork.InstantiateRoomObject(CarrierPath, hidden, Quaternion.identity, 0)
-            : Instantiate(prefab, hidden, Quaternion.identity);
+        GameObject root = VanillaCatalog.Spawn(CarrierPath, hidden, Quaternion.identity);
         AnimalGas carrier = root.AddComponent<AnimalGas>();
         root.AddComponent<Events.InternalWaveExcluded>();
         carrier._position = position;

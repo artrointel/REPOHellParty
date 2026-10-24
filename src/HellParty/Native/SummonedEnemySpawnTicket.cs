@@ -1,8 +1,11 @@
 using System.Collections;
 using HarmonyLib;
+using HellParty.Rules;
 using UnityEngine;
 
 namespace HellParty.Native;
+
+internal enum SummonPool { None, Wave, Cleanup }
 
 // Native room prefabs, native setup/registration and native spawn RPCs only.
 // Used by monster abilities and global waves.
@@ -12,9 +15,24 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
     internal bool Pending = true;
     internal PlayerAvatar? InitialTarget;
     internal bool ShareAttackTarget;
+    private SummonPool _pool;
+    private string _path = "";
+    private readonly SummonReuseClock _reuse = new();
 
-    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool vanillaOnly = false)
+    internal static EnemyParent Create(string path, Vector3 position, PlayerAvatar? target = null, bool shareAttackTarget = false, bool prepareOnMesh = false, bool vanillaOnly = false, SummonPool pool = SummonPool.None)
     {
+        if (pool != SummonPool.None && EnemyDirector.instance != null)
+            foreach (EnemyParent existing in EnemyDirector.instance.enemiesSpawned)
+            {
+                if (existing == null || existing.transform.parent != LevelGenerator.Instance.EnemyParent.transform) continue;
+                SummonedEnemySpawnTicket parked = existing.GetComponent<SummonedEnemySpawnTicket>();
+                if (parked == null || parked._pool != pool || parked._path != path || parked.Pending ||
+                    NativeEnemy.Spawned(existing) || !parked._reuse.Ready(Time.timeAsDouble)) continue;
+                parked.Prepare(position, target, shareAttackTarget);
+                existing.GetComponentInChildren<EnemyHealth>(true).spawnValuableCurrent = 0;
+                existing.DespawnedTimerSet(0);
+                return existing;
+            }
         Vector3 holding = AssetManager.instance.physDisabledPosition;
         if (prepareOnMesh)
         {
@@ -29,12 +47,27 @@ internal sealed class SummonedEnemySpawnTicket : MonoBehaviour
         EnemyParent parent = root.GetComponent<EnemyParent>();
         if (vanillaOnly) root.AddComponent<VanillaAbilityExcluded>();
         SummonedEnemySpawnTicket ticket = root.AddComponent<SummonedEnemySpawnTicket>();
-        ticket.Position = position;
-        ticket.InitialTarget = target;
-        ticket.ShareAttackTarget = shareAttackTarget;
+        ticket._pool = pool;
+        ticket._path = path;
+        ticket.Prepare(position, target, shareAttackTarget);
         root.GetComponentInChildren<Enemy>(true).EnemyTeleported(prepareOnMesh ? position : holding);
         NativeEnemy.SetupDone(parent) = true;
         return parent;
+    }
+
+    private void Prepare(Vector3 position, PlayerAvatar? target, bool shareAttackTarget)
+    {
+        Pending = true;
+        Position = position;
+        InitialTarget = target;
+        ShareAttackTarget = shareAttackTarget;
+        _reuse.Reset();
+    }
+
+    private void Update()
+    {
+        if (_pool != SummonPool.None)
+            _reuse.Observe(Time.timeAsDouble, !Pending && !NativeEnemy.Spawned(GetComponent<EnemyParent>()));
     }
 
     private IEnumerator Start()

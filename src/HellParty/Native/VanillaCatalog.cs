@@ -133,14 +133,19 @@ internal static class VanillaCatalog
         throw new InvalidOperationException("Required vanilla valuable prefab not found in loaded presets.");
     }
 
-    internal static GameObject Spawn(PrefabRef prefab, Vector3 position, Quaternion rotation) => SemiFunc.IsMultiplayer()
-        ? PhotonNetwork.InstantiateRoomObject(prefab.ResourcePath, position, rotation, 0)
-        : UnityEngine.Object.Instantiate(prefab.Prefab, position, rotation);
+    internal static GameObject Spawn(PrefabRef prefab, Vector3 position, Quaternion rotation)
+    {
+        RoomViewBudget.Ensure(prefab.Prefab, prefab.ResourcePath);
+        return SemiFunc.IsMultiplayer()
+            ? PhotonNetwork.InstantiateRoomObject(prefab.ResourcePath, position, rotation, 0)
+            : UnityEngine.Object.Instantiate(prefab.Prefab, position, rotation);
+    }
 
     internal static GameObject Spawn(string resourcePath, Vector3 position, Quaternion rotation)
     {
         GameObject prefab = Resources.Load<GameObject>(resourcePath);
         if (prefab == null) throw new InvalidOperationException($"Vanilla prefab not found: {resourcePath}");
+        RoomViewBudget.Ensure(prefab, resourcePath);
         return SemiFunc.IsMultiplayer()
             ? PhotonNetwork.InstantiateRoomObject(resourcePath, position, rotation, 0)
             : UnityEngine.Object.Instantiate(prefab, position, rotation);

@@ -56,6 +56,12 @@ internal sealed class MonsterWave : MonoBehaviour
             if (Resources.Load<GameObject>("Enemies/Enemy - Gnome") == null) throw new InvalidOperationException("Native Gnome prefab missing.");
             next = WaveGramophone.Create(point);
         }
+        catch (RoomViewCapacityException)
+        {
+            if (next != null) next.Remove();
+            RoomViewBudget.Warn();
+            return;
+        }
         catch (Exception e)
         {
             if (next != null) next.Remove();
@@ -126,10 +132,18 @@ internal sealed class MonsterWave : MonoBehaviour
                 }
                 if (path == "Enemies/Enemy - Gnome" && EnemyGnomeDirector.instance == null)
                     VanillaCatalog.Spawn("Enemies/Enemy - Gnome Director", Vector3.zero, Quaternion.identity);
-                EnemyParent parent = SummonedEnemySpawnTicket.Create(path, point, prepareOnMesh: true);
-                WaveCreature member = parent.gameObject.AddComponent<WaveCreature>();
-                member.Owner = this;
+                EnemyParent parent = SummonedEnemySpawnTicket.Create(path, point, prepareOnMesh: true, pool: SummonPool.Wave);
+                WaveCreature member = parent.GetComponent<WaveCreature>() ?? parent.gameObject.AddComponent<WaveCreature>();
+                member.Prepare(this);
+                _creatures.Remove(member);
                 _creatures.Add(member);
+            }
+            catch (RoomViewCapacityException)
+            {
+                _pending.Enqueue(path);
+                _retryAt = Time.time + 3;
+                RoomViewBudget.Warn();
+                break;
             }
             catch (Exception e) { _pending.Enqueue(path); Plugin.ModLogger.LogError($"Monster wave summon failed: {e}"); break; }
         }

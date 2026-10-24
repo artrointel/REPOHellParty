@@ -28,47 +28,72 @@ internal sealed class TrudgeCall : MonoBehaviour
     private static IEnumerator Summon(StageRuntime stage, Vector3 point, PlayerAvatar? target)
     {
         yield return new WaitForSeconds(TrudgeCallCycle.Delay);
-        if (stage == null || StageRuntime.Current != stage || !SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) yield break;
         // Roll independently for each slot; duplicate species are allowed.
-        for (int i = 0; i < TrudgeCallCycle.Count; i++)
+        var choices = new int[TrudgeCallCycle.Count];
+        var completed = new bool[TrudgeCallCycle.Count];
+        for (int i = 0; i < choices.Length; i++) choices[i] = UnityEngine.Random.Range(0, 3);
+        // Retry only blocked slots, without rerolling species or duplicating a success.
+        for (int attempt = 0; attempt < 5; attempt++)
         {
-            try
+            if (stage == null || StageRuntime.Current != stage || !SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsLevel()) yield break;
+            bool pending = false;
+            for (int i = 0; i < choices.Length; i++)
             {
-                int choice = UnityEngine.Random.Range(0, 3);
-                PrefabRef prefab;
-                if (choice == 0) prefab = VanillaCatalog.TickPrefab();
-                else if (choice == 1)
+                if (completed[i]) continue;
+                try
                 {
-                    if (EnemyGnomeDirector.instance == null)
-                        VanillaCatalog.Spawn(BirthdayBalloonSpawn.GnomeDirectorPath, Vector3.zero, Quaternion.identity);
-                    prefab = VanillaCatalog.GnomePrefab();
+                    int choice = choices[i];
+                    PrefabRef prefab;
+                    if (choice == 0) prefab = VanillaCatalog.TickPrefab();
+                    else if (choice == 1)
+                    {
+                        if (EnemyGnomeDirector.instance == null)
+                            VanillaCatalog.Spawn(BirthdayBalloonSpawn.GnomeDirectorPath, Vector3.zero, Quaternion.identity);
+                        prefab = VanillaCatalog.GnomePrefab();
+                    }
+                    else
+                    {
+                        if (EnemyBangDirector.instance == null)
+                            VanillaCatalog.Spawn("Enemies/Enemy - Bang Director", Vector3.zero, Quaternion.identity);
+                        prefab = VanillaCatalog.BangerPrefab();
+                    }
+                    if (!TryPosition(prefab, point, i, out Vector3 spawn))
+                    { pending = true; continue; }
+                    EnemyParent parent = SummonedEnemySpawnTicket.Create(prefab.ResourcePath, spawn,
+                        EnemyTarget.Valid(target) ? target : null, shareAttackTarget: true, prepareOnMesh: true, vanillaOnly: true);
+                    parent.gameObject.AddComponent<TrudgeReinforcement>().Target = target;
+                    completed[i] = true;
                 }
-                else
+                catch (Exception exception)
                 {
-                    if (EnemyBangDirector.instance == null)
-                        VanillaCatalog.Spawn("Enemies/Enemy - Bang Director", Vector3.zero, Quaternion.identity);
-                    prefab = VanillaCatalog.BangerPrefab();
+                    completed[i] = true; // A partial creation must not be retried.
+                    Plugin.ModLogger.LogError($"Trudge reinforcement summon failed: {exception}");
                 }
-                if (!TryPosition(prefab, point, i, out Vector3 spawn))
-                    throw new InvalidOperationException($"No clear walkable Trudge reinforcement point near {point}.");
-                EnemyParent parent = SummonedEnemySpawnTicket.Create(prefab.ResourcePath, spawn,
-                    EnemyTarget.Valid(target) ? target : null, shareAttackTarget: true, prepareOnMesh: true, vanillaOnly: true);
-                parent.gameObject.AddComponent<TrudgeReinforcement>().Target = target;
             }
-            catch (Exception exception) { Plugin.ModLogger.LogError($"Trudge reinforcement summon failed: {exception}"); }
+            if (!pending) yield break;
+            if (attempt < 4) yield return new WaitForSeconds(.5f);
         }
+        for (int i = 0; i < completed.Length; i++)
+            if (!completed[i]) Plugin.ModLogger.LogWarning($"Trudge reinforcement slot {i + 1} skipped after retries: no connected clear floor within 6m of {point}.");
     }
 
     private static bool TryPosition(PrefabRef prefab, Vector3 center, int slot, out Vector3 point)
     {
         NavMeshAgent agent = prefab.Prefab.GetComponentInChildren<NavMeshAgent>(true);
         var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
-        for (int i = 0; i < 24; i++)
+        point = default;
+        if (!NavMesh.SamplePosition(center, out NavMeshHit anchor, 3, filter) || Mathf.Abs(anchor.position.y - center.y) > 2) return false;
+        for (int i = 0; i < 64; i++)
         {
             float angle = (i + slot * 4) * Mathf.PI / 4;
-            float radius = i < 8 ? .6f : i < 16 ? 1.2f : 2f;
+            float radius = .75f * (1 + i / 8);
             Vector3 candidate = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-            if (!NavMesh.SamplePosition(candidate, out NavMeshHit ground, 1.5f, filter) || Mathf.Abs(ground.position.y - center.y) > 2) continue;
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit ground, 1.5f, filter) ||
+                Mathf.Abs(ground.position.y - center.y) > 2 ||
+                new Vector2(ground.position.x - center.x, ground.position.z - center.z).sqrMagnitude > 36 ||
+                NavMesh.Raycast(anchor.position, ground.position, out _, filter) ||
+                Physics.Linecast(center + Vector3.up * .3f, ground.position + Vector3.up * .3f,
+                    LayerMask.GetMask("Default"), QueryTriggerInteraction.Ignore)) continue;
             float height = Mathf.Max(.4f, agent.height), clearance = Mathf.Clamp(agent.radius, .12f, height / 2);
             if (Physics.CheckCapsule(ground.position + Vector3.up * (clearance + .05f),
                     ground.position + Vector3.up * (height - clearance + .05f), clearance,

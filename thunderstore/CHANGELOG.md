@@ -3,9 +3,12 @@
 ## 0.2.0 — Release candidate
 
 - **Only the host installs; friends join with vanilla R.E.P.O.**
+- Increase Huntsman and Loom's shared Abduction range from 4m to 5m, including the 5m boundary.
 - Add natural Elsa's Assassination at difficulty 5. While following a player with no other living player within 20m of the target, Elsa starts its native growth at 5m and attacks. A living teammate entering the target's 20m radius cancels the mode immediately, even during growth.
 - Reentry cooldown lasts ten seconds from the end of assassination. First use is immediate and cancellation never waits for a cooldown. There is no separate assassination lifetime; native stun, target loss, death and despawn still apply. Ordinary native aggression is preserved. Summoned Elsas, including Bowtie Brothers/Revenge, are excluded.
 - Add boundary/cooldown/origin tests and an Elsa multiplayer playtest guide. No temporary debug spawns or forced difficulty are included.
+- Improve Trudge reinforcement placement: search nearby clear, connected floor up to 6m away and retry blocked slots every 0.5 seconds for up to two additional seconds. Successful slots are not duplicated; exhausted placement attempts produce a warning instead of an exception.
+- Reuse fully despawned Monster Wave and Cleanup Crew summons within their own per-stage prefab pools after a two-second RPC drain. Reset per-life targets and timers through native spawning instead of allocating new room ViewIDs on every summon. Check complete prefab ViewID capacity before network creation, preserving 32 IDs of native headroom; delay waves or skip Cleanup Crew summons when capacity is insufficient, with throttled warnings.
 
 ## 0.1.0 — Release candidate
 

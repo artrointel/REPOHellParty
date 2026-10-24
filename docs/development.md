@@ -95,7 +95,11 @@ Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격�
 
 호스트만 HellParty를 설치한 경우, 다른 참가자의 SharedHealthPacks 또는 다른 모드가 오래된 ViewID로 보내는 `HealOtherRPC`·잡기 메시지에는 이 발송 방어가 적용되지 않는다. 특히 로그의 `Remote called. By: #02 'Ara'`는 그 참가자가 발송했다는 의미다. 원격 모드의 정리 시 회복 버그는 해당 참가자 측에서도 수정되어야 한다. 수신 경고를 숨기거나 사라진 ViewID를 가짜 객체로 재등록하지 않는다. 실제 멀티플레이에서 장면 전환과 제거 직전 Grab을 확인해야 한다.
 
-스테이지마다 반복된 `RPC_SetWalkieColor`·`RPC_CreateRemoteTalkieOnRightArm`·`RPC_SetLocalAvatarViewId` 오류는 대상 View가 없다는 경고와 다르다. View는 있으나 해당 RPC를 처리할 컴포넌트·메서드가 없다는 뜻이다. 보고 당시 순정 게임 및 호스트 프로필의 플러그인 DLL 총 35개에서 세 이름의 수신 메서드와 직접적인 송신 문자열을 검사했으나 찾지 못했다. 참가자 측 무전기 관련 모드의 전용 통신으로 추정하며, 정확한 모드명은 참가자 설치 목록과 대조해야 한다. HellParty에 가짜 수신 RPC를 추가해 오류만 지우지 않는다. 송수신 모드의 설치·버전·호스트 전용 지원 여부를 맞추거나 송신 측 기능을 조정해야 한다.
+스테이지마다 반복된 `RPC_SetWalkieColor`·`RPC_CreateRemoteTalkieOnRightArm`·`RPC_SetLocalAvatarViewId` 오류는 대상 View가 없다는 경고와 다르다. View는 있으나 해당 RPC를 처리할 컴포넌트·메서드가 없다는 뜻이다. 2026-10-24 재검사에서 순정 게임과 현재 호스트 프로필의 플러그인 DLL 총 34개에 세 이름의 수신 메서드·직접 송신 문자열이 없었다. [Omniscye WalkieTalkies의 공개 소스](https://thunderstore.io/c/repo/p/Omniscye/WalkieTalkies/source/)에서 `WalkieController`가 뒤의 두 RPC를 송신·수신하는 것을 확인했다. 공개 소스는 구버전이며 `RPC_SetWalkieColor`는 포함하지 않으므로, 세 오류 모두의 정확한 송신 버전·참가자는 참가자 설치 목록과 대조해야 한다. 호스트에는 이 무전기 모드가 설치되어 있지 않으므로 참가자 측 설치 여부를 먼저 확인한다. 순정 참가자를 유지하려면 송신 측 무전기 모드를 비활성화하고 새 로비에서 확인한다. 무전기 모드를 사용하려면 필요한 수신 측에도 호환 버전이 있어야 한다. HellParty에 가짜 수신 RPC를 추가해 오류만 지우지 않는다.
+
+`AllocateViewID() ... room (user 0)`는 수신 RPC 누락과 달리 방 소유 ViewID 공간의 고갈이다. 설치된 PUN의 기본 `MAX_VIEW_IDS`는 1000이며, 방 ID는 1~999를 사용한다. 순정 디스폰은 `EnemyParent.EnableObject`만 비활성화하므로 등록 객체와 ViewID를 반납하지 않는다. 웨이브·부화는 `SummonedEnemySpawnTicket`의 전용 풀로 완전 퇴장 후 2초가 지난 동일 프리팹을 재사용한다. 스테이지와 용도가 같은 개체만 허용하고 예약 시 즉시 대기 플래그를 세워 중복 대여를 막는다. 순정 Director 목록·Gnome 인덱스를 보존하고 기존 스폰 RPC로 새 생명을 시작하므로 바닐라 참가자에 추가 RPC가 필요 없다.
+
+`RoomViewBudget`는 `VanillaCatalog.Spawn`의 두 경로에서 네트워크 생성 전에 방 View 점유와 프리팹의 자식 View까지 검사한다. 순정 생성용으로 32개를 남기며 PUN의 ID 체계나 제한값을 바꾸지 않는다. 가스 생성도 같은 경로를 사용한다. 용량 부족은 전용 예외로 구분해 웨이브는 3초 후 재시도하고 부화는 취소한다. 이는 PUN이 프리팹 일부의 ID만 할당한 뒤 실패하는 경로에 들어가지 않도록 한다. 다른 시스템의 살아 있는 객체를 지우거나 기존 순정 몬스터를 풀에 편입하지 않는다. [Photon 공식 문서](https://doc.photonengine.com/pun/current/gameplay/instantiation)의 ViewID 한계·수명 설명을 참고한다.
 
 플레이 중에는 빌드만 수행하고 실행 중인 게임과 설치된 DLL은 변경하지 않는다. 새 수명 관리 코드의 검증은 배포·재시작 이후에 수행한다. 사라진 View에 대한 두 종류의 잡기 경고만으로 해당 오브젝트 종류를 확정할 수는 없다.
 

@@ -40,6 +40,27 @@ assassination.NewLife();
 Check("A new native life clears mode and previous cooldown", !assassination.Active && assassination.Begin(0, true, false, 1));
 Check("Separate Elsa instances do not share cooldowns", new ElsaAssassinationClock().Begin(0, true, false, 1));
 
+var reuse = new SummonReuseClock();
+Check("A never-parked summon cannot be reused", !reuse.Ready(100));
+reuse.Observe(100, true);
+Check("Hidden summons drain old messages before reuse", !reuse.Ready(101.999) && reuse.Ready(102));
+reuse.Observe(101, true);
+Check("Repeated hidden observations do not restart draining", reuse.Ready(102));
+reuse.Reset();
+Check("Reserving a pooled summon prevents a second reservation", !reuse.Ready(1000));
+reuse.Observe(200, true);
+reuse.Observe(201, false);
+Check("An active or pending summon cannot be reused", !reuse.Ready(1000));
+reuse.Observe(300, true);
+Check("A later retirement starts a fresh drain period", !reuse.Ready(301.999) && reuse.Ready(302));
+Check("New pool clocks do not inherit another instance's availability", !new SummonReuseClock().Ready(1000));
+Check("Room budget permits exact capacity while preserving native headroom", RoomViewBudgetRules.Fits(999, 965, 2));
+Check("Room budget refuses a multi-view prefab that would consume native headroom", !RoomViewBudgetRules.Fits(999, 966, 2));
+Check("A full room refuses additional instantiation", !RoomViewBudgetRules.Fits(999, 999, 1));
+Check("Other configured Photon limits use the same reserve rule", RoomViewBudgetRules.Fits(1999, 1965, 2));
+Check("Invalid room counts and zero-view prefabs are rejected", !RoomViewBudgetRules.Fits(0, 0, 1) && !RoomViewBudgetRules.Fits(999, -1, 1) && !RoomViewBudgetRules.Fits(999, 0, 0));
+Check("Budget arithmetic cannot wrap into allowing an overfull room", !RoomViewBudgetRules.Fits(int.MaxValue, int.MaxValue, int.MaxValue));
+
 StalkingDollContactRules.Slide(1, 0, 1, 0, out double slideX, out double slideZ);
 Check("Wall contact permits the stalker to move away", slideX == 1 && slideZ == 0);
 StalkingDollContactRules.Slide(0, 1, 1, 0, out slideX, out slideZ);
@@ -104,8 +125,8 @@ var clownExpired = new ClownStaffLife();
 Check("Laser expiry removes an unrewarded Staff once", clownExpired.Remove() && !clownExpired.Remove());
 Check("Later Clown death cannot recreate an expired Staff", !clownExpired.Reward() && !clownExpired.Rewarded);
 Check("Separate Staff rewards do not share lifecycle", new ClownStaffLife().Pinned);
-Check("Loom Abduction stays locked until four", !AbductionClock.Eligible(3, 2, true, 16, 4) && AbductionClock.Eligible(4, 2, true, 16, 4));
-Check("Loom Abduction shares living-player range and pursuit requirements", !AbductionClock.Eligible(5, 1, true, 1, 4) && !AbductionClock.Eligible(5, 2, false, 1, 4) && !AbductionClock.Eligible(5, 2, true, 16.001, 4));
+Check("Loom Abduction stays locked until four", !AbductionClock.Eligible(3, 2, true, 25, 4) && AbductionClock.Eligible(4, 2, true, 25, 4));
+Check("Loom Abduction shares living-player range and pursuit requirements", !AbductionClock.Eligible(5, 1, true, 1, 4) && !AbductionClock.Eligible(5, 2, false, 1, 4) && !AbductionClock.Eligible(5, 2, true, 25.001, 4));
 for (int tier = 0; tier <= 5; tier++)
 {
     var noDeathLoot = new BirthdayBalloonRewards<int>();
@@ -747,8 +768,8 @@ Check("original death or new life clears pending respawns", !clock.IsReady(10000
 Check("Huntsman abduction unlocks at tier one", !AbductionClock.Eligible(0, 2, true, 0) && AbductionClock.Eligible(1, 2, true, 0));
 Check("Abduction normally requires at least two living players", !AbductionClock.Eligible(5, 0, true, 1) && !AbductionClock.Eligible(5, 1, true, 1) && AbductionClock.Eligible(5, 3, true, 1));
 Check("Abduction requires combat or player tracking", !AbductionClock.Eligible(5, 2, false, 1));
-Check("Abduction includes four metres and excludes any further distance", AbductionClock.Eligible(2, 2, true, 16) && !AbductionClock.Eligible(2, 2, true, 16.0001));
-Check("Both carrier tiers reject the old five-to-seven-metre range", !AbductionClock.Eligible(2, 2, true, 25) && !AbductionClock.Eligible(4, 2, true, 49, 4));
+Check("Abduction includes five metres and excludes any further distance", AbductionClock.Eligible(2, 2, true, 25) && !AbductionClock.Eligible(2, 2, true, 25.0001));
+Check("Both carrier tiers allow five metres and reject the old seven-metre range", AbductionClock.Eligible(1, 2, true, 25) && AbductionClock.Eligible(4, 2, true, 25, 4) && !AbductionClock.Eligible(1, 2, true, 49) && !AbductionClock.Eligible(4, 2, true, 49, 4));
 Check("Abduction rejects invalid distances", !AbductionClock.Eligible(5, 2, true, double.NaN) && !AbductionClock.Eligible(5, 2, true, -1) && !AbductionClock.Eligible(5, 2, true, double.PositiveInfinity));
 var abduction = new AbductionClock();
 Check("First abduction has no initial cooldown", abduction.Ready(0) && abduction.Start(0));
@@ -932,7 +953,16 @@ Check("Wave clearance uses the actual enemy agent dimensions", waveSpawnSearch.A
 var waveVisibility = release.GetType("HellParty.Events.WaveSpawnPoints").Methods.Single(m => m.Name == "Visible").Body.Instructions;
 Check("Wave remote visibility considers camera direction rather than a full circle", waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InverseTransformPoint") && waveVisibility.Any(i => i.Operand is MethodReference m && m.Name == "InView"));
 var wavePump = release.GetType("HellParty.Events.MonsterWave").Methods.Single(m => m.Name == "Pump").Body.Instructions;
-Check("Wave birth uses validated on-mesh initialization", wavePump.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
+Check("Wave birth uses validated on-mesh initialization and a dedicated reuse pool", wavePump.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create" && i.Previous.OpCode.Code == Code.Ldc_I4_1 && i.Previous.Previous.OpCode.Code == Code.Ldc_I4_0 && i.Previous.Previous.Previous.OpCode.Code == Code.Ldc_I4_1));
+foreach (var spawn in release.GetType("HellParty.Native.VanillaCatalog").Methods.Where(m => m.Name == "Spawn"))
+{
+    var calls = spawn.Body.Instructions.ToList();
+    int guard = calls.FindIndex(i => i.Operand is MethodReference m && m.DeclaringType.Name == "RoomViewBudget" && m.Name == "Ensure");
+    int allocate = calls.FindIndex(i => i.Operand is MethodReference m && m.Name == "InstantiateRoomObject");
+    Check("Room capacity is checked before network prefab allocation: " + spawn.Parameters[0].ParameterType.Name, guard >= 0 && guard < allocate);
+}
+Check("Wave capacity exhaustion defers rather than enters the general failure path", release.GetType("HellParty.Events.MonsterWave").Methods.Single(m => m.Name == "Pump").Body.ExceptionHandlers.Any(h => h.CatchType?.Name == "RoomViewCapacityException"));
+Check("Cleanup capacity exhaustion skips rather than repeatedly allocating", release.GetType("HellParty.CleanupHeadPursuit").NestedTypes.SelectMany(t => t.Methods).Where(m => m.HasBody).Any(m => m.Body.ExceptionHandlers.Any(h => h.CatchType?.Name == "RoomViewCapacityException")));
 var summonedReady = release.GetType("HellParty.Native.SummonedEnemyReadyPatch").Methods.Single(m => m.Name == "Postfix").Body.Instructions.ToList();
 int explicitEnable = summonedReady.FindIndex(i => i.Operand is MethodReference m && m.Name == "set_enabled");
 int forcedWarp = summonedReady.FindIndex(i => i.Operand is MethodReference m && m.Name == "Warp");
@@ -941,6 +971,8 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    Check("Reused native enemies reset health through SpawnRPC", game.GetType("EnemyParent").Methods.Single(m => m.Name == "SpawnRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "EnemyHealth" && m.Name == "OnSpawn"));
+    Check("Native health initialization restores both life and death state for reuse", new[] { "healthCurrent", "dead" }.All(field => game.GetType("EnemyHealth").Methods.Single(m => m.Name == "OnSpawn").Body.Instructions.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == field)));
     foreach (string method in new[] { "ChaseStop", "Update", "OnSpawn", "UpdateState", "TransformBigToSmallRPC" })
         Check($"Elsa assassination native hook exists: {method}", game.GetType("EnemyElsa").Methods.Any(m => m.Name == method && !m.IsStatic));
     Check("Elsa native anger timer can be cleared on assassination exit", game.GetType("EnemyElsa").Fields.Any(f => f.Name == "angryTimer" && f.FieldType.FullName == "System.Single"));
