@@ -51,6 +51,30 @@
       "problemMatcher": []
     },
     {
+      "label": "HellParty: Build Cleanup Crew test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Build-Dev.ps1", "-TestScenario", "CleanupCrew", "-NoRestore"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "HellParty: Start Cleanup Crew test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-TestScenario", "CleanupCrew"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "HellParty: Start Cleanup Crew test with debugger",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-TestScenario", "CleanupCrew", "-EnableDebugger"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "HellParty: Watch BepInEx log",
       "type": "shell",
       "command": "Get-Content -LiteralPath '${env:APPDATA}\\Thunderstore Mod Manager\\DataFolder\\REPO\\profiles\\REPO\\BepInEx\\LogOutput.log' -Tail 100 -Wait",

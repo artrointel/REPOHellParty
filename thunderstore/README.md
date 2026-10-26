@@ -27,7 +27,7 @@ These are the monsters' **fully upgraded abilities**. Exact values and unlock co
 | **Bowtie** | Wind attacks bring an Elsa beside the target, complete with her muscle transformation. Defeating Bowtie can summon a revenge Elsa at its death spot. |
 | **Chef** | That Frog collectible might be the monster. Grab it and Chef breaks free to attack; recognize the disguise and you can destroy it for the kill reward. |
 | **Upscream** | A large valuable can hide an Upscream. Pick it up and your next trip across the room may not be voluntary. |
-| **Cleanup Crew** | The exploding head is only the opening act. An Upscream hatches at the blast site, inherits the victim and retires after landing its throw. |
+| **Cleanup Crew** | Explosive heads stick to you and hop to nearby teammates. Grab one off, but the fuse keeps ticking. When this deadly game of hot potato ends, an Upscream hatches at the blast site and hunts the last target. |
 | **Clown** | Laser staves join its attacks. Shoot it before it has a target and it blocks the hit and retaliates with a staff. Move before the fixed aim fires; surviving staves become loot on its death. |
 | **Mentalist** | Shooting a Mentalist with no target triggers a laser-gun counter instead of damage or stun. Aim locks immediately, leaving a short window to move out of the shot. |
 | **Huntsman** | Get too close during pursuit and it can carry you away. A teammate can free you by hitting or stunning it. Even its death can leave a live Human Grenade. |

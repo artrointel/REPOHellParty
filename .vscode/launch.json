@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "HellParty: Cleanup Crew test + attach",
+      "type": "vstuc",
+      "request": "attach",
+      "endPoint": "127.0.0.1:10000",
+      "preLaunchTask": "HellParty: Start Cleanup Crew test with debugger"
+    },
+    {
       "name": "HellParty: Launch and attach",
       "type": "vstuc",
       "request": "attach",

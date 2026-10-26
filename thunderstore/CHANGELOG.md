@@ -3,6 +3,8 @@
 ## 0.2.0 — Release candidate
 
 - **Only the host installs; friends join with vanilla R.E.P.O.**
+- Add an explicit developer-only Debug build option, `-TestScenario CleanupCrew`, with isolated output, difficulty 5 and one Cleanup Crew plus a shotgun and tranquilizer near the starting player. Default Debug and Release exclude the scenario code; Release rejects test options. Normal monster AI and vanilla guest support are preserved.
+- Add Cleanup Crew's Sticky Head at difficulty 1: native explosive heads stick to their target within 1.5m and detach on Grab. Initial attachment consumes no cooldown; detaching or transferring from the previous carrier starts three seconds before another attachment or transfer. Held heads cannot attach. Native explosion timing and final-target hatch inheritance are preserved. Normal builds need no debug setup or guest-side mod.
 - Increase Huntsman and Loom's shared Abduction range from 4m to 5m, including the 5m boundary.
 - Add natural Elsa's Assassination at difficulty 5. While following a player with no other living player within 20m of the target, Elsa starts its native growth at 5m and attacks. A living teammate entering the target's 20m radius cancels the mode immediately, even during growth.
 - Reentry cooldown lasts ten seconds from the end of assassination. First use is immediate and cancellation never waits for a cooldown. There is no separate assassination lifetime; native stun, target loss, death and despawn still apply. Ordinary native aggression is preserved. Summoned Elsas, including Bowtie Brothers/Revenge, are excluded.

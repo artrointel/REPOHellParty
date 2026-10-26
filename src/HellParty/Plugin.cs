@@ -24,6 +24,9 @@ public sealed class Plugin : BaseUnityPlugin
         {
             _harmony.PatchAll();
             ModLogger.LogInfo($"{PluginName} v{PluginVersion} loaded.");
+#if DEBUG && HELLPARTY_TEST_CLEANUP_CREW
+            ModLogger.LogWarning("TEST BUILD: CleanupCrew scenario compiled in. Host level difficulty is fixed at 5 with test spawns. Rebuild without -TestScenario for normal play.");
+#endif
         }
         catch (Exception exception)
         {

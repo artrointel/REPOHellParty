@@ -2,12 +2,17 @@
 param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
+    [ValidateSet("None", "CleanupCrew")]
+    [string]$TestScenario = "None",
     [switch]$Offline,
     [switch]$NoRestore,
     [switch]$Deploy
 )
 
 $ErrorActionPreference = "Stop"
+if ($Configuration -ne "Debug" -and $TestScenario -ne "None") {
+    throw "Test scenarios require -Configuration Debug."
+}
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $projectFile = Join-Path $projectRoot "src\HellParty\HellParty.csproj"
 $localDotnet = Join-Path $projectRoot ".dotnet\dotnet.exe"
@@ -44,8 +49,9 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "Restore failed." }
     }
     $deployValue = if ($Deploy) { "true" } else { "false" }
-    & $dotnetCommand build $projectFile --configuration $Configuration --no-restore "-p:CopyFilesToPluginOutputDirectoryOnBuild=$deployValue"
+    & $dotnetCommand build $projectFile --configuration $Configuration --no-restore "-p:CopyFilesToPluginOutputDirectoryOnBuild=$deployValue" "-p:HellPartyTestScenario=$TestScenario"
     if ($LASTEXITCODE -ne 0) { throw "Build failed." }
+    if ($TestScenario -ne "None") { Write-Host "Test scenario enabled: $TestScenario. This DLL belongs to a test session; rebuild without -TestScenario for normal play." }
 } finally {
     Pop-Location
 }

@@ -13,6 +13,7 @@ $buildArgs = @{}
 if ($Offline) { $buildArgs.Offline = $true }
 & (Join-Path $PSScriptRoot "Build-Dev.ps1") @buildArgs -Configuration Debug
 & (Join-Path $PSScriptRoot "Build-Dev.ps1") -NoRestore -Configuration Release
+& (Join-Path $PSScriptRoot "Build-Dev.ps1") -NoRestore -Configuration Debug -TestScenario CleanupCrew
 $localDotnet = Join-Path $projectRoot ".dotnet\dotnet.exe"
 $dotnetCommand = if (Test-Path -LiteralPath $localDotnet) { $localDotnet } else { (Get-Command dotnet).Source }
 $testProject = Join-Path $projectRoot "tests\HellParty.Tests\HellParty.Tests.csproj"

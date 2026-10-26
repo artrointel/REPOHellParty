@@ -3,10 +3,15 @@ param(
     [switch]$EnableDebugger,
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
+    [ValidateSet("None", "CleanupCrew")]
+    [string]$TestScenario = "None",
     [switch]$NoBuild
 )
 
 $ErrorActionPreference = "Stop"
+if ($TestScenario -ne "None" -and ($Configuration -ne "Debug" -or $NoBuild)) {
+    throw "Use -Configuration Debug with a build to select -TestScenario. -NoBuild runs the already deployed DLL."
+}
 
 $gameDirectory = "C:\Program Files (x86)\Steam\steamapps\common\REPO"
 $gameExecutable = Join-Path $gameDirectory "REPO.exe"
@@ -25,7 +30,7 @@ if (Get-Process -Name "REPO" -ErrorAction SilentlyContinue) {
 }
 
 if (-not $NoBuild) {
-    & (Join-Path $PSScriptRoot "Build-Dev.ps1") -Configuration $Configuration -NoRestore -Deploy
+    & (Join-Path $PSScriptRoot "Build-Dev.ps1") -Configuration $Configuration -TestScenario $TestScenario -NoRestore -Deploy
 }
 
 $launchArguments = @(
@@ -53,6 +58,6 @@ if ($EnableDebugger) {
 else {
     Write-Host "R.E.P.O. started with HellParty $Configuration in the Thunderstore REPO profile."
 }
-if ($Configuration -eq "Debug") {
-    Write-Host "Mentalist test: difficulty 2; one Mentalist near start + shotgun + handgun + tranquilizer + laser. Targetless test mode starts ON; F6 toggles normal recognition/combat. Shoot, then move within two seconds to dodge the reflection."
+if ($TestScenario -eq "CleanupCrew") {
+    Write-Host "Cleanup Crew test: difficulty 5 on every stage; one Cleanup Crew near start, shotgun and tranquilizer. Leave the truck if the enemy is waiting for a clear connected floor. Two players are needed to test head transfers."
 }

@@ -2,7 +2,7 @@
 
 실제 게임에서 몬스터 행동·피해·보상과 바닐라 참가자 동기화를 확인하는 문서다. 자동 검사 코드는 저장소의 `tests/`에서, 빌드·실행 방법은 [개발 환경](../development.md)에서 관리한다.
 
-임시 몬스터·무기 생성이나 강제 난이도는 사용하지 않는다. 각 몬스터의 실제 해금 조건은 [기획표](../monster-abilities.md)와 [상세 기획](../monsters/README.md)을 따른다.
+기본 Debug와 Release는 임시 몬스터·무기 생성이나 강제 난이도를 사용하지 않는다. 청소부는 `-TestScenario CleanupCrew`로 별도 테스트 Debug를 빌드해 빠르게 준비할 수 있으며, 해당 코드가 기본 빌드에 포함되지 않도록 검사한다. 각 몬스터의 실제 해금 조건은 [기획표](../monster-abilities.md)와 [상세 기획](../monsters/README.md)을 따른다.
 
 | 대상 | 확인 문서 |
 | --- | --- |
@@ -13,7 +13,7 @@
 | Shadow Child | [블라인드](blind-playtest.md) |
 | Bowtie | [형제와 복수](bowtie-playtest.md) |
 | Chef | [Frog 변장](chef-playtest.md) |
-| Cleanup Crew | [부화](cleanup-crew-playtest.md) |
+| Cleanup Crew | [끈적이는 헤드와 부화](cleanup-crew-playtest.md) |
 | Clown | [레이저 Staff와 쉴드](clown-playtest.md) |
 | Elsa | [고립 대상 암살과 즉시 해제](elsa-playtest.md) |
 | Headman | [보호본능](headman-playtest.md) |

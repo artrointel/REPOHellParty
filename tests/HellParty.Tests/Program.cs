@@ -61,6 +61,30 @@ Check("Other configured Photon limits use the same reserve rule", RoomViewBudget
 Check("Invalid room counts and zero-view prefabs are rejected", !RoomViewBudgetRules.Fits(0, 0, 1) && !RoomViewBudgetRules.Fits(999, -1, 1) && !RoomViewBudgetRules.Fits(999, 0, 0));
 Check("Budget arithmetic cannot wrap into allowing an overfull room", !RoomViewBudgetRules.Fits(int.MaxValue, int.MaxValue, int.MaxValue));
 
+Check("Sticky Cleanup heads unlock at one", !CleanupStickyHeadClock<object>.Unlocked(0) && CleanupStickyHeadClock<object>.Unlocked(1));
+Check("Sticky head range includes exactly one and a half metres", CleanupStickyHeadClock<object>.InRange(2.25) && CleanupStickyHeadClock<object>.InRange(2.249) && !CleanupStickyHeadClock<object>.InRange(2.251));
+Check("Sticky heads reject invalid distances", !CleanupStickyHeadClock<object>.InRange(-1) && !CleanupStickyHeadClock<object>.InRange(double.NaN) && !CleanupStickyHeadClock<object>.InRange(double.PositiveInfinity));
+var sticky = new CleanupStickyHeadClock<object>();
+var carrierA = new object();
+var carrierB = new object();
+Check("The first head attachment is immediately ready", sticky.Attach(100, carrierA, false) && ReferenceEquals(sticky.Carrier, carrierA));
+Check("A held head never attaches to a nearby player", !sticky.Attach(100, carrierB, true));
+Check("Initial attachment does not start cooldown or delay the first transfer", sticky.Ready(100, false) && sticky.Attach(100, carrierB, false));
+Check("Leaving the previous carrier starts transfer cooldown", !sticky.Attach(102.999, carrierA, false));
+Check("A head can transfer exactly three seconds after the previous detachment", sticky.Attach(103, carrierA, false) && ReferenceEquals(sticky.Carrier, carrierA));
+Check("Remaining on the same carrier never refreshes cooldown", !sticky.Attach(106, carrierA, false) && sticky.Attach(106, carrierB, false));
+Check("Grab detaches a pinned head immediately", sticky.Detach(107) && sticky.Carrier == null);
+Check("Grab detachment provides three seconds before sticking again", !sticky.Attach(109.999, carrierA, false) && sticky.Attach(110, carrierA, false));
+Check("Reattachment does not consume an additional cooldown", sticky.Ready(110, false));
+Check("A long attachment still starts a full cooldown on detachment", sticky.Detach(500) && !sticky.Attach(502.999, carrierB, false) && sticky.Attach(503, carrierB, false));
+Check("Repeated grab observations do not extend detachment cooldown", sticky.Detach(504) && !sticky.Detach(506) && sticky.Attach(507, carrierA, false));
+sticky.Stop();
+Check("An exploded or disabled head cannot attach again", sticky.Carrier == null && !sticky.Attach(1000, carrierA, false));
+sticky.NewLife();
+Check("The next native throw clears the previous carrier and cooldown", sticky.Carrier == null && sticky.Attach(0, carrierA, false));
+Check("Separate heads have independent transfer cooldowns", new CleanupStickyHeadClock<object>().Attach(0, carrierB, false));
+Check("A missing target cannot consume a head attachment", !new CleanupStickyHeadClock<object>().Attach(0, null, false));
+
 StalkingDollContactRules.Slide(1, 0, 1, 0, out double slideX, out double slideZ);
 Check("Wall contact permits the stalker to move away", slideX == 1 && slideZ == 0);
 StalkingDollContactRules.Slide(0, 1, 1, 0, out slideX, out slideZ);
@@ -859,6 +883,23 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+using var cleanupTest = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/Scenarios/CleanupCrew/netstandard2.1/HellParty.dll"));
+Check("An opted-in Debug build includes the Cleanup Crew scenario", cleanupTest.GetType("HellParty.Debugging.CleanupCrewScenario") != null);
+Check("The opted-in scenario is started by the level runtime", cleanupTest.GetType("HellParty.StageRuntime").NestedTypes.SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Any(i => i.Operand is GenericInstanceMethod m && m.Name == "AddComponent" && m.GenericArguments.Any(t => t.FullName == "HellParty.Debugging.CleanupCrewScenario")));
+Check("Only the opted-in scenario can override difficulty", cleanupTest.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "CleanupCrewScenario" && m.Name == "get_OverrideDifficulty"));
+foreach (var normal in new[] { debug, release })
+    Check("Normal builds cannot call the scenario difficulty override: " + (normal == debug ? "Debug" : "Release"),
+        !normal.GetType("HellParty.DifficultyService").Methods.Single(m => m.Name == "get_Current").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Namespace.StartsWith("HellParty.Debugging")));
+var scenarioMethods = cleanupTest.GetType("HellParty.Debugging.CleanupCrewScenario").NestedTypes.SelectMany(t => t.Methods).Where(m => m.HasBody).ToArray();
+Check("Cleanup test uses native spawned enemies instead of cloning active AI", scenarioMethods.SelectMany(m => m.Body.Instructions).Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "SummonedEnemySpawnTicket" && m.Name == "Create"));
+var testPlacement = cleanupTest.GetType("HellParty.Debugging.CleanupCrewScenario").Methods.Single(m => m.Name == "FindPosition").Body.Instructions;
+Check("Cleanup test placement validates a navigable route", testPlacement.Any(i => i.Operand is MethodReference m && m.Name == "CalculatePath") && testPlacement.Any(i => i.Operand is MethodReference m && m.Name == "get_status"));
+var testStart = scenarioMethods.Single(m => m.Name == "MoveNext").Body.Instructions.ToList();
+int firstItem = testStart.FindIndex(i => i.Operand is MethodReference m && m.Name == "SpawnItem");
+int resolveEnemy = testStart.FindIndex(i => i.Operand is MethodReference m && m.Name == "FindCleanupCrew");
+Check("Test equipment initializes before enemy resolution or placement can fail", firstItem >= 0 && resolveEnemy > firstItem && testStart.Count(i => i.Operand is MethodReference m && m.Name == "SpawnItem") == 2);
+Check("Cleanup test retains natural perception and attack AI", !cleanupTest.Types.Where(t => t.Namespace.StartsWith("HellParty.Debugging")).SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Any(i => i.Operand is MethodReference m && m.Name == "UpdatePlayerTarget"));
+
 Check("Elsa assassination attaches through the common tier/origin predicate", release.GetType("HellParty.StageRuntime").Methods.Single(m => m.Name == "TryAttach").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "ElsaAssassinationClock" && m.Name == "Eligible"));
 Check("Assassination continuously guards against summoned and vanilla-only origins", new[] { "SummonedEnemySpawnTicket", "VanillaAbilityExcluded", "BowtieBrother" }.All(type => release.GetType("HellParty.ElsaAssassination").Methods.Single(m => m.Name == "BeforeNativeUpdate").Body.Instructions.Any(i => i.Operand is GenericInstanceMethod m && m.GenericArguments.Any(t => t.Name == type))));
 Check("Gentle restoration uses a native all-client shrink RPC", release.GetType("HellParty.ElsaAssassination").Methods.Single(m => m.Name == "RestoreGentle").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "TransformBigToSmallRPC"));
@@ -905,6 +946,11 @@ Check("Cleanup throw retirement runs after native AttackImpulse", release.GetTyp
 Check("Cleanup explosion hook authenticates the native master message", release.GetType("HellParty.CleanupHeadExplosionPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 Check("Cleanup pursuit records the head target rather than the parent target", release.GetType("HellParty.CleanupHeadExplosionPatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is FieldReference f && f.DeclaringType.Name == "EnemyBombThrowerHead" && f.Name == "playerTarget"));
 Check("Cleanup pursuer lifetime begins at actual SpawnRPC", release.GetType("HellParty.Native.SummonedEnemyReadyPatch").Methods.Single(m => m.Name == "Postfix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "CleanupPursuer" && m.Name == "Born"));
+var stickyType = release.GetType("HellParty.CleanupStickyHead");
+Check("Sticky heads never write the native explosion countdown", stickyType.Methods.Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).All(i => i.OpCode.Code != Code.Stfld || i.Operand is not FieldReference f || f.DeclaringType.Name != "EnemyBombThrowerHead" || f.Name != "stateTimer"));
+Check("Sticky head transfers use the native synchronized target setter", stickyType.Fields.Any(f => f.Name == "SetTarget") && stickyType.Methods.Single(m => m.Name == ".cctor").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && i.Operand is string s && s == "UpdatePlayerTarget"));
+Check("Network head removal verifies the native master grab event", release.GetType("HellParty.CleanupStickyHeadNetworkGrabPatch").Methods.Single(m => m.Name == "Postfix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
+Check("Reused native head state is authenticated before resetting sticky life", release.GetType("HellParty.CleanupStickyHeadStatePatch").Methods.Single(m => m.Name == "Prefix").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
 var captureCalls = release.GetType("HellParty.HuntsmanAbduction").Methods.Single(m => m.Name == "TryCapture").Body.Instructions;
 Check("Both abduction carriers ray-test before the native capture", captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.DeclaringType.Name == "AbductionSight" && m.Name == "Clear") is int sightIndex && sightIndex >= 0 && sightIndex < captureCalls.ToList().FindIndex(i => i.Operand is MethodReference m && m.Name == "TumbleSet"));
 Check("Loom abduction uses its own native vision origin", release.GetType("HellParty.Native.AbductionSight").Methods.Single(m => m.Name == "Origin").Body.Instructions.Any(i => i.Operand is FieldReference f && f.DeclaringType.Name == "EnemyShadow" && f.Name == "visionTransform"));
@@ -971,6 +1017,9 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    foreach (string method in new[] { "StateActive", "StateExplode", "UpdatePlayerTarget", "UpdateStateRPC", "ExplodeRPC", "Update" })
+        Check("Sticky head native hook exists: " + method, game.GetType("EnemyBombThrowerHead").Methods.Any(m => m.Name == method && !m.IsStatic));
+    Check("Native head target setter still broadcasts its target RPC", game.GetType("EnemyBombThrowerHead").Methods.Single(m => m.Name == "UpdatePlayerTarget").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && i.Operand is string s && s == "UpdatePlayerTargetRPC"));
     Check("Reused native enemies reset health through SpawnRPC", game.GetType("EnemyParent").Methods.Single(m => m.Name == "SpawnRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "EnemyHealth" && m.Name == "OnSpawn"));
     Check("Native health initialization restores both life and death state for reuse", new[] { "healthCurrent", "dead" }.All(field => game.GetType("EnemyHealth").Methods.Single(m => m.Name == "OnSpawn").Body.Instructions.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == field)));
     foreach (string method in new[] { "ChaseStop", "Update", "OnSpawn", "UpdateState", "TransformBigToSmallRPC" })

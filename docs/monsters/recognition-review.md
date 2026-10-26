@@ -22,7 +22,7 @@
 | Bella | 순정 벨 이벤트에 연동하며 Grab 시 `EnemyTricycle.playerTarget`을 잡은 플레이어로 지정한다. 경고 중 타깃이 비어 있을 수 있다. |
 | Birthday Boy | 일반·자동 파열과 피격·사망 이벤트가 발동 조건이다. 피격 지원 소환은 `EnemyBirthdayBoy.playerTarget`을 우선 공유한다. |
 | Huntsman | `EnemyHunter.State.Aim`·`Shoot`, 또는 플레이어의 시야 Transform을 추적 중인 `InvestigateWalk`를 납치 조건으로 사용한다. 단순 소음 조사 이동은 제외한다. |
-| Cleanup Crew | 본체가 아닌 `EnemyBombThrowerHead.playerTarget`을 폭발 직전에 저장한다. |
+| Cleanup Crew | 끈적이는 헤드는 `EnemyBombThrowerHead.playerTarget`의 1.5m 접근을 검사하고, 부착 후 근처 다른 플레이어에게 전달하면 순정 타깃도 변경한다. 쿨타임은 분리부터 3초다. 부화는 폭발 직전 헤드의 최종 타깃을 저장한다. |
 
 ## 타깃 보유와 별도의 발동 조건
 

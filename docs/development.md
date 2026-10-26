@@ -51,17 +51,34 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 ## Debug와 Release
 
-Debug와 Release 모두 [공용 난이도](metadata/difficulty.md)를 사용한다. `min(5, 1 + max(0, levelsCompleted) / 3)`으로 stage1/4/7/10/13에서 난이도 1/2/3/4/5가 된다. 난이도 0은 순정 기준이며 자연 진행에는 없다. `DifficultyService.Current`는 모든 능력과 이벤트의 공용 조회 지점이고, `StageRuntime.TryAttach`는 난이도에 맞는 능력을 연결한다.
+옵션 없는 Debug와 Release 모두 [공용 난이도](metadata/difficulty.md)를 사용한다. `min(5, 1 + max(0, levelsCompleted) / 3)`으로 stage1/4/7/10/13에서 난이도 1/2/3/4/5가 된다. 난이도 0은 순정 기준이며 자연 진행에는 없다. `DifficultyService.Current`는 모든 능력과 이벤트의 공용 조회 지점이고, `StageRuntime.TryAttach`는 난이도에 맞는 능력을 연결한다.
 
-기존 테스트용 몬스터·무기 자동 생성, 강제 난이도, 전용 단축키, 솔로 납치 우회, Upscream 테스트 개체의 변장 허용 예외와 스토커 이동 진단 로그는 제거했다. 프로필에 남은 과거 `[Debug.*]` 설정은 더 이상 읽지 않으므로 실제 플레이에 영향을 주지 않는다. 납치는 두 빌드 모두 생존자 2명 이상을 요구한다.
+기본 빌드에는 테스트용 몬스터·무기 자동 생성, 강제 난이도, 전용 단축키, 솔로 납치 우회, Upscream 테스트 예외와 스토커 이동 진단 로그가 없다. 프로필의 과거 `[Debug.*]` 설정도 읽지 않는다. 테스트 코드는 `src/HellParty/Debugging/`에 분리하고 **Debug 빌드에서 `-TestScenario CleanupCrew`를 명시할 때만** 컴파일한다. Release에서 테스트 옵션을 요청하면 빌드 전에 거부한다. 납치는 테스트 빌드에서도 생존자 2명 이상을 요구한다.
 
-두 구성의 차이는 컴파일 최적화와 디버깅 정보다. 실제 멀티플레이에는 Release를 권장한다. Debug에서도 게임 진행·능력 조건은 동일하며 Mono 디버거를 연결할 수 있다. 런타임의 로드·스테이지 난이도 로그와 실제 오류·경고는 유지한다.
+기본 두 구성의 차이는 컴파일 최적화와 디버깅 정보다. 실제 멀티플레이에는 Release를 권장한다. 옵션 없는 Debug에서도 게임 진행·능력 조건은 동일하며 Mono 디버거를 연결할 수 있다. 런타임의 로드·스테이지 난이도 로그와 실제 오류·경고는 유지한다.
 
 `scripts/Start-RepoDev.ps1`은 선택한 구성을 빌드·배포하고 게임을 실행한다. 기본 구성은 Debug이며 `-Configuration Release`로 일반 플레이용 빌드를 선택한다. 이미 배포한 빌드는 `-NoBuild`로 실행한다. 게임 창은 표시되며 `-EnableDebugger`를 사용해도 디버거 연결을 기다리며 게임을 멈추지 않는다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -Configuration Release
 ```
+
+청소부 테스트 빌드만 준비하거나 바로 빌드·배포·실행하려면 다음을 사용한다. 게임을 실행 중이면 배포·새 실행을 거부한다.
+
+```powershell
+# 빌드만: 설치된 DLL과 실행 중인 게임은 변경하지 않는다.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Dev.ps1 -Offline -TestScenario CleanupCrew
+# 게임 종료 후 테스트 빌드·배포·실행
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1 -TestScenario CleanupCrew
+# 테스트 종료 후 기본 Debug로 복귀: 옵션을 생략하고 다시 빌드·배포한다.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-RepoDev.ps1
+```
+
+테스트 DLL은 `src/HellParty/bin/Debug/Scenarios/CleanupCrew/netstandard2.1/HellParty.dll`에 별도로 생성된다. 기본 Debug의 `bin/Debug/netstandard2.1`과 Release 산출물은 덮어쓰지 않는다. 직접 MSBuild를 사용할 때는 `-p:HellPartyTestScenario=CleanupCrew`를 전달하며 기본값은 `None`이다. `-NoBuild`는 이미 배포된 DLL을 실행하는 옵션이므로 테스트 옵션과 함께 사용할 수 없고, 정상 빌드로 되돌리는 기능도 아니다. 예전 테스트 DLL을 배포했다면 옵션 없는 빌드를 다시 배포해야 한다. 과거 멘탈리스트 테스트 안내는 실행 스크립트에서 제거했다.
+
+청소부 테스트는 호스트의 각 실제 스테이지 난이도를 **5**로 고정하고 시작 플레이어 근처에 샷건·수면총 각 1개와 청소부 1마리를 생성한다. 저장된 `levelsCompleted`를 수정하지 않는다. 장비 생성과 몬스터 위치 탐색을 분리하고, 청소부는 빈 NavMesh와 연결 경로·몸체 공간·시야를 확인해 배치한다. 공간이 없으면 플레이어 이동을 따라 최대 30초간 재시도하므로 트럭 밖으로 나와 확인한다. 순정 인지·공격·폭발 타이머와 부화는 그대로 사용한다. 테스트 안내는 `TEST BUILD`·`TEST CleanupCrew` 로그에서 확인한다. 플레이어 간 전달 검증에는 2명이 필요하며 바닐라 참가자는 추가 모드를 설치하지 않는다.
+
+VS Code에서는 `HellParty: Start Cleanup Crew test` 태스크 또는 `HellParty: Cleanup Crew test + attach` 실행 구성을 선택한다. 다른 테스트를 추가할 때도 별도 시나리오 소스·컴파일 심볼·빌드 옵션으로 연결하고, 기본 Debug 및 Release에 시나리오 타입이나 난이도 우회가 없는지 검사한다. 테스트 시나리오 안에서만 장비·몬스터 준비와 진단 로그를 작성한다.
 
 자동 검사는 `tests/HellParty.Tests`에 유지한다. 몬스터별 실제 확인 문서는 [플레이테스트 폴더](playtests/README.md)에 모아 자연 생성 개체와 실제 진행도를 기준으로 작성하며, 바닐라 참가자에게 테스트 플러그인을 요구하지 않는다.
 
@@ -103,7 +120,7 @@ Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격�
 
 플레이 중에는 빌드만 수행하고 실행 중인 게임과 설치된 DLL은 변경하지 않는다. 새 수명 관리 코드의 검증은 배포·재시작 이후에 수행한다. 사라진 View에 대한 두 종류의 잡기 경고만으로 해당 오브젝트 종류를 확정할 수는 없다.
 
-`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·사망 파열 추가 생성 억제와 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 100 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Huntsman 납치의 거리·단계·생존자 수·주기 피해·해제 후 쿨타임·전역 슬롯 경쟁, Cleanup Crew의 단계·폭발 중복·헤드 재사용·소환 수명도 검사한다. Mono.Cecil로 두 구성의 임시 테스트 코드 제거, 실제 진행도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
+`tests/HellParty.Tests`는 Unity를 로드하지 않는 .NET 9 콘솔 테스트 러너다. 실제 규칙 소스를 연결해 단계 경계, Apex Predator 분신·복귀·재소환, Animal 거리·쿨타임·분화 수명, Birthday Boy의 연속 체류·10m 경계·일반/피격/사망 파열 보상·실제 피해/치명타 구분·사망 파열 추가 생성 억제와 중복 방지, Bella의 해금·경고 단계 누적/대기/중단, Bowtie 형제·복수의 해금·10초 수명·교체·공격별/사망별 중복 소환 방지, Chef의 해금·20m 경계·1초 재시도·변장/해제/공격 전환, 파괴 시 처치와 중복 파괴·Grab 경합 방지, 변장 중 시야 검사 간격과 시야 상실 시 비공격 배회 복귀, 공격 회복 중 타깃 유지와 순정 추격 종료·사망에 따른 재변장 제한, 본체 체력·Frog 유효 내구 비율 및 반복 변신에서의 부분 피해 유지를 검사한다. 자율 인형의 최근접 대상·동률 선택, 관찰 시 공격/이동 중단, Grab 대기와 화면 시야 경계, 100 체력·피해 누적·중복 사망 방지, 체력 비율 가격과 정수 표시 반올림·가격 15% 이하 생존·누적 오차 방지도 검사한다. Huntsman 납치의 거리·단계·생존자 수·주기 피해·해제 후 쿨타임·전역 슬롯 경쟁, Cleanup Crew의 단계·끈적이는 헤드 1.5m 경계·분리 시점부터 3초 쿨타임·Grab 해제·폭발 후 재부착 차단·다음 투척 초기화·폭발 중복·헤드 재사용·소환 수명도 검사한다. Mono.Cecil로 두 구성의 임시 테스트 코드 제거, 실제 진행도 계산과 설치된 게임의 패치 지점도 검사한다. 실패 시 프로세스가 실패 코드로 종료된다. `dotnet test`/VSTest 프로젝트는 아니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-Dev.ps1 -Offline

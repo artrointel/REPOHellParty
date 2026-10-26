@@ -14,7 +14,7 @@
 - 현재 기획표의 능력은 구현되었으며 실제 바닐라 동반 플레이 검증은 각 플레이테스트 문서를 따른다.
 - 그 밖의 순정 몬스터: 별도 능력 기획 미정이며 순정 동작 유지.
 
-구현·자동 검사 통과와 실제 바닐라 참가자 검증은 구분한다. 각 상세 문서와 플레이테스트에 확인 범위를 기록한다. 두 빌드 구성 모두 실제 진행도를 사용하며 임시 테스트 시나리오는 제거했다. 실행은 [개발 환경](../development.md#debug와-release)을 따른다.
+구현·자동 검사 통과와 실제 바닐라 참가자 검증은 구분한다. 각 상세 문서와 플레이테스트에 확인 범위를 기록한다. 기본 Debug·Release는 실제 진행도를 사용한다. 청소부 테스트 준비는 `-TestScenario CleanupCrew`를 명시한 별도 Debug에만 포함한다. 실행과 기본 빌드 복귀는 [개발 환경](../development.md#debug와-release)을 따른다.
 
 ## 순정 몬스터 목록
 
@@ -25,7 +25,7 @@
 - [Birthday Boy](birthday-boy.md)
 - [Bowtie](bowtie.md)
 - [Chef](chef.md)
-- [Cleanup Crew](cleanup-crew.md)
+- [Cleanup Crew — 끈적이는 헤드·부화](cleanup-crew.md)
 - [Clown](clown.md)
 - [Elsa](elsa.md)
 - [Gambit](gambit.md)

@@ -37,7 +37,7 @@ authority: host
 
 - [공용 난이도](difficulty.md): stage1부터 난이도 1이며, 공통 인지 상태 정의와 난이도 해금은 별도로 적용한다.
 - [Huntsman — 납치·죽음의전술](../monsters/huntsman.md): 납치는 공통 타깃 참조 대신 순정 Aim·Shoot 또는 플레이어 Transform을 추적하는 InvestigateWalk를 조건으로 한다. 사망 수류탄은 인지 조건의 예외다.
-- [Cleanup Crew — 부화](../monsters/cleanup-crew.md): 본체가 아닌 폭발헤드의 폭발 시점 타깃을 계승한다. 폭발 후 2초 동안 대상 유효성을 유지해야 한다.
+- [Cleanup Crew — 끈적이는 헤드·부화](../monsters/cleanup-crew.md): 부착은 폭발헤드 자신의 현재 타깃을 사용하고, 부착 후에는 1.5m 안의 다른 플레이어에게 타깃을 옮긴다. 최초 부착은 대기 없이 가능하고, 분리·전달 시점부터 다음 부착·전달까지 3초를 센다. 부화는 폭발 시점 헤드의 최종 타깃을 계승하며 폭발 후 2초 동안 대상 유효성을 유지해야 한다.
 - [Upscream — 변장](../monsters/upscream.md): 자연 생성 개체가 Chef와 같은 탐색·해제 규칙을 사용한다. 다른 능력·웨이브 소환 개체는 제외한다.
 
 - [Shadow Child — 블라인드](blind.md): `EnemyThinMan.playerTarget`을 사용한다. 같은 타깃을 3초간 유지하면 발동하고 3초마다 반복한다. 타깃 교체·상실 시 유지 시간을 초기화한다.

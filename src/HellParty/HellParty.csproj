@@ -12,11 +12,26 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <HellPartyTestScenario Condition="'$(HellPartyTestScenario)' == ''">None</HellPartyTestScenario>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>portable</DebugType>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' and '$(HellPartyTestScenario)' == 'CleanupCrew'">
+    <DefineConstants>$(DefineConstants);HELLPARTY_TEST_CLEANUP_CREW</DefineConstants>
+    <OutputPath>bin\$(Configuration)\Scenarios\$(HellPartyTestScenario)\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Debug' or '$(HellPartyTestScenario)' != 'CleanupCrew'">
+    <Compile Remove="Debugging\**\*.cs" />
+  </ItemGroup>
+
+  <Target Name="ValidateHellPartyTestScenario" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(HellPartyTestScenario)' != 'None' and '$(HellPartyTestScenario)' != 'CleanupCrew'" Text="Unknown HellPartyTestScenario. Use None or CleanupCrew." />
+    <Error Condition="'$(Configuration)' != 'Debug' and '$(HellPartyTestScenario)' != 'None'" Text="HellParty test scenarios require a Debug build." />
+  </Target>
 
   <PropertyGroup>
     <RestoreAdditionalProjectSources>
