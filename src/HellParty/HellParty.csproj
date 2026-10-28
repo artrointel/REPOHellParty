@@ -24,12 +24,17 @@
     <OutputPath>bin\$(Configuration)\Scenarios\$(HellPartyTestScenario)\</OutputPath>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Configuration)' != 'Debug' or '$(HellPartyTestScenario)' != 'CleanupCrew'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' and '$(HellPartyTestScenario)' == 'Headgrab'">
+    <DefineConstants>$(DefineConstants);HELLPARTY_TEST_HEADGRAB</DefineConstants>
+    <OutputPath>bin\$(Configuration)\Scenarios\Headgrab\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Debug' or ('$(HellPartyTestScenario)' != 'CleanupCrew' and '$(HellPartyTestScenario)' != 'Headgrab')">
     <Compile Remove="Debugging\**\*.cs" />
   </ItemGroup>
 
   <Target Name="ValidateHellPartyTestScenario" BeforeTargets="PrepareForBuild">
-    <Error Condition="'$(HellPartyTestScenario)' != 'None' and '$(HellPartyTestScenario)' != 'CleanupCrew'" Text="Unknown HellPartyTestScenario. Use None or CleanupCrew." />
+    <Error Condition="'$(HellPartyTestScenario)' != 'None' and '$(HellPartyTestScenario)' != 'CleanupCrew' and '$(HellPartyTestScenario)' != 'Headgrab'" Text="Unknown HellPartyTestScenario. Use None, CleanupCrew or Headgrab." />
     <Error Condition="'$(Configuration)' != 'Debug' and '$(HellPartyTestScenario)' != 'None'" Text="HellParty test scenarios require a Debug build." />
   </Target>
 

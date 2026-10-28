@@ -24,6 +24,9 @@ internal sealed class StageRuntime : MonoBehaviour
 #if DEBUG && HELLPARTY_TEST_CLEANUP_CREW
         if (GetComponent<Debugging.CleanupCrewScenario>() == null) gameObject.AddComponent<Debugging.CleanupCrewScenario>();
 #endif
+#if DEBUG && HELLPARTY_TEST_HEADGRAB
+        gameObject.AddComponent<Debugging.HeadgrabScenario>();
+#endif
     }
 
     internal static void TryAttach(EnemyParent parent)

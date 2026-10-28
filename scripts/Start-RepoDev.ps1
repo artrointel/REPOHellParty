@@ -3,7 +3,7 @@ param(
     [switch]$EnableDebugger,
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
-    [ValidateSet("None", "CleanupCrew")]
+    [ValidateSet("None", "CleanupCrew", "Headgrab")]
     [string]$TestScenario = "None",
     [switch]$NoBuild
 )

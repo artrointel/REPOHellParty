@@ -75,6 +75,14 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "HellParty: Start Headgrab test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\scripts\\Start-RepoDev.ps1", "-TestScenario", "Headgrab"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "HellParty: Watch BepInEx log",
       "type": "shell",
       "command": "Get-Content -LiteralPath '${env:APPDATA}\\Thunderstore Mod Manager\\DataFolder\\REPO\\profiles\\REPO\\BepInEx\\LogOutput.log' -Tail 100 -Wait",
