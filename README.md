@@ -23,7 +23,7 @@ HellParty turns a familiar R.E.P.O. loot run into a monster party. Valuables hid
 
 ## Meet the party
 
-These are the monsters' **fully upgraded abilities**. Exact values and unlock conditions may change with balance updates.
+Monsters unlock new abilities or upgrade existing ones **every three rounds**, up to difficulty 5. The guide below shows their **fully upgraded abilities**, not what you face from round one. Balance may change with updates.
 
 | Monster | What changes for you |
 | --- | --- |

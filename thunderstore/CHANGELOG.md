@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Clarify progression in the monster guide: HellParty difficulty increases every three rounds, from difficulty 1 in round 1 to difficulty 5 in round 13, then stays capped.
+- Explain that the monster guide describes fully upgraded abilities; early rounds intentionally have fewer abilities. No gameplay changes in this documentation update.
+
 ## 0.2.0
 
 - From Clone II onward, the original duck's crown is visible for one second every five seconds. Killing the original restores permanently visible, collectible loot, even during a hidden interval.

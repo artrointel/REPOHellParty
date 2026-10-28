@@ -7,7 +7,7 @@
     <AssemblyName>HellParty</AssemblyName>
     <RootNamespace>HellParty</RootNamespace>
     <Authors>artrointel</Authors>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Description>Host-only stage difficulty and monster abilities for R.E.P.O.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyFilesToPluginOutputDirectoryOnBuild>false</CopyFilesToPluginOutputDirectoryOnBuild>
