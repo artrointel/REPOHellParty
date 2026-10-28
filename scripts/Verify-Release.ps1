@@ -32,7 +32,7 @@ $metadata = [ordered]@{
     release_notes_sha256 = (Get-FileHash -LiteralPath $notes -Algorithm SHA256).Hash
     plugin_sha256 = (Get-FileHash -LiteralPath $dll -Algorithm SHA256).Hash
     game_assembly_sha256 = (Get-FileHash -LiteralPath $GameAssembly -Algorithm SHA256).Hash
-    checks = @('Debug/Release build', 'deterministic rules', 'installed-game contracts', 'package contents and hashes', 'invalid package rejection')
+    checks = @('Debug/Release build', 'isolated opt-in Debug scenario', 'Release debug-code exclusion and optimization', 'deterministic rules', 'installed-game contracts', 'package contents and hashes', 'invalid package rejection')
     in_game_multiplayer_verified = $false
 }
 [IO.File]::WriteAllText($receipt, ($metadata | ConvertTo-Json -Depth 4) + "`n", (New-Object Text.UTF8Encoding($false)))

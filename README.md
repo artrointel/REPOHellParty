@@ -27,7 +27,7 @@ These are the monsters' **fully upgraded abilities**. Exact values and unlock co
 
 | Monster | What changes for you |
 | --- | --- |
-| **Apex Predator** | The duck arrives with up to three doubles. Fake deaths leave radiation gas. Find the crowned original, defeat it to end the family reunion, and collect the crown. |
+| **Apex Predator** | The duck arrives with up to three doubles. Fake deaths leave radiation gas. Watch for the crown: it flashes for one second every five seconds. Remember the original, defeat it to end the family reunion, and collect the crown. |
 | **Animal** | Get close and gas appears at its target's feet. Kill it and two half-health Animals take its place. Hunt them before they disappear to claim their cores. |
 | **Bella** | Her passenger is a bell-linked explosive Clown Doll. The tiny valuables she drops are bait: grabbing one earns an immediate attack. Surviving items become loot when she dies. |
 | **Birthday Boy** | Linger beside a balloon or pop one and a Gnome can burst out. Hurt the boy and nearby balloons pop together, bringing reinforcements that share his target. |

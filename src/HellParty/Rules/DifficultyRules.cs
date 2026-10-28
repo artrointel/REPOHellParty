@@ -8,6 +8,8 @@ internal static class DifficultyRules
     internal static int FromCompletedStages(int completed) => Math.Min(5, 1 + Math.Max(0, completed) / 3);
     internal static int StageNumber(int completed) => completed < 0 ? 1 : completed == int.MaxValue ? int.MaxValue : completed + 1;
     internal static int CloneLimit(int difficulty) => difficulty <= 0 ? 0 : difficulty < 3 ? 1 : difficulty < 5 ? 2 : 3;
+    internal static bool CrownVisible(int difficulty, double elapsed) =>
+        difficulty > 0 && (CloneLimit(difficulty) < 2 || Math.Max(0, elapsed) % 5 < 1);
     internal static bool ShouldRecall(float squaredDistance) => squaredDistance >= 225f;
     internal static int AnimalGasCooldown(int difficulty) => difficulty < 2 ? 0 : 10;
     internal static bool AnimalGasInRange(float squaredDistance) => squaredDistance <= 9f;

@@ -71,7 +71,7 @@ if ($pluginSource -like "*TODO_AUTHOR*") {
 $env:DOTNET_CLI_HOME = Join-Path $projectRoot ".dotnet-home"
 $env:NUGET_PACKAGES = Join-Path $projectRoot ".nuget\packages"
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
-$buildArguments = @("build", $projectFile, "--configuration", $Configuration, "-p:CopyFilesToPluginOutputDirectoryOnBuild=false")
+$buildArguments = @("build", $projectFile, "--configuration", $Configuration, "-p:CopyFilesToPluginOutputDirectoryOnBuild=false", "-p:HellPartyTestScenario=None")
 if ($NoRestore) {
     $buildArguments += "--no-restore"
 }

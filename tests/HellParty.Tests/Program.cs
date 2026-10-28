@@ -14,6 +14,12 @@ void Check(string name, bool condition)
     passed++;
 }
 
+Check("No crown at vanilla difficulty", !DifficultyRules.CrownVisible(0, 0));
+foreach (int tier in new[] { 1, 2, 3, 4, 5 })
+foreach (double elapsed in new[] { 0d, 0.999, 1, 4.999, 5, 5.999, 6, 9.999, 10, 1001 })
+    Check($"Crown visibility tier {tier} at {elapsed}s", DifficultyRules.CrownVisible(tier, elapsed) ==
+        (tier < 3 || elapsed % 5 < 1));
+
 for (int completed = 0; completed < 12; completed++)
 foreach (int players in new[] { 1, 6, 7, 12 })
 {
@@ -905,6 +911,22 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+IEnumerable<TypeDefinition> ReleaseTypes(IEnumerable<TypeDefinition> types)
+{
+    foreach (TypeDefinition type in types)
+    {
+        yield return type;
+        foreach (TypeDefinition nested in ReleaseTypes(type.NestedTypes)) yield return nested;
+    }
+}
+var releaseMethods = ReleaseTypes(release.Types).SelectMany(t => t.Methods).Where(m => m.HasBody).ToArray();
+var releaseInstructions = releaseMethods.SelectMany(m => m.Body.Instructions).ToArray();
+Check("Shipping DLL declares Release configuration", release.Assembly.CustomAttributes.Any(a => a.AttributeType.FullName == "System.Reflection.AssemblyConfigurationAttribute" && a.ConstructorArguments.Single().Value is string configuration && configuration == "Release"));
+Check("Shipping DLL does not disable compiler optimizations", release.Assembly.CustomAttributes.Where(a => a.AttributeType.FullName == "System.Diagnostics.DebuggableAttribute").All(a => a.ConstructorArguments.Count == 1 && (Convert.ToInt32(a.ConstructorArguments[0].Value) & 256) == 0));
+Check("Shipping DLL excludes all nested test scenario types", !ReleaseTypes(release.Types).Any(t => t.Namespace.StartsWith("HellParty.Debugging", StringComparison.Ordinal)));
+Check("Shipping DLL cannot reference a test scenario from any method", !releaseInstructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.FullName.StartsWith("HellParty.Debugging", StringComparison.Ordinal) || i.Operand is TypeReference t && t.FullName.StartsWith("HellParty.Debugging", StringComparison.Ordinal)));
+Check("Shipping DLL contains no test startup or scenario log markers", !releaseInstructions.Any(i => i.OpCode.Code == Code.Ldstr && i.Operand is string s && (s.StartsWith("TEST ", StringComparison.Ordinal) || s.StartsWith("DEBUG ", StringComparison.Ordinal))));
+Check("Shipping DLL contains no temporary keyboard test controls", !releaseInstructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.FullName == "UnityEngine.Input" && new[] { "GetKey", "GetKeyDown", "GetKeyUp" }.Contains(m.Name)));
 Check("Monster count balance patches native amount setup", release.GetType("HellParty.MonsterSpawnBalance").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyPatch" && a.ConstructorArguments.Any(v => v.Value is string s && s == "AmountSetup")));
 Check("Monster count balance never instantiates a separate enemy", release.GetType("HellParty.MonsterSpawnBalance").Methods.Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).All(i => i.Operand is not MethodReference m || (m.Name != "InstantiateRoomObject" && m.Name != "Instantiate" && m.Name != "Spawn")));
 Check("Party scaling excludes inactive Photon peers rather than dead avatars", release.GetType("HellParty.MonsterSpawnBalance").Methods.Single(m => m.Name == "PartySize").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_IsInactive") && !release.GetType("HellParty.MonsterSpawnBalance").Methods.Single(m => m.Name == "PartySize").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "PlayerGetList"));

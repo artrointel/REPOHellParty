@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using HellParty.Native;
+using HellParty.Rules;
 using Photon.Pun;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ internal sealed class CrownCarrier : MonoBehaviour
     private Vector3 _lastPosition;
     private Quaternion _lastRotation;
     private float _meshBottomOffset;
+    private float _createdAt;
+    private bool _hidden;
 
     internal static CrownCarrier Create(EnemyDuck duck)
     {
@@ -28,6 +31,7 @@ internal sealed class CrownCarrier : MonoBehaviour
         carrier._duck = duck;
         carrier._physical = root.GetComponent<PhysGrabObject>();
         carrier._body = root.GetComponent<Rigidbody>();
+        carrier._createdAt = Time.time;
         carrier.MeasureCrown();
         carrier.Pin();
         return carrier;
@@ -56,21 +60,28 @@ internal sealed class CrownCarrier : MonoBehaviour
 
     private void Pin()
     {
+        bool spawned = NativeEnemy.Spawned(NativeEnemy.Parent(_duck));
+        bool visible = spawned && DifficultyRules.CrownVisible(DifficultyService.Current, Time.time - _createdAt);
+        bool revealing = visible && _hidden;
+        if (revealing) _physical.OverrideDeactivateReset();
         _physical.OverrideKinematic(0.2f);
         _physical.OverrideGrabDisable(0.2f);
         _physical.OverrideIndestructible(0.2f);
         _body.detectCollisions = false;
         _body.interpolation = RigidbodyInterpolation.None;
-        bool visible = NativeEnemy.Spawned(NativeEnemy.Parent(_duck));
-        if (!visible) _physical.OverrideDeactivate(0.2f);
         // headLookAtSource is a rig look-direction helper, not a head socket.
         // Use the visible duck geometry, anchored to the physical body, instead.
-        Vector3 position = visible ? AboveDuck() : AssetManager.instance.physDisabledPosition;
         Quaternion rotation = Quaternion.Euler(0, _duck.bodyTransform.eulerAngles.y, 0);
+        // Keep the reward location current even throughout the hidden interval.
+        if (spawned) { _lastPosition = AboveDuck(); _lastRotation = rotation; }
+        if (!visible) _physical.OverrideDeactivate(0.2f);
+        Vector3 position = visible ? _lastPosition : AssetManager.instance.physDisabledPosition;
+        // Native Teleport RPC snaps vanilla guests back from the hidden position.
+        if (revealing) _physical.Teleport(position, rotation);
         transform.SetPositionAndRotation(position, rotation);
         _body.position = position;
         _body.rotation = rotation;
-        if (visible) { _lastPosition = position; _lastRotation = rotation; }
+        _hidden = !visible;
     }
 
     private void MeasureCrown()
@@ -108,6 +119,7 @@ internal sealed class CrownCarrier : MonoBehaviour
     {
         if (_released) return;
         _released = true;
+        _physical.OverrideDeactivateReset();
         _body.detectCollisions = true;
         _body.interpolation = RigidbodyInterpolation.Interpolate;
         _physical.Teleport(_lastPosition, _lastRotation);

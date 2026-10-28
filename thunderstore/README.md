@@ -21,7 +21,7 @@ These are the monsters' **fully upgraded abilities**. Exact values and unlock co
 
 | Monster | What changes for you |
 | --- | --- |
-| **Apex Predator** | The duck arrives with up to three doubles. Fake deaths leave radiation gas. Find the crowned original, defeat it to end the family reunion, and collect the crown. |
+| **Apex Predator** | The duck arrives with up to three doubles. Fake deaths leave radiation gas. Watch for the crown: it flashes for one second every five seconds. Remember the original, defeat it to end the family reunion, and collect the crown. |
 | **Animal** | Get close and gas appears at its target's feet. Kill it and two half-health Animals take its place. Hunt them before they disappear to claim their cores. |
 | **Bella** | Her passenger is a bell-linked explosive Clown Doll. The tiny valuables she drops are bait: grabbing one earns an immediate attack. Surviving items become loot when she dies. |
 | **Birthday Boy** | Linger beside a balloon or pop one and a Gnome can burst out. Hurt the boy and nearby balloons pop together, bringing reinforcements that share his target. |
@@ -60,7 +60,7 @@ For a local release candidate, import the ZIP as a local mod. For manual install
 
 Report problems through the repository Issues page with the game and HellParty versions, host/guest roles, other installed mods, reproduction steps and relevant `BepInEx/LogOutput.log` lines. Mention whether a problem appears only for vanilla guests.
 
-HellParty uses native prefabs, animations and network messages. The build uses R.E.P.O. 0.4.4 compile-time references; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. Old development spawns, forced difficulty and test keys are removed.
+HellParty uses native prefabs, animations and network messages. The build uses R.E.P.O. 0.4.4 compile-time references; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. This Release package excludes developer test scenarios, forced test difficulty, test equipment spawns and test hotkeys.
 
 Build instructions, design notes, grouped playtest documents and release verification tools are in the repository. The package contains HellParty's DLL, documentation, metadata and its cartoon icon; game, Unity and BepInEx assemblies are not bundled.
 

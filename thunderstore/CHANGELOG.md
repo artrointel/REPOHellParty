@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.2.0 — Release candidate
+## 0.2.0
+
+- From Clone II onward, the original duck's crown is visible for one second every five seconds. Killing the original restores permanently visible, collectible loot, even during a hidden interval.
 
 - **Only the host installs; friends join with vanilla R.E.P.O.**
 - Adjust native selections: rounds 1–4 add one medium pick; rounds 5–9 add one large pick; round 10 onward adds one of each. With at least seven connected participants, each applicable bonus becomes two. Preserve small counts, native eligibility, weighting, spawn timing and networking; skip only a category with no unlocked setup.
