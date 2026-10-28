@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add a host-only activation banner at round 1. Difficulty increases (rounds 4, 7, 10 and 13) name the monsters that just got more dangerous. Uses native animated text after the opening sequence; vanilla guests need no update.
+- Add a short native TTS announcement from the host at activation and difficulty increases. Nearby vanilla guests can hear it without installing the mod. Uses normal speech speed and respects native audio behavior.
+
 ## 0.2.1
 
 - Clarify progression in the monster guide: HellParty difficulty increases every three rounds, from difficulty 1 in round 1 to difficulty 5 in round 13, then stays capped.

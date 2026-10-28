@@ -14,6 +14,19 @@ void Check(string name, bool condition)
     passed++;
 }
 
+for (int completed = 0; completed < 31; completed++)
+    Check($"Host difficulty notice at stage {completed + 1}", DifficultyNoticeRules.ShouldAnnounce(completed, DifficultyRules.FromCompletedStages(completed)) ==
+        (completed == 0 || completed == 3 || completed == 6 || completed == 9 || completed == 12));
+Check("Invalid progress cannot trigger an increase notice", !DifficultyNoticeRules.ShouldAnnounce(-1, 1));
+Check("Forced difficulty does not claim a natural increase", !DifficultyNoticeRules.ShouldAnnounce(3, 5) && !DifficultyNoticeRules.ShouldAnnounce(0, 5));
+Check("Maximum completed stages do not overflow notice comparisons", !DifficultyNoticeRules.ShouldAnnounce(int.MaxValue, 5));
+Check("Every difficulty increase has concise notice highlights", Enumerable.Range(2, 4).All(tier =>
+    !string.IsNullOrWhiteSpace(DifficultyNoticeRules.Highlights(tier)) &&
+    DifficultyNoticeRules.Highlights(tier).Split('\n').Length <= 3 &&
+    DifficultyNoticeRules.Highlights(tier).Split('\n').All(line => line.Length <= 65)));
+Check("Opening, vanilla and unsupported difficulties have no monster list", DifficultyNoticeRules.Highlights(0) == "" && DifficultyNoticeRules.Highlights(1) == "" && DifficultyNoticeRules.Highlights(6) == "");
+Check("Opening speech announces activation, not a later increase", DifficultyNoticeRules.SpokenMessage(0) != DifficultyNoticeRules.SpokenMessage(3));
+
 Check("No crown at vanilla difficulty", !DifficultyRules.CrownVisible(0, 0));
 foreach (int tier in new[] { 1, 2, 3, 4, 5 })
 foreach (double elapsed in new[] { 0d, 0.999, 1, 4.999, 5, 5.999, 6, 9.999, 10, 1001 })
@@ -1064,6 +1077,16 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    Check("Native large message supports local styled text", game.GetType("BigMessageUI").Methods.Any(m => m.Name == "BigMessage" && m.Parameters.Count == 5));
+    Check("Native large message exposes occupancy for cooperative notices", game.GetType("BigMessageUI").Fields.Any(f => f.Name == "bigMessageTimer") && game.GetType("BigMessageUI").Fields.Any(f => f.Name == "bigMessage"));
+    var notice = release.GetType("HellParty.DifficultyNotice");
+    var noticeCalls = notice.NestedTypes.Where(t => t.Name.StartsWith("<Start>")).SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Where(i => i.Operand is MethodReference).Select(i => (MethodReference)i.Operand).ToArray();
+    Check("Difficulty notice uses local UI without network sends", noticeCalls.Any(m => m.DeclaringType.Name == "BigMessageUI" && m.Name == "BigMessage") && !noticeCalls.Any(m => m.DeclaringType.Namespace.StartsWith("Photon", StringComparison.Ordinal)));
+    Check("Difficulty notice gates display to host or solo", noticeCalls.Any(m => m.Name == "IsMasterClientOrSingleplayer"));
+    var speechInstructions = notice.NestedTypes.Where(t => t.Name.StartsWith("<AnnounceSpeech>")).SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).ToArray();
+    Check("Difficulty speech sends exactly one native chat RPC path", speechInstructions.Count(i => i.Operand is MethodReference m && m.Name == "RPC") == 1 && speechInstructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "ChatMessageSendRPC"));
+    Check("Native chat speech permits the host and runs during the round", game.GetType("PlayerAvatar").Methods.Single(m => m.Name == "ChatMessageSendRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterAndOwnerOnlyRPC"));
+    Check("Native TTS receives text and whisper mode, not playback speed", game.GetType("TTSVoice").Methods.Single(m => m.Name == "TTSSpeakNow").Parameters.Count == 2);
     var amountSetup = game.GetType("EnemyDirector").Methods.Single(m => m.Name == "AmountSetup").Body.Instructions.ToList();
     int amountAnchor = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "Clear" && i.Previous?.Operand is FieldReference f && f.Name == "enemyListCurrent");
     int firstNativePick = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "PickEnemies");
