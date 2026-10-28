@@ -13,6 +13,7 @@ HellParty turns a familiar R.E.P.O. loot run into a monster party. Valuables hid
 - A doll waits perfectly still while you look at it, then silently follows when everyone looks away. Make it angry and eye contact stops helping.
 - A fight can bring reinforcements, and a defeated monster can leave a dangerous encore.
 - Some risks pay off: a duck's crown, Bella's leftovers and a Clown's surviving staff can become loot.
+- Native spawns get extra company: one medium pick in rounds 1–4, one large pick in rounds 5–9, and one of each from round 10 onward. Parties of seven or more get two of each applicable pick. Native selection and spawn rules still apply.
 
 ## Meet the party
 

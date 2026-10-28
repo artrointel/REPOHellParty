@@ -14,6 +14,28 @@ void Check(string name, bool condition)
     passed++;
 }
 
+for (int completed = 0; completed < 12; completed++)
+foreach (int players in new[] { 1, 6, 7, 12 })
+{
+    int amount = players >= 7 ? 2 : 1;
+    int mediumBonus = completed < 4 || completed >= 9 ? amount : 0;
+    int largeBonus = completed >= 4 ? amount : 0;
+    Check($"Stage {completed + 1}, party {players}: native medium adjustment", MonsterSpawnBalanceRules.Count(2, completed, players, false, 5, true, true) == 2 + mediumBonus);
+    Check($"Stage {completed + 1}, party {players}: native large adjustment", MonsterSpawnBalanceRules.Count(3, completed, players, true, 5, true, true) == 3 + largeBonus);
+}
+Check("A vanilla zero-medium opening gains its requested picks", MonsterSpawnBalanceRules.Count(0, 0, 7, false, 1, true, true) == 2);
+Check("Vanilla baseline difficulty disables both count bonuses", MonsterSpawnBalanceRules.Count(2, 9, 7, false, 0, true, true) == 2 && MonsterSpawnBalanceRules.Count(3, 9, 7, true, 0, true, true) == 3);
+Check("Guests cannot adjust native monster amounts", MonsterSpawnBalanceRules.Count(2, 9, 7, false, 5, false, true) == 2 && MonsterSpawnBalanceRules.Count(3, 9, 7, true, 5, false, true) == 3);
+Check("Non-level scenes preserve both native counts", MonsterSpawnBalanceRules.Count(2, 9, 7, false, 5, true, false) == 2 && MonsterSpawnBalanceRules.Count(3, 9, 7, true, 5, true, false) == 3);
+Check("Actual stage controls the band even under debug difficulty five", MonsterSpawnBalanceRules.Count(2, 4, 1, false, 5, true, true) == 2 && MonsterSpawnBalanceRules.Count(3, 4, 1, true, 5, true, true) == 4);
+Check("Invalid progress, party sizes and native counts are preserved", MonsterSpawnBalanceRules.Count(2, -1, 7, false, 1, true, true) == 2 && MonsterSpawnBalanceRules.Count(2, 0, 0, false, 1, true, true) == 2 && MonsterSpawnBalanceRules.Count(-1, 9, 7, true, 5, true, true) == -1);
+Check("Two extra picks cannot overflow the native count", MonsterSpawnBalanceRules.Count(int.MaxValue - 1, 9, 7, true, 5, true, true) == int.MaxValue);
+
+Check("Native medium eligibility respects minimum and maximum progress", !MonsterSpawnBalanceRules.Eligible(true, 1, 2, 3, 5, 1) && MonsterSpawnBalanceRules.Eligible(true, 2, 2, 3, 5, 1) && MonsterSpawnBalanceRules.Eligible(true, 3, 2, 3, 5, 1) && !MonsterSpawnBalanceRules.Eligible(true, 4, 2, 3, 5, 1));
+Check("A zero native maximum means no upper progress restriction", MonsterSpawnBalanceRules.Eligible(true, 99, 2, 0, 5, 1));
+Check("Disabled native progress restrictions do not affect medium eligibility", MonsterSpawnBalanceRules.Eligible(false, 0, 10, 20, 1, 1));
+Check("Native profile run-count locks remain enforced", !MonsterSpawnBalanceRules.Eligible(false, 0, 0, 0, 0, 1) && MonsterSpawnBalanceRules.Eligible(false, 0, 0, 0, 1, 1));
+
 Check("Elsa assassination is unavailable below five", Enumerable.Range(0, 5).All(tier => !ElsaAssassinationClock.Eligible(tier, false)));
 Check("Natural Elsa gains assassination at five", ElsaAssassinationClock.Eligible(5, false));
 Check("All summoned Elsa origins are excluded", !ElsaAssassinationClock.Eligible(5, true));
@@ -883,6 +905,9 @@ Check("Prefab path matching is case-insensitive", UpscreamDisguiseCatalog.Eligib
 string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../"));
 using var debug = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/netstandard2.1/HellParty.dll"));
 using var release = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Release/netstandard2.1/HellParty.dll"));
+Check("Monster count balance patches native amount setup", release.GetType("HellParty.MonsterSpawnBalance").CustomAttributes.Any(a => a.AttributeType.Name == "HarmonyPatch" && a.ConstructorArguments.Any(v => v.Value is string s && s == "AmountSetup")));
+Check("Monster count balance never instantiates a separate enemy", release.GetType("HellParty.MonsterSpawnBalance").Methods.Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).All(i => i.Operand is not MethodReference m || (m.Name != "InstantiateRoomObject" && m.Name != "Instantiate" && m.Name != "Spawn")));
+Check("Party scaling excludes inactive Photon peers rather than dead avatars", release.GetType("HellParty.MonsterSpawnBalance").Methods.Single(m => m.Name == "PartySize").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "get_IsInactive") && !release.GetType("HellParty.MonsterSpawnBalance").Methods.Single(m => m.Name == "PartySize").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "PlayerGetList"));
 using var cleanupTest = ModuleDefinition.ReadModule(Path.Combine(root, "src/HellParty/bin/Debug/Scenarios/CleanupCrew/netstandard2.1/HellParty.dll"));
 Check("An opted-in Debug build includes the Cleanup Crew scenario", cleanupTest.GetType("HellParty.Debugging.CleanupCrewScenario") != null);
 Check("The opted-in scenario is started by the level runtime", cleanupTest.GetType("HellParty.StageRuntime").NestedTypes.SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).Any(i => i.Operand is GenericInstanceMethod m && m.Name == "AddComponent" && m.GenericArguments.Any(t => t.FullName == "HellParty.Debugging.CleanupCrewScenario")));
@@ -1017,6 +1042,12 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    var amountSetup = game.GetType("EnemyDirector").Methods.Single(m => m.Name == "AmountSetup").Body.Instructions.ToList();
+    int amountAnchor = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "Clear" && i.Previous?.Operand is FieldReference f && f.Name == "enemyListCurrent");
+    int firstNativePick = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "PickEnemies");
+    Check("Native amount hook has one clear point before selection", amountAnchor >= 0 && firstNativePick > amountAnchor && amountSetup.Count(i => i.Operand is MethodReference m && m.Name == "Clear" && i.Previous?.Operand is FieldReference f && f.Name == "enemyListCurrent") == 1);
+    Check("Both native curve branches initialize medium and large counts before the hook", new[] { "amountCurve2Value", "amountCurve3Value" }.All(field => amountSetup.Take(amountAnchor).Count(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == field) == 2));
+    Check("Native total still consumes the adjusted medium count", amountSetup.Skip(firstNativePick).Any(i => i.OpCode.Code == Code.Ldfld && i.Operand is FieldReference f && f.Name == "amountCurve2Value") && amountSetup.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == "totalAmount"));
     foreach (string method in new[] { "StateActive", "StateExplode", "UpdatePlayerTarget", "UpdateStateRPC", "ExplodeRPC", "Update" })
         Check("Sticky head native hook exists: " + method, game.GetType("EnemyBombThrowerHead").Methods.Any(m => m.Name == method && !m.IsStatic));
     Check("Native head target setter still broadcasts its target RPC", game.GetType("EnemyBombThrowerHead").Methods.Single(m => m.Name == "UpdatePlayerTarget").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && i.Operand is string s && s == "UpdatePlayerTargetRPC"));

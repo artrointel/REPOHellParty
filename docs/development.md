@@ -51,6 +51,8 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 ## Debug와 Release
 
+스폰 밸런스는 `MonsterSpawnBalance`가 순정 `EnemyDirector.AmountSetup`의 곡선 평가 후·추첨 전에 중형·대형 수량을 조정한다. 1~4라운드는 중형 +1, 5~9라운드는 대형 +1, 10라운드부터 중형·대형 각각 +1이며 계산 시 실제 접속자가 7명 이상이면 각 +1을 +2로 한다. 사망 여부는 인원에 영향을 주지 않고 비활성 Photon 참가자는 제외한다. 추가 슬롯도 순정 선정·초기화·네트워크 경로를 사용하며, 해금된 프리셋이 없는 분류만 건너뛴다. 상세 기준은 [몬스터 수량 보정](metadata/monster-spawn-balance.md)을 따른다.
+
 옵션 없는 Debug와 Release 모두 [공용 난이도](metadata/difficulty.md)를 사용한다. `min(5, 1 + max(0, levelsCompleted) / 3)`으로 stage1/4/7/10/13에서 난이도 1/2/3/4/5가 된다. 난이도 0은 순정 기준이며 자연 진행에는 없다. `DifficultyService.Current`는 모든 능력과 이벤트의 공용 조회 지점이고, `StageRuntime.TryAttach`는 난이도에 맞는 능력을 연결한다.
 
 기본 빌드에는 테스트용 몬스터·무기 자동 생성, 강제 난이도, 전용 단축키, 솔로 납치 우회, Upscream 테스트 예외와 스토커 이동 진단 로그가 없다. 프로필의 과거 `[Debug.*]` 설정도 읽지 않는다. 테스트 코드는 `src/HellParty/Debugging/`에 분리하고 **Debug 빌드에서 `-TestScenario CleanupCrew`를 명시할 때만** 컴파일한다. Release에서 테스트 옵션을 요청하면 빌드 전에 거부한다. 납치는 테스트 빌드에서도 생존자 2명 이상을 요구한다.

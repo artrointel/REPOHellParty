@@ -3,6 +3,7 @@
 ## 0.2.0 — Release candidate
 
 - **Only the host installs; friends join with vanilla R.E.P.O.**
+- Adjust native selections: rounds 1–4 add one medium pick; rounds 5–9 add one large pick; round 10 onward adds one of each. With at least seven connected participants, each applicable bonus becomes two. Preserve small counts, native eligibility, weighting, spawn timing and networking; skip only a category with no unlocked setup.
 - Add an explicit developer-only Debug build option, `-TestScenario CleanupCrew`, with isolated output, difficulty 5 and one Cleanup Crew plus a shotgun and tranquilizer near the starting player. Default Debug and Release exclude the scenario code; Release rejects test options. Normal monster AI and vanilla guest support are preserved.
 - Add Cleanup Crew's Sticky Head at difficulty 1: native explosive heads stick to their target within 1.5m and detach on Grab. Initial attachment consumes no cooldown; detaching or transferring from the previous carrier starts three seconds before another attachment or transfer. Held heads cannot attach. Native explosion timing and final-target hatch inheritance are preserved. Normal builds need no debug setup or guest-side mod.
 - Increase Huntsman and Loom's shared Abduction range from 4m to 5m, including the 5m boundary.
