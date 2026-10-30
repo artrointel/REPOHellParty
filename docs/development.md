@@ -6,12 +6,13 @@ REPOPocketCartTurret의 첫 커밋 `e788f0741f08436f0349089e68ca3bd48d0f3d1c`을
 
 - .NET 9 SDK, C# 12, `netstandard2.1`.
 - BepInEx.Core 5.4.21 및 종속 HarmonyX.
-- UnityEngine.Modules 2022.3.62.
-- R.E.P.O.GameLibs.Steam 0.4.4-ngd.0.
+- 설치된 R.E.P.O. 0.5.0의 `REPO_Data/Managed` 게임·Unity·Photon DLL. 로컬 검증 게임의 Unity 버전은 6000.3.17f1이다.
 - Linkoid.Repo.Plugin.Build 0.2.2.
 - BepInEx.Analyzers 1.0.8, BepInEx.AssemblyPublicizer.MSBuild 0.4.3.
 
-버전은 기준 커밋과 동일하게 고정했다. `global.json`은 안정 버전 .NET 9 SDK의 최신 feature band 사용을 허용한다. 로컬에 준비한 SDK는 9.0.319다. 게임 참조 패키지는 컴파일용이며 실제 게임이나 BepInEx를 설치하지 않는다.
+`global.json`은 안정 버전 .NET 9 SDK의 최신 feature band 사용을 허용한다. 로컬에 준비한 SDK는 9.0.319다. 게임과 Unity의 오래된 NuGet 참조는 제거했다. `Directory.Repo.props`의 `GameDirectory`를 실제 0.5.0 설치 경로로 맞춰야 빌드할 수 있다. 필요하면 MSBuild 속성 `HellPartyManagedDirectory`로 Managed 경로를 직접 지정한다. 게임 DLL이 없으면 빌드를 거부한다.
+
+빌드 시 AssemblyPublicizer가 게임 DLL의 컴파일용 사본을 `obj/<Configuration>/netstandard2.1/publicized`에 생성하고 내부 멤버 접근을 위한 특성을 추가한다. 원본 게임 DLL은 수정하지 않으며 게임·Unity·Photon 참조는 `Private=false`로 설정해 배포 DLL에 복사하지 않는다. REPOLib·MenuLib은 헬파티의 빌드·실행 의존성이 아니다.
 
 현재 PC에서는 이전 프로젝트의 `.dotnet` SDK와 `.nuget/packages`를 이 저장소로 복사해 준비했다. 이전 저장소를 수정하거나 런타임 종속성으로 사용하지 않는다. 두 폴더와 `.dotnet-home`, 빌드 산출물, 개인 경로 설정은 Git에서 제외된다.
 
@@ -47,7 +48,7 @@ VS Code의 기본 빌드 작업은 빌드만 수행한다. 별도 `Build + Deplo
 
 실행 스크립트와 로그 작업은 기본 Steam 경로와 Thunderstore `REPO` 프로필을 사용한다. 다른 프로필로 바꾸면 `Directory.Repo.props`뿐 아니라 `scripts/Start-RepoDev.ps1`과 `.vscode/tasks.json`의 실행·로그 경로도 맞춘다.
 
-로딩 시 `HellParty v0.2.0 loaded.`가 기록된다. 스테이지 준비 후 현재 스테이지와 모드 난이도가 로그에 기록된다.
+로딩 시 `HellParty v<현재 버전> loaded.`가 기록된다. 스테이지 준비 후 현재 스테이지와 모드 난이도가 로그에 기록된다.
 
 ## Debug와 Release
 
@@ -108,7 +109,7 @@ Debug·Release 빌드, 규칙·게임 계약, 패키지 생성·검사, 잘못�
 
 `Native/NetworkLifetime.cs`는 로컬에서 보내는 두 종류의 `PhotonView.RPC` 호출 전에 방 접속·ViewID·현재 등록 객체의 일치를 확인한다. 이미 등록 해제된 View로는 보내지 않는다. 다른 참가자의 발송이나 정상 발송 후 네트워크를 이동 중인 메시지까지 취소하는 기능은 아니다.
 
-Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격총, 웨이브 Gramophone 및 가스 생성 실패의 오브젝트 정리는 공통 제거 경로를 사용한다. 잡기를 먼저 해제하고 순정 위치 RPC로 화면 밖으로 이동시킨 뒤 기본 1초 동안 기존 View를 유지한다. 유효한 늦은 잡기 요청에는 해제를 다시 전달하고 유예를 연장하되 총 3초를 넘기지 않는다. 제거 중 재집기·잡기 링크와 지연 코루틴의 추가 전송을 막고 마지막에 네트워크 삭제한다. 코어 보상을 주는 정상 몬스터 사망·순정 가스 생성용 파괴에는 이 무효과 제거 경로를 대신 사용하지 않는다.
+Bella 미끼·부착 인형, Crown 정리, Chef 변장 해제, Mentalist 반격총, 웨이브 Gramophone 및 가스 생성 실패의 오브젝트 정리는 공통 제거 경로를 사용한다. 잡기를 먼저 해제하고 순정 위치 동기화로 화면 밖으로 이동시킨 뒤 기본 1초 동안 기존 View를 유지한다. 유효한 늦은 잡기 요청에는 해제를 다시 전달하고 유예를 연장하되 총 3초를 넘기지 않는다. 제거 중 재집기·잡기 링크와 지연 코루틴의 추가 전송을 막고 마지막에 네트워크 삭제한다. 코어 보상을 주는 정상 몬스터 사망·순정 가스 생성용 파괴에는 이 무효과 제거 경로를 대신 사용하지 않는다.
 
 로컬 설치된 SharedHealthPacks 1.0.0의 `ItemHealthPackUpdatePatch.Postfix`는 회복팩 사용 여부를 확인하지 않고 `ItemHealthPack.OnDestroy` 때 `SemiFunc.PlayerGetAll()`의 전원에게 `HealOther`를 호출한다. 미사용 팩과 장면 정리에서도 회복 요청이 발생할 수 있다. 네이티브 파괴 콜백 전체를 예외 복구 가능한 범위로 감싸 이 경우의 회복을 막고, `PlayerHealth.HealOther`도 사망·비활성·미등록 대상을 제외한다. 정상 사용된 팩의 플레이 중 공유 회복 동작은 유지한다. SharedHealthPacks DLL 자체는 수정하거나 제거하지 않는다.
 

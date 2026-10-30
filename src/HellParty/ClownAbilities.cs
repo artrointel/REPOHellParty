@@ -87,17 +87,23 @@ internal sealed class ClownStaff : MonoBehaviour
     internal static ClownStaff Create(ClownAbilities owner, Vector3 muzzle, Vector3 aim, double delay)
     {
         PrefabRef prefab = owner.StaffPrefab;
-        GameObject root = VanillaCatalog.Spawn(prefab, muzzle, Quaternion.identity);
+        Transform template = prefab.Prefab.transform;
+        Transform laser = prefab.Prefab.GetComponent<ValuableWizardStaff>().laserTransform;
+        Quaternion localRotation = Quaternion.Inverse(template.rotation) * laser.rotation;
+        Quaternion rotation = Quaternion.LookRotation(aim - muzzle) * Quaternion.Inverse(localRotation);
+        Vector3 offset = Quaternion.Inverse(template.rotation) * (laser.position - template.position);
+        Vector3 position = muzzle - rotation * offset;
+        // Native guests must have the correct aim before the first snapshot,
+        // including attacks with no additional firing delay.
+        GameObject root = VanillaCatalog.Spawn(prefab, position, rotation);
         ClownStaff carrier = root.AddComponent<ClownStaff>();
         carrier._owner = owner;
         carrier._staff = root.GetComponent<ValuableWizardStaff>();
         carrier._physical = root.GetComponent<PhysGrabObject>();
         carrier._body = root.GetComponent<Rigidbody>();
         carrier._fireAt = Time.timeAsDouble + delay;
-        Quaternion local = Quaternion.Inverse(root.transform.rotation) * carrier._staff.laserTransform.rotation;
-        carrier._rotation = Quaternion.LookRotation(aim - muzzle) * Quaternion.Inverse(local);
-        root.transform.rotation = carrier._rotation;
-        carrier._position = muzzle - (carrier._staff.laserTransform.position - root.transform.position);
+        carrier._rotation = rotation;
+        carrier._position = position;
         root.GetComponent<PhysGrabObjectImpactDetector>().destroyDisable = true;
         carrier.Pin();
         return carrier;
@@ -129,8 +135,7 @@ internal sealed class ClownStaff : MonoBehaviour
         while (Pinned && !_physical.spawned && Time.timeAsDouble < timeout) yield return null;
         if (!Pinned || !NetworkLifetime.Live(this)) yield break;
         if (!_physical.spawned) { Remove(); yield break; }
-        if (SemiFunc.IsMultiplayer()) GetComponent<PhotonView>().RPC("SetPositionRPC", RpcTarget.All, _position, _rotation);
-        else _physical.Teleport(_position, _rotation);
+        _physical.Teleport(_position, _rotation);
         while (Pinned && Time.timeAsDouble < _fireAt) yield return null;
         if (!Pinned || !NetworkLifetime.Live(this) || _owner == null || !_owner.Alive) yield break;
         _staff.semiLaser.hurtCollider.enemyHost = _owner.Enemy;

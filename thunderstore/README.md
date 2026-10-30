@@ -60,7 +60,7 @@ For a local release candidate, import the ZIP as a local mod. For manual install
 
 Report problems through the repository Issues page with the game and HellParty versions, host/guest roles, other installed mods, reproduction steps and relevant `BepInEx/LogOutput.log` lines. Mention whether a problem appears only for vanilla guests.
 
-HellParty uses native prefabs, animations and network messages. The build uses R.E.P.O. 0.4.4 compile-time references; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. This Release package excludes developer test scenarios, forced test difficulty, test equipment spawns and test hotkeys.
+HellParty uses native prefabs, animations and network messages. The source now targets installed R.E.P.O. 0.5.0 game, Unity and Photon assemblies; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. This Release package excludes developer test scenarios, forced test difficulty, test equipment spawns and test hotkeys.
 
 Build instructions, design notes, grouped playtest documents and release verification tools are in the repository. The package contains HellParty's DLL, documentation, metadata and its cartoon icon; game, Unity and BepInEx assemblies are not bundled.
 

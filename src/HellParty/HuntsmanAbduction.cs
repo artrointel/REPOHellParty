@@ -110,7 +110,7 @@ internal sealed class HuntsmanAbduction : MonoBehaviour
             // locally instead of sending a MasterClient RPC every physics tick.
             nearest.tumble.tumbleOverrideTimer = .5f;
             nearest.tumble.TumbleOverride(true);
-            nearest.tumble.TumbleSet(true, false);
+            nearest.tumble.TumbleSet(true, false, _reset: false);
             if (!nearest.tumble.isTumbling) { Release(); return; }
             // A target pinned behind its pursuer must not make the pursuer
             // endlessly turn towards its own back. Keep that aim point static.

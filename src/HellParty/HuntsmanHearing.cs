@@ -42,7 +42,9 @@ internal static class HuntsmanSoundSourceScope
         yield return AccessTools.Method(typeof(PlayerVoiceChat), "Update");
         yield return AccessTools.Method(typeof(PlayerAvatar), "Footstep");
         yield return AccessTools.Method(typeof(PlayerAvatar), "LandRPC");
-        yield return AccessTools.Method(typeof(PhysGrabObjectImpactDetector), "EnemyInvestigate");
+        // The one-argument wrapper calls this overload in 0.5. Scope the actual
+        // emission, avoiding both ambiguous lookup and nested duplicate scopes.
+        yield return AccessTools.Method(typeof(PhysGrabObjectImpactDetector), "EnemyInvestigate", new[] { typeof(float), typeof(Vector3) });
         yield return AccessTools.Method(typeof(ItemGun), "ShootRPC");
         yield return AccessTools.Method(typeof(ItemGun), "StateShooting");
     }

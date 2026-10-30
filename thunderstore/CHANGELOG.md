@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Prepare R.E.P.O. 0.5.0 support: build against installed game, Unity and Photon DLLs, update tumble/destruction/grenade calls, and disambiguate Huntsman sound attribution patches.
+- Send the English locale with native TTS announcements. Initialize gas carriers and Clown staves at their intended positions; use host-authoritative native teleport synchronization.
+- Expand automated checks to cover emitted game/Unity/Photon member signatures and Harmony target arguments. In-game multiplayer verification remains pending.
+
 - Add a host-only activation banner at round 1. Difficulty increases (rounds 4, 7, 10 and 13) name the monsters that just got more dangerous. Uses native animated text after the opening sequence; vanilla guests need no update.
 - Add a short native TTS announcement from the host at activation and difficulty increases. Nearby vanilla guests can hear it without installing the mod. Uses normal speech speed and respects native audio behavior.
 

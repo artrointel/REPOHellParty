@@ -209,7 +209,7 @@ internal sealed class StalkingDoll : MonoBehaviour
         // Stop our horizontal pursuit once, preserving gravity/fall velocity
         // and any impulses applied on subsequent stationary ticks.
         if (!_body.isKinematic)
-            _body.velocity = new Vector3(0, _body.velocity.y, 0);
+            _body.linearVelocity = new Vector3(0, _body.linearVelocity.y, 0);
         _driving = false;
         _pathAt = 0;
     }
@@ -218,7 +218,7 @@ internal sealed class StalkingDoll : MonoBehaviour
     {
         // Drive only along the floor. Vertical motion remains gravity-driven
         // rather than pinning the doll to a floating NavMesh offset.
-        _body.velocity = new Vector3(velocity.x, _body.velocity.y, velocity.z);
+        _body.linearVelocity = new Vector3(velocity.x, _body.linearVelocity.y, velocity.z);
         _driving = true;
     }
 

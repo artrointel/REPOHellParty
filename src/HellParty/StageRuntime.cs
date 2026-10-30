@@ -21,7 +21,7 @@ internal sealed class StageRuntime : MonoBehaviour
         if (GetComponent<DifficultyNotice>() == null) gameObject.AddComponent<DifficultyNotice>();
         if (DifficultyService.Current >= 1 && GetComponent<Events.MonsterWave>() == null)
             gameObject.AddComponent<Events.MonsterWave>();
-        foreach (EnemyParent parent in FindObjectsOfType<EnemyParent>()) TryAttach(parent);
+        foreach (EnemyParent parent in FindObjectsByType<EnemyParent>(FindObjectsSortMode.InstanceID)) TryAttach(parent);
 #if DEBUG && HELLPARTY_TEST_CLEANUP_CREW
         if (GetComponent<Debugging.CleanupCrewScenario>() == null) gameObject.AddComponent<Debugging.CleanupCrewScenario>();
 #endif

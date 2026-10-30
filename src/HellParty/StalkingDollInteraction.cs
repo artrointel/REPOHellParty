@@ -143,7 +143,7 @@ internal static class StalkingDollHitConfirmationPatch
         // Only actual health decreases after the native RPC's authentication
         // can confirm a pending hit. Invulnerable contacts never extend rage.
         if (!SemiFunc.IsMasterClientOrSingleplayer() || __instance.health >= __state) return;
-        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsOfType<StalkingDoll>())
+        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsByType<StalkingDoll>(FindObjectsSortMode.InstanceID))
             doll.ConfirmRemoteHit(__instance, __state);
     }
 }
@@ -160,7 +160,7 @@ internal static class StalkingDollRageDeathPatch
         // Observe the authenticated native alive-to-dead transition, including
         // deaths caused by other monsters, other players or the environment.
         if (!SemiFunc.IsMasterClientOrSingleplayer() || __state || !__instance.deadSet) return;
-        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsOfType<StalkingDoll>()) doll.PlayerDied();
+        foreach (StalkingDoll doll in UnityEngine.Object.FindObjectsByType<StalkingDoll>(FindObjectsSortMode.InstanceID)) doll.PlayerDied();
     }
 }
 

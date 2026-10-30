@@ -91,9 +91,9 @@ internal sealed class DifficultyNotice : MonoBehaviour
                 {
                     string speech = DifficultyNoticeRules.SpokenMessage(completed);
                     if (SemiFunc.IsMultiplayer())
-                        host.photonView.RPC("ChatMessageSendRPC", RpcTarget.All, speech, false);
+                        host.photonView.RPC("ChatMessageSendRPC", RpcTarget.All, speech, false, "en-US");
                     else
-                        host.voiceChat.ttsVoice.TTSSpeakNow(speech, false);
+                        host.voiceChat.ttsVoice.TTSSpeakNow(speech, false, "en-US");
                 }
                 catch (Exception exception)
                 {

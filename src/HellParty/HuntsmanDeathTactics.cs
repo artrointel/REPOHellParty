@@ -62,7 +62,7 @@ internal sealed class HuntsmanDeathTactics : MonoBehaviour
         try
         {
             ItemGrenadeHuman human = grenade.GetComponent<ItemGrenadeHuman>();
-            human.Initialize();
+            // 0.5 initializes native grenade references in Awake, before this coroutine.
             // Native Spawn pulls the pin, randomizes its 1.5–3s fuse and
             // applies the native random throw force/torque. Grab remains enabled.
             human.Spawn();

@@ -90,7 +90,7 @@ internal sealed class MentalistReflectedGun : MonoBehaviour
     {
         _physical.OverrideGrabDisable(0.2f);
         _physical.OverrideZeroGravity(0.2f);
-        if (!_body.isKinematic) { _body.velocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
+        if (!_body.isKinematic) { _body.linearVelocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
         _physical.OverrideKinematic(0.2f);
         _body.detectCollisions = false;
         transform.SetPositionAndRotation(_position, _rotation);

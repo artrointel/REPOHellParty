@@ -117,7 +117,7 @@ internal sealed class CleanupStickyHead : MonoBehaviour
 
     private void Pin()
     {
-        if (!_body.isKinematic) { _body.velocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
+        if (!_body.isKinematic) { _body.linearVelocity = Vector3.zero; _body.angularVelocity = Vector3.zero; }
         _physical.OverrideKinematic(.2f);
         _physicsPinned = true;
         _body.interpolation = RigidbodyInterpolation.None;

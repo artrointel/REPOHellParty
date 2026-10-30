@@ -76,7 +76,7 @@ internal sealed class CrownCarrier : MonoBehaviour
         if (spawned) { _lastPosition = AboveDuck(); _lastRotation = rotation; }
         if (!visible) _physical.OverrideDeactivate(0.2f);
         Vector3 position = visible ? _lastPosition : AssetManager.instance.physDisabledPosition;
-        // Native Teleport RPC snaps vanilla guests back from the hidden position.
+        // Native teleport revision snaps guests back on the next host snapshot.
         if (revealing) _physical.Teleport(position, rotation);
         transform.SetPositionAndRotation(position, rotation);
         _body.position = position;

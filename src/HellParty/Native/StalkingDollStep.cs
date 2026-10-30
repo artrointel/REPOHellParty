@@ -17,7 +17,7 @@ internal static class StalkingDollStep
 
     internal static bool TryClimb(Rigidbody body, Collider[] colliders, Vector3 movement)
     {
-        if (body.isKinematic || body.velocity.y > .5f || movement.sqrMagnitude < .000001f) return false;
+        if (body.isKinematic || body.linearVelocity.y > .5f || movement.sqrMagnitude < .000001f) return false;
         if (!BodyBounds(body, colliders, out Bounds bounds)) return false;
         Vector3 foot = new(bounds.center.x, bounds.min.y, bounds.center.z);
         if (!Support(body, bounds, out RaycastHit support)) return false;
@@ -62,7 +62,7 @@ internal static class StalkingDollStep
             if (!clear) continue;
             body.position += lift + horizontal;
             // Settle on the verified tread before resuming the refreshed path.
-            body.velocity = Vector3.zero;
+            body.linearVelocity = Vector3.zero;
             return true;
         }
         return false;

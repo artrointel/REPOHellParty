@@ -1,11 +1,11 @@
 [CmdletBinding()]
-param()
+param([string]$PackagePath)
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $validator = Join-Path $root 'scripts\Test-Package.ps1'
 $manifest = Get-Content -LiteralPath (Join-Path $root 'thunderstore\manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$package = Join-Path $root "artifacts\HellParty-$($manifest.version_number).zip"
+$package = if ([string]::IsNullOrWhiteSpace($PackagePath)) { Join-Path $root "artifacts\HellParty-$($manifest.version_number).zip" } else { [IO.Path]::GetFullPath($PackagePath) }
 $artifacts = [IO.Path]::GetFullPath((Join-Path $root 'artifacts')).TrimEnd('\') + '\'
 $fixtures = Join-Path $artifacts ('package-tests-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $fixtures | Out-Null

@@ -56,7 +56,7 @@ internal sealed class HeadmanProtection : MonoBehaviour
     {
         if (!EnemyTarget.Valid(attacker) || StageRuntime.Current == null) return;
         if (companion == null) return;
-        foreach (HeadmanProtection headman in FindObjectsOfType<HeadmanProtection>())
+        foreach (HeadmanProtection headman in FindObjectsByType<HeadmanProtection>(FindObjectsSortMode.InstanceID))
             if (headman._parent != companion && headman.Available &&
                 ProtectionRules.Eligible(DifficultyService.Current, false,
                     (position - NativeEnemy.Position(headman._enemy)).sqrMagnitude))

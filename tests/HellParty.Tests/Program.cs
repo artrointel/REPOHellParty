@@ -1077,6 +1077,25 @@ Check("Summoned agents are explicitly enabled before forced Warp", explicitEnabl
 if (args.Length > 0)
 {
     using var game = ModuleDefinition.ReadModule(args[0]);
+    foreach (string configuration in new[] { "Debug", "Release" })
+    {
+        using var compiledGame = ModuleDefinition.ReadModule(Path.Combine(root, $"src/HellParty/obj/{configuration}/netstandard2.1/publicized/Assembly-CSharp.dll"));
+        Check($"{configuration} compiled against the inspected installed game", compiledGame.Mvid == game.Mvid);
+    }
+    using var referenceAudit = new GameReferenceAudit(Path.GetDirectoryName(Path.GetFullPath(args[0]))!);
+    foreach (var build in new[] { debug, release, cleanupTest })
+    {
+        string[] missingReferences = referenceAudit.Missing(build);
+        Check($"{build.FileName}: emitted game/Unity/Photon references exist: {string.Join("; ", missingReferences)}", missingReferences.Length == 0);
+        string[] patchErrors = referenceAudit.PatchErrors(build);
+        Check($"{build.FileName}: declared Harmony targets and injected arguments exist: {string.Join("; ", patchErrors)}", patchErrors.Length == 0);
+    }
+    var obsoleteTts = new MethodReference("TTSSpeakNow", game.TypeSystem.Void, game.GetType("TTSVoice")) { HasThis = true };
+    obsoleteTts.Parameters.Add(new ParameterDefinition(game.TypeSystem.String));
+    obsoleteTts.Parameters.Add(new ParameterDefinition(game.TypeSystem.Boolean));
+    Check("Reference audit rejects the obsolete two-argument TTS signature", !referenceAudit.Exists(obsoleteTts));
+    var obsoleteGrenade = new MethodReference("Initialize", game.TypeSystem.Void, game.GetType("ItemGrenadeHuman")) { HasThis = true };
+    Check("Reference audit rejects removed grenade initialization", !referenceAudit.Exists(obsoleteGrenade));
     Check("Native large message supports local styled text", game.GetType("BigMessageUI").Methods.Any(m => m.Name == "BigMessage" && m.Parameters.Count == 5));
     Check("Native large message exposes occupancy for cooperative notices", game.GetType("BigMessageUI").Fields.Any(f => f.Name == "bigMessageTimer") && game.GetType("BigMessageUI").Fields.Any(f => f.Name == "bigMessage"));
     var notice = release.GetType("HellParty.DifficultyNotice");
@@ -1086,7 +1105,14 @@ if (args.Length > 0)
     var speechInstructions = notice.NestedTypes.Where(t => t.Name.StartsWith("<AnnounceSpeech>")).SelectMany(t => t.Methods).Where(m => m.HasBody).SelectMany(m => m.Body.Instructions).ToArray();
     Check("Difficulty speech sends exactly one native chat RPC path", speechInstructions.Count(i => i.Operand is MethodReference m && m.Name == "RPC") == 1 && speechInstructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "ChatMessageSendRPC"));
     Check("Native chat speech permits the host and runs during the round", game.GetType("PlayerAvatar").Methods.Single(m => m.Name == "ChatMessageSendRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterAndOwnerOnlyRPC"));
-    Check("Native TTS receives text and whisper mode, not playback speed", game.GetType("TTSVoice").Methods.Single(m => m.Name == "TTSSpeakNow").Parameters.Count == 2);
+    Check("Native TTS receives text, whisper mode and locale", game.GetType("TTSVoice").Methods.Single(m => m.Name == "TTSSpeakNow").Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] { "System.String", "System.Boolean", "System.String" }));
+    Check("Native TTS chat RPC requires a locale argument", game.GetType("PlayerAvatar").Methods.Single(m => m.Name == "ChatMessageSendRPC").Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] { "System.String", "System.Boolean", "System.String", "Photon.Pun.PhotonMessageInfo" }));
+    Check("Announcement supplies an explicit English locale", speechInstructions.Count(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "en-US") == 2);
+    var soundLookup = release.GetType("HellParty.HuntsmanSoundSourceScope").NestedTypes.Single(t => t.Name.Contains("TargetMethods")).Methods.Single(m => m.Name == "MoveNext").Body.Instructions;
+    Check("Sound emitter lookup resolves the positional investigate overload", soundLookup.Any(i => i.Operand is TypeReference t && t.FullName == "UnityEngine.Vector3") && game.GetType("PhysGrabObjectImpactDetector").Methods.Any(m => m.Name == "EnemyInvestigate" && m.Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] { "System.Single", "UnityEngine.Vector3" })));
+    Check("Retirement, gas and staff no longer broadcast host-only SetPositionRPC", !releaseInstructions.Any(i => i.OpCode.Code == Code.Ldstr && (string)i.Operand == "SetPositionRPC"));
+    Check("Native destruction supports explicit effects and force options", game.GetType("PhysGrabObjectImpactDetector").Methods.Single(m => m.Name == "DestroyObject").Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] { "System.Boolean", "System.Boolean" }));
+    Check("Native grenade initializes references in Awake", game.GetType("ItemGrenadeHuman").Methods.Single(m => m.Name == "Awake").Body.Instructions.Any(i => i.OpCode.Code == Code.Stfld && i.Operand is FieldReference f && f.Name == "itemGrenade"));
     var amountSetup = game.GetType("EnemyDirector").Methods.Single(m => m.Name == "AmountSetup").Body.Instructions.ToList();
     int amountAnchor = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "Clear" && i.Previous?.Operand is FieldReference f && f.Name == "enemyListCurrent");
     int firstNativePick = amountSetup.FindIndex(i => i.Operand is MethodReference m && m.Name == "PickEnemies");
@@ -1130,7 +1156,7 @@ if (args.Length > 0)
     Check("native Human Grenade throw includes impulse and torque", humanGrenadeThrow.Any(i => i.Operand is MethodReference m && m.Name == "AddForce") && humanGrenadeThrow.Any(i => i.Operand is MethodReference m && m.Name == "AddTorque"));
     Check("Native Upscream throw applies landing damage setup", game.GetType("EnemyUpscreamAnim").Methods.Single(m => m.Name == "AttackImpulse").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "ImpactHurtSet"));
     foreach ((string type, string method) in new[] { ("PlayerVoiceChat", "Update"), ("PlayerAvatar", "Footstep"), ("PlayerAvatar", "LandRPC"), ("PhysGrabObjectImpactDetector", "EnemyInvestigate"), ("ItemGun", "ShootRPC"), ("ItemGun", "StateShooting") })
-        Check($"native attributed sound emitter reaches investigate: {type}.{method}", game.GetType(type).Methods.Single(m => m.Name == method).Body.Instructions.Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "EnemyDirector" && m.Name == "SetInvestigate"));
+        Check($"native attributed sound emitter reaches investigate: {type}.{method}", game.GetType(type).Methods.Where(m => m.Name == method && m.HasBody).SelectMany(m => m.Body.Instructions).Any(i => i.Operand is MethodReference m && m.DeclaringType.Name == "EnemyDirector" && m.Name == "SetInvestigate"));
     Check("Native investigate entry broadcasts its own SetRPC", game.GetType("EnemyStateInvestigate").Methods.Single(m => m.Name == "Set").Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && i.Operand is string s && s == "SetRPC"));
     foreach ((string type, string rpc) in new[] { ("EnemyBombThrowerHead", "ExplodeRPC"), ("EnemyBombThrowerHead", "UpdateStateRPC"), ("EnemySlowMouth", "UpdatePlayerTargetRPC"), ("EnemySlowMouth", "UpdateStateRPC"), ("EnemyUpscream", "TargetPlayerRPC") })
         Check($"native Cleanup pursuit RPC authenticates the master: {type}.{rpc}", game.GetType(type).Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
@@ -1139,8 +1165,9 @@ if (args.Length > 0)
     Check("native Spewer notice reads the supplied vision target", game.GetType("EnemySlowMouth").Methods.Single(m => m.Name == "StateNotice").Body.Instructions.Any(i => i.Operand is FieldReference f && f.Name == "onVisionTriggeredPlayer"));
     Check("native Spewer despawn completes through EnemyParent", game.GetType("EnemySlowMouth").Methods.Single(m => m.Name == "StateDespawn").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "Despawn"));
     Check("native Upscream despawn animation completes through EnemyParent", game.GetType("EnemyUpscreamAnim").Methods.Single(m => m.Name == "SetDespawn").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "Despawn"));
-    foreach (string rpc in new[] { "TumbleRequestRPC", "TumbleSetRPC", "TumbleOverrideRPC" })
+    foreach (string rpc in new[] { "TumbleRequestRPC", "TumbleOverrideRPC" })
         Check($"native abduction RPC accepts authenticated master or owner: {rpc}", game.GetType("PlayerTumble").Methods.Single(m => m.Name == rpc).Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterAndOwnerOnlyRPC"));
+    Check("Native tumble state application is master-only", game.GetType("PlayerTumble").Methods.Single(m => m.Name == "TumbleSetRPC").Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "MasterOnlyRPC"));
     foreach ((string type, string method) in new[] { ("EnemyHunter", "OnHurt"), ("EnemyHunter", "OnDeath"), ("EnemyHunter", "OnTouchPlayer"), ("PlayerTumble", "FixedUpdate"), ("PlayerTumble", "TumbleSet") })
         Check($"installed abduction hook exists: {type}.{method}", game.GetType(type).Methods.Any(m => m.Name == method));
     foreach ((string type, string field) in new[] { ("EnemyHunter", "investigatePointHasTransform"), ("EnemyHunter", "investigatePointTransform"), ("PlayerTumble", "tumbleOverrideTimer"), ("PlayerTumble", "tumbleForce"), ("PlayerTumble", "tumbleTorque") })

@@ -68,7 +68,7 @@ Report problems through the repository Issues page with the game and HellParty v
 
 ## Development and contributing
 
-HellParty uses native prefabs, animations and network messages. The build uses R.E.P.O. 0.4.4 compile-time references; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. Default Debug and Release builds exclude test scenarios and use normal progression. An explicit Debug-only option enables the separate Cleanup Crew test setup.
+HellParty uses native prefabs, animations and network messages. The source now targets installed R.E.P.O. 0.5.0 game, Unity and Photon assemblies; automated rule/game-contract checks and in-game multiplayer checks cover different parts of verification. Default Debug and Release builds exclude test scenarios and use normal progression. An explicit Debug-only option enables the separate Cleanup Crew test setup.
 
 Build instructions, design notes, grouped playtest documents and release verification tools are in the repository. The package contains HellParty's DLL, documentation, metadata and its cartoon icon; game, Unity and BepInEx assemblies are not bundled.
 

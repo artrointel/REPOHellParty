@@ -19,8 +19,9 @@ internal sealed class AnimalGas : MonoBehaviour
         GameObject prefab = Resources.Load<GameObject>(CarrierPath);
         if (prefab == null || prefab.GetComponent<UraniumScript>() == null)
             throw new InvalidOperationException("Native Cleanup Crew-equivalent gas carrier was not found.");
-        Vector3 hidden = AssetManager.instance.physDisabledPosition;
-        GameObject root = VanillaCatalog.Spawn(CarrierPath, hidden, Quaternion.identity);
+        // 0.5 transmits teleports through host snapshots. Instantiate at the
+        // cloud location so destruction cannot race a guest's first snapshot.
+        GameObject root = VanillaCatalog.Spawn(CarrierPath, position, Quaternion.identity);
         AnimalGas carrier = root.AddComponent<AnimalGas>();
         root.AddComponent<Events.InternalWaveExcluded>();
         carrier._position = position;
@@ -52,10 +53,7 @@ internal sealed class AnimalGas : MonoBehaviour
         if (!NetworkLifetime.Live(this) || !SemiFunc.RunIsLevel()) yield break;
         try
         {
-            // Teleport() alone only changes host state and later serialization.
-            // Use the native reliable RPC on every client before destruction.
-            if (SemiFunc.IsMultiplayer()) GetComponent<PhotonView>().RPC("SetPositionRPC", RpcTarget.All, _position, Quaternion.identity);
-            else _physical.Teleport(_position, Quaternion.identity);
+            _physical.Teleport(_position, Quaternion.identity);
         }
         catch (Exception exception)
         {

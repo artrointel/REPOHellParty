@@ -55,7 +55,7 @@ internal sealed class RetiringNetworkObject : MonoBehaviour
             if (player != null && player.physGrabber != null && player.physGrabber.grabbedPhysGrabObject == _physical)
                 Release(player.physGrabber);
         if (AssetManager.instance != null)
-            _view.RPC("SetPositionRPC", RpcTarget.All, AssetManager.instance.physDisabledPosition, Quaternion.identity);
+            _physical.Teleport(AssetManager.instance.physDisabledPosition, Quaternion.identity);
         Hold();
     }
 

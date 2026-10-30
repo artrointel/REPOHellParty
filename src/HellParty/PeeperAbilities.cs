@@ -44,7 +44,7 @@ internal sealed class PeeperAbilities : MonoBehaviour
     internal static void ConfirmRemote(PlayerHealth health)
     {
         Hit? oldest = null;
-        foreach (PeeperAbilities owner in FindObjectsOfType<PeeperAbilities>())
+        foreach (PeeperAbilities owner in FindObjectsByType<PeeperAbilities>(FindObjectsSortMode.InstanceID))
         {
             owner._pending.RemoveAll(hit => Time.timeAsDouble - hit.At > 2);
             foreach (Hit hit in owner._pending)

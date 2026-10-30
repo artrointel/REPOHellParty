@@ -106,7 +106,7 @@ internal sealed class BirthdayBoyAbilities : MonoBehaviour
         if (sharedTarget != null && (sharedTarget.isDisabled || sharedTarget.deadSet)) sharedTarget = null;
         // Include balloons belonging to other Birthday Boys in this radius.
         // Each controller still owns its reward ledger and native RPC sender.
-        foreach (BirthdayBoyAbilities owner in FindObjectsOfType<BirthdayBoyAbilities>())
+        foreach (BirthdayBoyAbilities owner in FindObjectsByType<BirthdayBoyAbilities>(FindObjectsSortMode.InstanceID))
         {
             if (NativeEnemy.Health(owner._health) <= 0 || NativeEnemy.Dead(owner._health)) continue;
             foreach (var pair in new List<KeyValuePair<Vector3, GameObject>>(owner._birthday.balloons))
